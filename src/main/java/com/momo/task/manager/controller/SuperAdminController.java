@@ -3,8 +3,6 @@ package com.momo.task.manager.controller;
 import com.momo.task.manager.dto.UserCredentialsDto;
 import com.momo.task.manager.dto.UserDetailsDto;
 import com.momo.task.manager.dto.UserDto;
-import com.momo.task.manager.dto.UserProfilePictureDto;
-import com.momo.task.manager.model.User;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;

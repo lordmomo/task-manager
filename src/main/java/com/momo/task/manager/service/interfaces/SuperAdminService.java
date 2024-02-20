@@ -3,9 +3,6 @@ package com.momo.task.manager.service.interfaces;
 import com.momo.task.manager.dto.UserCredentialsDto;
 import com.momo.task.manager.dto.UserDetailsDto;
 import com.momo.task.manager.dto.UserDto;
-import com.momo.task.manager.dto.UserProfilePictureDto;
-import com.momo.task.manager.model.User;
-import org.springframework.http.RequestEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
