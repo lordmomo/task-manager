@@ -1,9 +1,6 @@
 package com.momo.task.manager.service.impl;
 
-import com.momo.task.manager.dto.ProjectDto;
-import com.momo.task.manager.dto.UserCredentialsDto;
-import com.momo.task.manager.dto.UserDetailsDto;
-import com.momo.task.manager.dto.UserDto;
+import com.momo.task.manager.dto.*;
 import com.momo.task.manager.model.ProfilePicture;
 import com.momo.task.manager.model.Project;
 import com.momo.task.manager.model.Role;
@@ -189,9 +186,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public void createProject(ProjectDto projectDto) {
-        System.out.println(projectDto.getKey());
+
         Project project = mapper.map(projectDto,Project.class);
-        System.out.println(project.getKey());
         Optional<User> optUser = superAdminRepository.findById(projectDto.getProjectLead());
         if(optUser.isPresent()){
             project.setProjectLead(optUser.get());
@@ -199,6 +195,40 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         else{
             throw new RuntimeException();
+        }
+    }
+
+    @Override
+    public void updateProject(Long projectId, UpdateProjectDto updateProjectDto) {
+        Optional<Project> optionalProject = projectRepository.findById(projectId);
+        if(optionalProject.isPresent()){
+            Project project = optionalProject.get();
+            if(!project.getKey().isEmpty() && project.getKey() != null){
+                project.setKey(updateProjectDto.getKey());
+            }
+            if(!project.getProjectName().isEmpty() && project.getProjectName() != null){
+                project.setProjectName(updateProjectDto.getProjectName());
+            }
+            Optional<User> optionalUser = superAdminRepository.findById(updateProjectDto.getProjectLead());
+            if (optionalUser.isPresent()){
+                project.setProjectLead(optionalUser.get());
+            }
+            else{
+                throw new RuntimeException();
+            }
+            projectRepository.save(project);
+
+        }else{
+            throw new RuntimeException();
+        }
+    }
+
+    @Override
+    public void deleteProject(Long projectId) {
+        Optional<Project> optionalProject = projectRepository.findById(projectId);
+        if(optionalProject.isPresent()){
+            Project project = optionalProject.get();
+            projectRepository.delete(project);
         }
     }
 

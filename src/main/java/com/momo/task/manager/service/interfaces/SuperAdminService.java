@@ -1,9 +1,6 @@
 package com.momo.task.manager.service.interfaces;
 
-import com.momo.task.manager.dto.ProjectDto;
-import com.momo.task.manager.dto.UserCredentialsDto;
-import com.momo.task.manager.dto.UserDetailsDto;
-import com.momo.task.manager.dto.UserDto;
+import com.momo.task.manager.dto.*;
 import com.momo.task.manager.model.Project;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,4 +30,8 @@ public interface SuperAdminService {
                       MultipartFile picture) throws IOException;
 
     void createProject(ProjectDto projectDto);
+
+    void updateProject(Long projectId, UpdateProjectDto updateProjectDto);
+
+    void deleteProject(Long projectId);
 }

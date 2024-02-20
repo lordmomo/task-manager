@@ -1,9 +1,6 @@
 package com.momo.task.manager.controller;
 
-import com.momo.task.manager.dto.ProjectDto;
-import com.momo.task.manager.dto.UserCredentialsDto;
-import com.momo.task.manager.dto.UserDetailsDto;
-import com.momo.task.manager.dto.UserDto;
+import com.momo.task.manager.dto.*;
 import com.momo.task.manager.model.Project;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +22,17 @@ public class SuperAdminController {
     public String createProject(@RequestBody ProjectDto projectDto) {
         superAdminService.createProject(projectDto);
         return "Project created successfully";
+    }
+    @PutMapping("/update-project/{projectId}")
+    public String updateProject(@PathVariable("projectId") Long projectId,@RequestBody UpdateProjectDto updateProjectDto) {
+        superAdminService.updateProject(projectId,updateProjectDto);
+        return "Project created successfully";
+    }
+
+    @DeleteMapping("/delete-project/{projectId}")
+    public String deleteProject(@PathVariable("projectId") Long projectId){
+        superAdminService.deleteProject(projectId);
+        return "Project deleted successfully";
     }
 
     //@ModelAttribute User user
