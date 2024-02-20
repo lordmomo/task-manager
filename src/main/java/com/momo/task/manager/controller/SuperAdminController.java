@@ -32,6 +32,19 @@ public class SuperAdminController {
 
         return superAdminService.createAdmin(firstName,lastName,email,username,password,role,picture);
     }
+
+    @PostMapping("/create-user")
+    public String createUser(@RequestParam String firstName,
+                              @RequestParam String lastName,
+                              @RequestParam String email,
+                              @RequestParam String username,
+                              @RequestParam String password,
+                              @RequestParam Long role,
+                              @RequestParam MultipartFile picture
+    ) throws IOException {
+
+        return superAdminService.createUser(firstName,lastName,email,username,password,role,picture);
+    }
     @GetMapping("/get-user-details/{userId}")
     public ResponseEntity<?> showUserDetails(@PathVariable("userId") Long userId){
         UserDto userDto = superAdminService.getUserDetails(userId);

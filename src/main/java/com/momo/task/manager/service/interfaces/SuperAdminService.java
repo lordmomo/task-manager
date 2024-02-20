@@ -25,4 +25,8 @@ public interface SuperAdminService {
     boolean updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto);
 
     boolean updateUserProfilePicture(Long userId, MultipartFile file) throws IOException;
+
+    String createUser(String firstName, String lastName, String email,
+                      String username, String password, Long role,
+                      MultipartFile picture) throws IOException;
 }

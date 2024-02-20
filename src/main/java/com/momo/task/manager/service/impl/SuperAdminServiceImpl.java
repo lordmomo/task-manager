@@ -70,7 +70,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPicture(profilePictureRepository.save(profilePicture));
 
         superAdminRepository.save(user);
-        return "Success";
+        return "Successfully created admin";
     }
 
     @Override
@@ -154,6 +154,32 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             return false;
         }
         return false;
+    }
+
+    @Override
+    public String createUser(String firstName, String lastName, String email,
+                             String username, String password, Long roleId,
+                             MultipartFile picture) throws IOException {
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setPassword(password);
+
+        Role optRole = roleRepository.findById(roleId)
+                .orElseThrow( () -> {
+                    return new RuntimeException("Role Not found");
+                });
+
+        user.setRole(optRole);
+
+        ProfilePicture profilePicture = new ProfilePicture();
+        profilePicture.setPictureData(picture.getBytes());
+        user.setPicture(profilePictureRepository.save(profilePicture));
+
+        superAdminRepository.save(user);
+        return "Successfully created user";
     }
 
 }
