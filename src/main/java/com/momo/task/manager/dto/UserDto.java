@@ -1,12 +1,11 @@
 package com.momo.task.manager.dto;
 
+import com.momo.task.manager.model.ProfilePicture;
 import com.momo.task.manager.model.Role;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +20,5 @@ public class UserDto {
     private String username;
     private String password;
     private Role role;
-    private MultipartFile pictureFile;
-
+    private byte[] pictureFile;
 }

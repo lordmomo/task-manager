@@ -19,6 +19,7 @@ public class File {
     @Column(name = "file_id")
     private Long fileId;
 
+    @Lob
     @Column(name = "file",columnDefinition = "LONGBLOB")
     private byte[] fileData;
 
