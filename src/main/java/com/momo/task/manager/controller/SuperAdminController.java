@@ -1,8 +1,10 @@
 package com.momo.task.manager.controller;
 
+import com.momo.task.manager.dto.ProjectDto;
 import com.momo.task.manager.dto.UserCredentialsDto;
 import com.momo.task.manager.dto.UserDetailsDto;
 import com.momo.task.manager.dto.UserDto;
+import com.momo.task.manager.model.Project;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -18,6 +20,12 @@ public class SuperAdminController {
 
     @Autowired
     SuperAdminService superAdminService;
+
+    @PostMapping("/create-projects")
+    public String createProject(@RequestBody ProjectDto projectDto) {
+        superAdminService.createProject(projectDto);
+        return "Project created successfully";
+    }
 
     //@ModelAttribute User user
     @PostMapping("/create-admin")

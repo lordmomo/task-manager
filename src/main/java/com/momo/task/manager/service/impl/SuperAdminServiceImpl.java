@@ -1,13 +1,16 @@
 package com.momo.task.manager.service.impl;
 
+import com.momo.task.manager.dto.ProjectDto;
 import com.momo.task.manager.dto.UserCredentialsDto;
 import com.momo.task.manager.dto.UserDetailsDto;
 import com.momo.task.manager.dto.UserDto;
 import com.momo.task.manager.model.ProfilePicture;
+import com.momo.task.manager.model.Project;
 import com.momo.task.manager.model.Role;
 import com.momo.task.manager.model.User;
 
 import com.momo.task.manager.repository.ProfilePictureRepository;
+import com.momo.task.manager.repository.ProjectRepository;
 import com.momo.task.manager.repository.RoleRepository;
 import com.momo.task.manager.repository.SuperAdminRepository;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
@@ -33,6 +36,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Autowired
     ProfilePictureRepository profilePictureRepository;
 
+    @Autowired
+    ProjectRepository projectRepository;
     ModelMapper mapper;
 
     // Constructor for initialization
@@ -180,6 +185,21 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
         superAdminRepository.save(user);
         return "Successfully created user";
+    }
+
+    @Override
+    public void createProject(ProjectDto projectDto) {
+        System.out.println(projectDto.getKey());
+        Project project = mapper.map(projectDto,Project.class);
+        System.out.println(project.getKey());
+        Optional<User> optUser = superAdminRepository.findById(projectDto.getProjectLead());
+        if(optUser.isPresent()){
+            project.setProjectLead(optUser.get());
+            projectRepository.save(project);
+        }
+        else{
+            throw new RuntimeException();
+        }
     }
 
 }
