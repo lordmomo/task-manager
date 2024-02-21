@@ -1,15 +1,9 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.*;
-import com.momo.task.manager.model.ProfilePicture;
-import com.momo.task.manager.model.Project;
-import com.momo.task.manager.model.Role;
-import com.momo.task.manager.model.User;
+import com.momo.task.manager.model.*;
 
-import com.momo.task.manager.repository.ProfilePictureRepository;
-import com.momo.task.manager.repository.ProjectRepository;
-import com.momo.task.manager.repository.RoleRepository;
-import com.momo.task.manager.repository.SuperAdminRepository;
+import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +29,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Autowired
     ProjectRepository projectRepository;
+
+    @Autowired
+    AccessRepository accessRepository;
     ModelMapper mapper;
 
     // Constructor for initialization
@@ -190,8 +187,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         Project project = mapper.map(projectDto,Project.class);
         Optional<User> optUser = superAdminRepository.findById(projectDto.getProjectLead());
         if(optUser.isPresent()){
-            project.setProjectLead(optUser.get());
+            User user = optUser.get();
+            project.setProjectLead(user);
             projectRepository.save(project);
+            addUsersToProject(project.getProjectName(), user.getUserId());
         }
         else{
             throw new RuntimeException();
@@ -203,6 +202,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         if(optionalProject.isPresent()){
             Project project = optionalProject.get();
+            User prevUser = project.getProjectLead();
             if(!project.getKey().isEmpty() && project.getKey() != null){
                 project.setKey(updateProjectDto.getKey());
             }
@@ -211,7 +211,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             }
             Optional<User> optionalUser = superAdminRepository.findById(updateProjectDto.getProjectLead());
             if (optionalUser.isPresent()){
-                project.setProjectLead(optionalUser.get());
+                User user = optionalUser.get();
+                project.setProjectLead(user);
+                accessRepository.deleteByUserId(prevUser.getUserId());
+                addUsersToProject(project.getProjectName(), user.getUserId());
             }
             else{
                 throw new RuntimeException();
@@ -230,6 +233,22 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             Project project = optionalProject.get();
             projectRepository.delete(project);
         }
+    }
+
+    @Override
+    public boolean addUsersToProject(String projectName, Long userId) {
+        Optional<User> optionalUser = superAdminRepository.findById(userId);
+        Optional<Project> optionalProject = projectRepository.findByProjectName(projectName);
+        if(optionalUser.isPresent() && optionalProject.isPresent()){
+            User user = optionalUser.get();
+            Project project = optionalProject.get();
+            Access access = new Access();
+            access.setUser(user);
+            access.setProject(project);
+            accessRepository.save(access);
+            return true;
+        }
+        return false;
     }
 
 }

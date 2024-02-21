@@ -111,4 +111,14 @@ public class SuperAdminController {
         }
         return ResponseEntity.status(HttpStatus.OK).body("User profile picture updated!!!");
     }
+
+    @PostMapping("/{projectName}/add-users/{userId}")
+    public ResponseEntity<String> addUsersToProject(@PathVariable("projectName") String projectName, @PathVariable("userId") Long userId){
+        boolean check = superAdminService.addUsersToProject(projectName,userId);
+        if(!check){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User or Project not found");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("User added to project!!!");
+
+    }
 }

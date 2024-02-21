@@ -34,4 +34,6 @@ public interface SuperAdminService {
     void updateProject(Long projectId, UpdateProjectDto updateProjectDto);
 
     void deleteProject(Long projectId);
+
+    boolean addUsersToProject(String projectName, Long userId);
 }

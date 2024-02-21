@@ -17,8 +17,9 @@ public class Access {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "access_id",nullable = false)
     private Long accessId;
+
     @ManyToOne
-    @JoinColumn(name = "accessed_user_id",referencedColumnName = "user_id")
+        @JoinColumn(name = "accessed_user_id",referencedColumnName = "user_id")
     private User user;
 
     @ManyToOne
