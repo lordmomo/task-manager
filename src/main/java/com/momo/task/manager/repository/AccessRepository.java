@@ -15,4 +15,8 @@ public interface AccessRepository extends JpaRepository<Access,Long> {
     @Query (nativeQuery = true,
             value = " DELETE FROM access a WHERE a.accessed_user_id = :userId")
     void deleteByUserId (Long userId);
+
+    @Query(nativeQuery = true,
+            value = "SELECT COUNT(*) FROM access a WHERE a.accessed_user_id = :userId AND a.accessed_project_id = :projectId")
+    Long validateUserProjectRelation(Long userId,Long projectId);
 }

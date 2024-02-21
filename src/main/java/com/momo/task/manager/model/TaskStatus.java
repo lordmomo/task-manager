@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskStatus {
-
     @Id
     @Column(name = "status_id")
     private Long statusId;

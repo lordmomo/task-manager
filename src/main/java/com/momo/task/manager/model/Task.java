@@ -1,5 +1,6 @@
 package com.momo.task.manager.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "task")
+@Table(name = "newtask")
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +31,7 @@ public class Task {
     @Column(name = "task_type",nullable = false)
     private String type;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "task_status",referencedColumnName = "status_id")
     private TaskStatus status;
 
@@ -47,16 +48,32 @@ public class Task {
     @JoinColumn(name = "project_id",referencedColumnName = "project_id")
     private Project project;
 
-    @OneToMany(mappedBy = "task")
-//    @JoinColumn(name="fileList",referencedColumnName = "file_id")
-    private List<File> files;
-
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "assignee",referencedColumnName = "user_id",nullable = false)
     private User assigneeId;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "reporter",referencedColumnName = "user_id",nullable = false)
     private User reporterId;
+
+    // add nullable = false
+    @ManyToOne
+    @JoinColumn(name="stage_id",referencedColumnName = "stage_id")
+    private Stages stageId;
+
+    @Column(name = "updated_flag",nullable = false)
+    boolean updatedFlag;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Column(name = "updated_date")
+    private Date updatedDate;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Column(name = "updated_stage_date")
+    private Date updatedStageDate;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Column(name = "updated_status_date")
+    private Date updatedStatusDate;
 
 }
