@@ -1,19 +1,27 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.TaskDto;
+import com.momo.task.manager.dto.UserDto;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
 import org.hibernate.boot.jaxb.SourceType;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.spel.ast.OpAnd;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -39,25 +47,62 @@ public class TaskServiceImpl implements TaskService {
     StagesRepository stagesRepository;
     @Autowired
     CheckUtils checkUtils;
+    ModelMapper mapper ;
+    @Autowired
+    public TaskServiceImpl() {
+        this.mapper = new ModelMapper();
+        configureModelMapper();
+    }
+    private void configureModelMapper(){
+        // Use strict matching strategy to avoid conflicts
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    Date date = new Date();
+        // Explicitly define mappings to avoid conflicts
+        mapper.createTypeMap(TaskDto.class, Task.class)
+                .addMapping(TaskDto::getReporterId, Task::setReporterId)
+                .addMapping(TaskDto::getAssigneeId, Task::setAssigneeId)
+                .addMapping(TaskDto::getStageId, Task::setStageId);
+    }
+
+
+//    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     @Override
-    public void createTask(Task task,MultipartFile file) throws IOException {
+    public void createTask(TaskDto taskDto) throws IOException {
+
         Long checkReporterHasAccessToProject = checkUtils.checkUserProjectAccess(
-                task.getReporterId().getUserId(),task.getProject().getProjectId()
+                taskDto.getReporterId(),taskDto.getProject()
         );
         if(checkReporterHasAccessToProject == 1){
             Long checkAssigneeHasAccessToProject = checkUtils.checkUserProjectAccess(
-                    task.getAssigneeId().getUserId(),task.getProject().getProjectId()
+                    taskDto.getAssigneeId(),taskDto.getProject()
             );
             if(checkAssigneeHasAccessToProject == 1){
+                Task task = new Task();
+                task.setTaskName(taskDto.getTaskName());
+                task.setDescription(taskDto.getDescription());
+                task.setType(taskDto.getType());
+                task.setStatus(checkUtils.getStatusFromId(taskDto.getStatus()));
+                task.setStartDate(taskDto.getStartDate());
+                task.setEndDate(taskDto.getEndDate());
+                task.setProject(checkUtils.getProjectFromId(taskDto.getProject()));
+                task.setAssigneeId(checkUtils.getUserFromId(taskDto.getAssigneeId()));
+                task.setReporterId(checkUtils.getUserFromId(taskDto.getReporterId()));
+                task.setStageId(checkUtils.getStageFromId(taskDto.getStageId()));
+
                 taskRepository.save(task);
-                File file1 = new File();
-                file1.setTask(task);
-                file1.setFile(file);
-                file1.setFileData(file.getBytes());
-                fileRepository.save(file1);
+
+                MultipartFile attachment = taskDto.getFile();
+                File file = new File();
+                file.setTask(task);
+                if(attachment!=null && !attachment.isEmpty())
+                {
+                    file.setFileData(attachment.getBytes());
+                }else{
+                    file.setFileData(null);
+                }
+                fileRepository.save(file);
                 System.out.println("save done in both repo");
             }
             else{
@@ -79,7 +124,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void updateTask(Long taskId, TaskDto taskDto) {
+    public void updateTask(Long taskId, TaskDto taskDto) throws ParseException {
         Optional<Task> optTask =taskRepository.findById(taskId);
         if (optTask.isPresent()){
             Task task = optTask.get();
@@ -138,9 +183,12 @@ public class TaskServiceImpl implements TaskService {
             }
 
             task.setUpdatedFlag(true);
-            task.setUpdatedDate(new Date());
-            task.setUpdatedStageDate(new Date());
-            task.setUpdatedStatusDate(new Date());
+
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            
+            task.setUpdatedDate(currentDateTime);
+            task.setUpdatedStageDate(currentDateTime);
+            task.setUpdatedStatusDate(currentDateTime);
 
             taskRepository.save(task);
             System.out.println("save success in service");

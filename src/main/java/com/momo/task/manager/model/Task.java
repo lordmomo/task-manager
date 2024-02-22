@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -59,9 +60,8 @@ public class Task {
     @JoinColumn(name = "reporter",referencedColumnName = "user_id",nullable = false)
     private User reporterId;
 
-    // add nullable = false
     @ManyToOne
-    @JoinColumn(name="stage_id",referencedColumnName = "stage_id")
+    @JoinColumn(name="stage_id",referencedColumnName = "stage_id",nullable = false)
     private Stages stageId;
 
     @Column(name = "updated_flag",nullable = false)
@@ -69,14 +69,14 @@ public class Task {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "updated_date")
-    private Date updatedDate;
+    private LocalDateTime updatedDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "updated_stage_date")
-    private Date updatedStageDate;
+    private LocalDateTime updatedStageDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "updated_status_date")
-    private Date updatedStatusDate;
+    private LocalDateTime updatedStatusDate;
 
 }

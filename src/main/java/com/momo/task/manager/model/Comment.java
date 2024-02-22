@@ -43,7 +43,4 @@ public class Comment {
     @Column(name = "file",columnDefinition = "LONGBLOB")
     private byte[] fileData;
 
-    @Transient
-    @JsonIgnore
-    private MultipartFile pictureFile;
 }

@@ -79,6 +79,8 @@ public class CommentServiceIml implements CommentService {
             return;
         }
 
+        // try to use custom method
+
         commentRepository.deleteById(commentValidation.getCommentId());
 
     }

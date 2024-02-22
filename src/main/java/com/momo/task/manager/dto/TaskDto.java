@@ -1,14 +1,8 @@
 package com.momo.task.manager.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.momo.task.manager.model.Project;
-import com.momo.task.manager.model.Stages;
-import com.momo.task.manager.model.TaskStatus;
-import com.momo.task.manager.model.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.annotation.Nullable;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -21,7 +15,11 @@ public class TaskDto {
 
     private Long status;
 
+    private String type;
+
     private String label;
+
+    private Long project;
 
     private Date startDate;
 
@@ -33,10 +31,7 @@ public class TaskDto {
 
     private Long stageId;
 
-//    boolean updatedFlag;
-//
-//    private Date updatedDate;
-//    private Date updatedStageDate;
-//
-//    private Date updatedStatusDate;
+    @Nullable
+    private MultipartFile file;
+
 }

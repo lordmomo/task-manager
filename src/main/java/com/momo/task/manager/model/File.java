@@ -1,5 +1,6 @@
 package com.momo.task.manager.model;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class File {
     private Long fileId;
 
     @Lob
+    @Nullable
     @Column(name = "file",columnDefinition = "LONGBLOB")
     private byte[] fileData;
 
@@ -28,6 +30,4 @@ public class File {
     @JoinColumn(name = "task_id", referencedColumnName = "task_id")
     private Task task;
 
-    @Transient
-    private MultipartFile file;
 }

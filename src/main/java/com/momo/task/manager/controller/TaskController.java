@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.momo.task.manager.utils.CheckUtils;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 
@@ -31,20 +32,17 @@ public class TaskController {
     CheckUtils checkUtils;
 
     @PostMapping("/create-tasks")
-    private String createTask(@ModelAttribute Task task,
-                              @RequestParam String status,
-                              @RequestParam String stageId,
-                              @RequestParam MultipartFile file) throws IOException {
+    private String createTask(@ModelAttribute TaskDto taskDto) throws IOException {
         // Fetch Stages and TaskStatus entities from the database
-        Stages stage = stagesRepository.findById(Long.valueOf(stageId))
-                .orElseThrow(() -> new EntityNotFoundException("Stages not found with ID: " + stageId));
-        task.setStageId(stage);
+//        Stages stage = stagesRepository.findById(Long.valueOf(stageId))
+//                .orElseThrow(() -> new EntityNotFoundException("Stages not found with ID: " + stageId));
+//        task.setStageId(stage);
+//
+//        TaskStatus taskStatus = taskStatusRepository.findById(Long.valueOf(status))
+//                .orElseThrow(() -> new EntityNotFoundException("TaskStatus not found with ID: " + status));
+//        task.setStatus(taskStatus);
 
-        TaskStatus taskStatus = taskStatusRepository.findById(Long.valueOf(status))
-                .orElseThrow(() -> new EntityNotFoundException("TaskStatus not found with ID: " + status));
-        task.setStatus(taskStatus);
-
-        taskService.createTask(task,file);
+        taskService.createTask(taskDto);
         return "success";
     }
 
@@ -55,7 +53,7 @@ public class TaskController {
     }
 
     @PutMapping("/update-task/{taskId}")
-    public String updateTask(@PathVariable("taskId") Long taskId,@RequestBody TaskDto taskDto){
+    public String updateTask(@PathVariable("taskId") Long taskId,@RequestBody TaskDto taskDto) throws ParseException {
         taskService.updateTask(taskId,taskDto);
         return "update successfully";
     }
