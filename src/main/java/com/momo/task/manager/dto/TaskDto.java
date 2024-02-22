@@ -19,7 +19,7 @@ public class TaskDto {
 
     private String description;
 
-    private TaskStatus status;
+    private Long status;
 
     private String label;
 
@@ -27,11 +27,11 @@ public class TaskDto {
 
     private Date endDate;
 
-    private User assigneeId;
+    private Long assigneeId;
 
-    private User reporterId;
+    private Long reporterId;
 
-    private Stages stageId;
+    private Long stageId;
 
 //    boolean updatedFlag;
 //
