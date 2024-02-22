@@ -5,6 +5,7 @@ import com.momo.task.manager.model.Task;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface TaskService {
     void createTask(Task task, MultipartFile file) throws IOException;
@@ -12,4 +13,6 @@ public interface TaskService {
     void deleteTask(Long taskId);
 
     void updateTask(Long taskId, TaskDto taskDto);
+
+    List<Task> getAllTask(Long projectId);
 }

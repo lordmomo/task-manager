@@ -1,6 +1,9 @@
 package com.momo.task.manager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,8 +28,9 @@ public class Comment {
     @JoinColumn(name = "task_id",referencedColumnName = "task_id")
     private Task taskId;
 
-    @Column(name = "full_name",nullable = false)
-    private String fullName;
+    @ManyToOne
+    @JoinColumn(name = "user_id",nullable = false,referencedColumnName = "user_id")
+    private User userId;
 
     @Column(name = "message",nullable = false)
     private String message;
@@ -35,9 +39,11 @@ public class Comment {
     private Date messagePostDate;
 
     @Lob
-    @Column(name = "profileImage",columnDefinition = "LONGBLOB")
-    private byte[] pictureData;
+    @Nullable
+    @Column(name = "file",columnDefinition = "LONGBLOB")
+    private byte[] fileData;
 
     @Transient
+    @JsonIgnore
     private MultipartFile pictureFile;
 }

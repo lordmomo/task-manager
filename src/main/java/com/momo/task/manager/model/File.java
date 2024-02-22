@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "newfile")
+@Table(name = "file")
 public class File {
 
     @Id

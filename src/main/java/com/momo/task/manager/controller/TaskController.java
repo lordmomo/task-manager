@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.momo.task.manager.utils.CheckUtils;
 import java.io.IOException;
+import java.util.List;
 
 
 @RestController
@@ -57,6 +58,12 @@ public class TaskController {
     public String updateTask(@PathVariable("taskId") Long taskId,@RequestBody TaskDto taskDto){
         taskService.updateTask(taskId,taskDto);
         return "update successfully";
+    }
+
+    //CIRCULAR REFERENCE ERROR TO BE SOLVED
+    @GetMapping("/projects/{projectId}/all-tasks")
+    public List<Task> getAllTasksOfProject(@PathVariable("projectId") Long projectId){
+        return taskService.getAllTask(projectId);
     }
 
     @GetMapping("/check")

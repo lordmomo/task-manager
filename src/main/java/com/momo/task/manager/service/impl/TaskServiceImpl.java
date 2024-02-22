@@ -15,6 +15,7 @@ import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -31,6 +32,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     SuperAdminRepository superAdminRepository;
+    @Autowired
+    ProjectRepository projectRepository;
 
     @Autowired
     StagesRepository stagesRepository;
@@ -145,6 +148,18 @@ public class TaskServiceImpl implements TaskService {
         else{
             System.out.println("save failed in service");
             throw new RuntimeException();
+        }
+    }
+
+    @Override
+    public List<Task> getAllTask(Long projectId) {
+        Optional<Project> project = projectRepository.findById(projectId);
+        if(project.isPresent()) {
+            return taskRepository.findAllByProject_ProjectId(project.get().getProjectId());
+        }
+        else{
+            System.out.println("project not found");
+            return null;
         }
     }
 
