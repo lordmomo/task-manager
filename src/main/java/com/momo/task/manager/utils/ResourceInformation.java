@@ -4,6 +4,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceInformation {
+
+    public static final String defaultImagePath = "images/profile-svgrepo-com.svg" ;
+
     public static final String projectNotFoundMessage = "Project not found";
     public static final String userNotFoundMessage = "User not found";
     public static final String projectOrUserNotFoundMessage = " Project or User not found";
@@ -14,6 +17,7 @@ public class ResourceInformation {
     public static final String assigneeNotFoundMessage = "Assignee not found";
     public static final String reporterNotFoundMessage = "Reporter not found";
     public static final String stageNotFoundMessage = "Stage not found";
+
     public static final String roleNotFoundMessage = "Role not found";
     public static final String assigneeHasNoAccessToProjectMessage = "Assignee has no access to project";
     public static final String reporterHasNoAccessToProjectMessage = "Reporter has no access to project";

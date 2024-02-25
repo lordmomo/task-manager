@@ -1,6 +1,5 @@
 package com.momo.task.manager.dto;
 
-import com.momo.task.manager.model.ProfilePicture;
 import com.momo.task.manager.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDto {
+public class UserResponseDto {
 
     private Long userId;
     private String firstName;

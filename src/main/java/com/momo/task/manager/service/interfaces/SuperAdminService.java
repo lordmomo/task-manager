@@ -9,17 +9,13 @@ import java.util.List;
 
 public interface SuperAdminService {
 
-    ResponseEntity<String> createAdmin(String firstName, String lastName, String email,
-                                       String username, String password, Long role,
-                                       MultipartFile picture) throws IOException;
+    ResponseEntity<String> createAdmin(UserCreateDto userCreateDto) throws IOException;
 
-    ResponseEntity<String> createUser(String firstName, String lastName, String email,
-                                      String username, String password, Long role,
-                                      MultipartFile picture) throws IOException;
+    ResponseEntity<String> createUser(UserCreateDto userCreateDto) throws IOException;
 
-    ResponseEntity<UserDto> getUserDetails(Long userId);
+    ResponseEntity<UserResponseDto> getUserDetails(Long userId);
 
-    ResponseEntity<List<UserDto>> getAllUsers();
+    ResponseEntity<List<UserResponseDto>> getAllUsers();
 
     ResponseEntity<String> removeUser(Long userId);
 

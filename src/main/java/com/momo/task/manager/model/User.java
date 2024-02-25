@@ -1,5 +1,6 @@
 package com.momo.task.manager.model;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +40,7 @@ public class User {
 
     @OneToOne
     @JoinColumn(name = "profile_image", referencedColumnName = "profile_picture_id")
+    @Nullable
     private ProfilePicture picture;
 
     public String fullName() {

@@ -4,6 +4,7 @@ import com.momo.task.manager.dto.*;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
+import com.momo.task.manager.utils.ImageLoader;
 import com.momo.task.manager.utils.ResourceInformation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     AccessRepository accessRepository;
     ModelMapper mapper;
 
+    @Autowired
+    ImageLoader imageLoader;
+
     // Constructor for initialization
     @Autowired
     public SuperAdminServiceImpl() {
@@ -44,28 +48,31 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     private void configureModelMapper() {
-        mapper.createTypeMap(User.class, UserDto.class)
-                .addMapping(src -> src.getPicture().getPictureData(), UserDto::setPictureFile);
+        mapper.createTypeMap(User.class, UserResponseDto.class)
+                .addMapping(src -> src.getPicture().getPictureData(), UserResponseDto::setPictureFile);
     }
 
     @Override
-    public ResponseEntity<String> createAdmin(String firstName, String lastName, String email,
-                                              String username, String password, Long roleId,
-                                              MultipartFile picture) throws IOException {
+    public ResponseEntity<String> createAdmin(UserCreateDto userCreateDto) throws IOException {
+
         User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setPassword(password);
+        user.setFirstName(userCreateDto.getFirstName());
+        user.setLastName(userCreateDto.getLastName());
+        user.setEmail(userCreateDto.getEmail());
+        user.setUsername(userCreateDto.getUsername());
+        user.setPassword(userCreateDto.getPassword());
 
-        Role optRole = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException(ResourceInformation.roleNotFoundMessage));
+        Optional<Role> optRole = roleRepository.findById(2L);
 
-        user.setRole(optRole);
+        optRole.ifPresent(user::setRole);
 
         ProfilePicture profilePicture = new ProfilePicture();
-        profilePicture.setPictureData(picture.getBytes());
+        if (userCreateDto.getPictureFile() != null) {
+            profilePicture.setPictureData(userCreateDto.getPictureFile().getBytes());
+        } else {
+            byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.defaultImagePath);
+            profilePicture.setPictureData(defaultPicture);
+        }
         user.setPicture(profilePictureRepository.save(profilePicture));
 
         superAdminRepository.save(user);
@@ -75,24 +82,24 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<UserDto> getUserDetails(Long userId) {
+    public ResponseEntity<UserResponseDto> getUserDetails(Long userId) {
         Optional<User> optUser = superAdminRepository.findById(userId);
 
         if (optUser.isPresent()) {
             User user = optUser.get();
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(mapper.map(user, UserDto.class));
+                    .body(mapper.map(user, UserResponseDto.class));
         }
         return null;
     }
 
     @Override
-    public ResponseEntity<List<UserDto>> getAllUsers() {
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<User> userList = superAdminRepository.findAll();
-        List<UserDto> userDtoList = new ArrayList<>();
+        List<UserResponseDto> userDtoList = new ArrayList<>();
         for (User user : userList) {
-            UserDto userDto = mapper.map(user, UserDto.class);
+            UserResponseDto userDto = mapper.map(user, UserResponseDto.class);
             userDtoList.add(userDto);
         }
         return ResponseEntity
@@ -111,9 +118,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                     .status(HttpStatus.OK)
                     .body(ResourceInformation.userDeletedMessage);
         }
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(ResourceInformation.userNotFoundMessage);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ResourceInformation.userNotFoundMessage);
 
     }
 
@@ -166,23 +173,24 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> createUser(String firstName, String lastName, String email,
-                             String username, String password, Long roleId,
-                             MultipartFile picture) throws IOException {
+    public ResponseEntity<String> createUser(UserCreateDto userCreateDto) throws IOException {
         User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setPassword(password);
+        user.setFirstName(userCreateDto.getFirstName());
+        user.setLastName(userCreateDto.getLastName());
+        user.setEmail(userCreateDto.getEmail());
+        user.setUsername(userCreateDto.getUsername());
+        user.setPassword(userCreateDto.getPassword());
 
-        Role optRole = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException(ResourceInformation.roleNotFoundMessage));
-
-        user.setRole(optRole);
+        Optional<Role> optRole = roleRepository.findById(3L);
+        optRole.ifPresent(user::setRole);
 
         ProfilePicture profilePicture = new ProfilePicture();
-        profilePicture.setPictureData(picture.getBytes());
+        if (userCreateDto.getPictureFile() != null) {
+            profilePicture.setPictureData(userCreateDto.getPictureFile().getBytes());
+        } else {
+            byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.defaultImagePath);
+            profilePicture.setPictureData(defaultPicture);
+        }
         user.setPicture(profilePictureRepository.save(profilePicture));
 
         superAdminRepository.save(user);

@@ -33,37 +33,23 @@ public class SuperAdminController {
 
     //@ModelAttribute User user
     @PostMapping("/create-admin")
-    public ResponseEntity<String> createAdmin(@RequestParam String firstName,
-                              @RequestParam String lastName,
-                              @RequestParam String email,
-                              @RequestParam String username,
-                              @RequestParam String password,
-                              @RequestParam Long role,
-                              @RequestParam MultipartFile picture
-                              ) throws IOException {
+    public ResponseEntity<String> createAdmin(@ModelAttribute UserCreateDto userCreateDto) throws IOException {
 
-        return superAdminService.createAdmin(firstName,lastName,email,username,password,role,picture);
+        return superAdminService.createAdmin(userCreateDto);
     }
 
     @PostMapping("/create-user")
-    public ResponseEntity<String> createUser(@RequestParam String firstName,
-                              @RequestParam String lastName,
-                              @RequestParam String email,
-                              @RequestParam String username,
-                              @RequestParam String password,
-                              @RequestParam Long role,
-                              @RequestParam MultipartFile picture
-    ) throws IOException {
+    public ResponseEntity<String> createUser(@ModelAttribute UserCreateDto userCreateDto) throws IOException {
 
-        return superAdminService.createUser(firstName,lastName,email,username,password,role,picture);
+        return superAdminService.createUser(userCreateDto);
     }
     @GetMapping("/get-user-details/{userId}")
-    public ResponseEntity<UserDto> showUserDetails(@PathVariable("userId") Long userId){
+    public ResponseEntity<UserResponseDto> showUserDetails(@PathVariable("userId") Long userId){
         return superAdminService.getUserDetails(userId);
     }
 
     @GetMapping("/get-all-users")
-    public ResponseEntity<List<UserDto>> showAllUsers(){
+    public ResponseEntity<List<UserResponseDto>> showAllUsers(){
         return superAdminService.getAllUsers();
     }
     @DeleteMapping("/remove-user/{userId}")
