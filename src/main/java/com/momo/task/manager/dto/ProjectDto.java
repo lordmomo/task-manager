@@ -12,12 +12,8 @@ import lombok.NoArgsConstructor;
 public class ProjectDto {
 
     private String projectName;
-
     private String key;
-
     private String template;
-
     private String type;
-
     private Long projectLead;
 }

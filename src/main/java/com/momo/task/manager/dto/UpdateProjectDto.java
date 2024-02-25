@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 public class UpdateProjectDto {
 
     private String projectName;
-
     private String key;
-
     private Long projectLead;
 }

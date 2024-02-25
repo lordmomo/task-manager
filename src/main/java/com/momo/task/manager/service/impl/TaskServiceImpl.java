@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -198,7 +197,7 @@ public class TaskServiceImpl implements TaskService {
             return taskRepository.findByProdId(projectId);
         } else {
             log.info("project not found");
-            return Collections.emptyList();
+            return null;
         }
     }
 
