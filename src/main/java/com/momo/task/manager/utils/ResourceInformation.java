@@ -1,8 +1,5 @@
 package com.momo.task.manager.utils;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class ResourceInformation {
 
     private ResourceInformation(){

@@ -9,21 +9,27 @@ import java.util.Optional;
 
 @Component
 public class CheckUtils {
-
-    @Autowired
     AccessRepository accessRepository;
-    @Autowired
     ProjectRepository projectRepository;
-    @Autowired
     SuperAdminRepository superAdminRepository;
-    @Autowired
     TaskRepository taskRepository;
-
-    @Autowired
     TaskStatusRepository taskStatusRepository;
-
-    @Autowired
     StagesRepository stagesRepository;
+    @Autowired
+    public CheckUtils(AccessRepository accessRepository,
+                      ProjectRepository projectRepository,
+                      SuperAdminRepository superAdminRepository,
+                      TaskRepository taskRepository,
+                      TaskStatusRepository taskStatusRepository,
+                      StagesRepository stagesRepository) {
+
+        this.accessRepository = accessRepository;
+        this.projectRepository = projectRepository;
+        this.superAdminRepository = superAdminRepository;
+        this.taskRepository = taskRepository;
+        this.taskStatusRepository = taskStatusRepository;
+        this.stagesRepository = stagesRepository;
+    }
 
     public Long checkUserProjectAccess(Long userId, Long projectId) {
         return accessRepository.validateUserProjectRelation(userId, projectId);

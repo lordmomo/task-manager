@@ -21,29 +21,37 @@ import java.util.Optional;
 @Service
 public class SuperAdminServiceImpl implements SuperAdminService {
 
-    @Autowired
     SuperAdminRepository superAdminRepository;
-
-    @Autowired
     RoleRepository roleRepository;
-
-    @Autowired
     ProfilePictureRepository profilePictureRepository;
-
-    @Autowired
     ProjectRepository projectRepository;
-
-    @Autowired
     AccessRepository accessRepository;
     ModelMapper mapper;
-
-    @Autowired
     ImageLoader imageLoader;
 
+
     // Constructor for initialization
+//    public SuperAdminServiceImpl() {
+//        this.mapper = new ModelMapper();
+//        configureModelMapper();
+//    }
+
     @Autowired
-    public SuperAdminServiceImpl() {
-        this.mapper = new ModelMapper();
+    public SuperAdminServiceImpl(SuperAdminRepository superAdminRepository,
+                                 RoleRepository roleRepository,
+                                 ProfilePictureRepository profilePictureRepository,
+                                 ProjectRepository projectRepository,
+                                 AccessRepository accessRepository,
+                                 ModelMapper mapper,
+                                 ImageLoader imageLoader) {
+
+        this.superAdminRepository = superAdminRepository;
+        this.roleRepository = roleRepository;
+        this.profilePictureRepository = profilePictureRepository;
+        this.projectRepository = projectRepository;
+        this.accessRepository = accessRepository;
+        this.mapper = mapper;
+        this.imageLoader = imageLoader;
         configureModelMapper();
     }
 

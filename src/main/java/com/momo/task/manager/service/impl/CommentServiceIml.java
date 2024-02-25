@@ -25,12 +25,13 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class CommentServiceIml implements CommentService {
-
-    @Autowired
     CheckUtils checkUtils;
-
-    @Autowired
     CommentRepository commentRepository;
+    @Autowired
+    public CommentServiceIml(CheckUtils checkUtils, CommentRepository commentRepository) {
+        this.checkUtils = checkUtils;
+        this.commentRepository = commentRepository;
+    }
 
     @Override
     public ResponseEntity<String> createComment(Long projectId, CommentDto commentDto) throws IOException {

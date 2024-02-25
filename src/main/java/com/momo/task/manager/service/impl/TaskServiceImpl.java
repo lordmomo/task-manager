@@ -23,30 +23,40 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class TaskServiceImpl implements TaskService {
-    @Autowired
     TaskRepository taskRepository;
-
-    @Autowired
     CommentRepository commentRepository;
-    @Autowired
     FileRepository fileRepository;
-
-    @Autowired
     TaskStatusRepository taskStatusRepository;
-
-    @Autowired
     SuperAdminRepository superAdminRepository;
-    @Autowired
     ProjectRepository projectRepository;
-
-    @Autowired
     StagesRepository stagesRepository;
-    @Autowired
     CheckUtils checkUtils;
     ModelMapper mapper;
+//    public TaskServiceImpl() {
+//        this.mapper = new ModelMapper();
+//        configureModelMapper();
+//    }
+
     @Autowired
-    public TaskServiceImpl() {
-        this.mapper = new ModelMapper();
+    public TaskServiceImpl(TaskRepository taskRepository,
+                           CommentRepository commentRepository,
+                           FileRepository fileRepository,
+                           TaskStatusRepository taskStatusRepository,
+                           SuperAdminRepository superAdminRepository,
+                           ProjectRepository projectRepository,
+                           StagesRepository stagesRepository,
+                           CheckUtils checkUtils,
+                           ModelMapper mapper) {
+
+        this.taskRepository = taskRepository;
+        this.commentRepository = commentRepository;
+        this.fileRepository = fileRepository;
+        this.taskStatusRepository = taskStatusRepository;
+        this.superAdminRepository = superAdminRepository;
+        this.projectRepository = projectRepository;
+        this.stagesRepository = stagesRepository;
+        this.checkUtils = checkUtils;
+        this.mapper = mapper;
         configureModelMapper();
     }
 
