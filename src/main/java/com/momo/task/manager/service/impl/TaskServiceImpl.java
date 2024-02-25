@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -85,27 +85,31 @@ public class TaskServiceImpl implements TaskService {
                 task.setStageId(checkUtils.getStageFromId(taskDto.getStageId()));
 
                 taskRepository.save(task);
+                saveTaskFile(task,taskDto.getFile());
 
-                MultipartFile attachment = taskDto.getFile();
-                File file = new File();
-                file.setTask(task);
-                if (attachment != null && !attachment.isEmpty()) {
-                    file.setFileData(attachment.getBytes());
-                } else {
-                    file.setFileData(null);
-                }
-                fileRepository.save(file);
-                log.info(ResourceInformation.taskCreatedMessage);
-                return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.taskCreatedMessage);
+                log.info(ResourceInformation.TASK_CREATED_MESSAGE);
+                return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
             } else {
                 log.info("Assignee has no access to project");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.assigneeHasNoAccessToProjectMessage);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.ASSIGNEE_HAS_NO_ACCESS_TO_PROJECT_MESSAGE);
             }
         } else {
             log.info("Reporter has no access to project");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.reporterHasNoAccessToProjectMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.REPORTER_HAS_NO_ACCESS_TO_PROJECT_MESSAGE);
         }
 
+    }
+
+    private void saveTaskFile(Task task,MultipartFile mFile) throws IOException {
+        File file = new File();
+        file.setTask(task);
+        if (mFile != null && !mFile.isEmpty()) {
+            file.setFileData(mFile.getBytes());
+        } else {
+            file.setFileData(null);
+        }
+        fileRepository.save(file);
+        log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
     }
 
     @Override
@@ -115,9 +119,9 @@ public class TaskServiceImpl implements TaskService {
             fileRepository.deleteByTaskId(taskId);
             commentRepository.findAllByCommentByTaskId(taskId);
             taskRepository.deleteById(taskId);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.taskDeletedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_DELETED_MESSAGE);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.taskNotFoundMessage);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
 
     }
 
@@ -156,7 +160,7 @@ public class TaskServiceImpl implements TaskService {
                 if (user.isPresent()) {
                     task.setAssigneeId(user.get());
                 } else {
-                    log.info(ResourceInformation.assigneeNotFoundMessage);
+                    log.info(ResourceInformation.ASSIGNEE_NOT_FOUND_MESSAGE);
                 }
             }
             if (task.getReporterId() != null) {
@@ -164,7 +168,7 @@ public class TaskServiceImpl implements TaskService {
                 if (user.isPresent()) {
                     task.setReporterId(user.get());
                 } else {
-                    log.info(ResourceInformation.reporterNotFoundMessage);
+                    log.info(ResourceInformation.REPORTER_NOT_FOUND_MESSAGE);
                 }
             }
             if (task.getStageId() != null) {
@@ -172,7 +176,7 @@ public class TaskServiceImpl implements TaskService {
                 if (stages.isPresent()) {
                     task.setStageId(stages.get());
                 } else {
-                    log.info(ResourceInformation.stageNotFoundMessage);
+                    log.info(ResourceInformation.STAGE_NOT_FOUND_MESSAGE);
                 }
             }
 
@@ -186,11 +190,11 @@ public class TaskServiceImpl implements TaskService {
 
             taskRepository.save(task);
             log.info("save success in service");
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.taskUpdatedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_UPDATED_MESSAGE);
 
         } else {
             log.info("save failed in service");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.taskNotFoundMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
     }
 
@@ -203,8 +207,8 @@ public class TaskServiceImpl implements TaskService {
                     .status(HttpStatus.OK)
                     .body(taskRepository.findByProdId(projectId));
         } else {
-            log.info("project not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectNotFoundMessage);
+            log.info(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
         }
     }
 

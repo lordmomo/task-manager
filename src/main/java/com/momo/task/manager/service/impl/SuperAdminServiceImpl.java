@@ -70,7 +70,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (userCreateDto.getPictureFile() != null) {
             profilePicture.setPictureData(userCreateDto.getPictureFile().getBytes());
         } else {
-            byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.defaultImagePath);
+            byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.DEFAULT_IMAGE_PATH);
             profilePicture.setPictureData(defaultPicture);
         }
         user.setPicture(profilePictureRepository.save(profilePicture));
@@ -78,7 +78,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         superAdminRepository.save(user);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ResourceInformation.adminCreatedMessage);
+                .body(ResourceInformation.ADMIN_CREATED_MESSAGE);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                     .status(HttpStatus.OK)
                     .body(mapper.map(user, UserResponseDto.class));
         }
-        return null;
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @Override
@@ -116,11 +116,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             profilePictureRepository.delete(user.getPicture());
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(ResourceInformation.userDeletedMessage);
+                    .body(ResourceInformation.USER_DELETED_MESSAGE);
         }
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ResourceInformation.userNotFoundMessage);
+                .body(ResourceInformation.USER_NOT_FOUND_MESSAGE);
 
     }
 
@@ -135,9 +135,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             user.setEmail(userDetailsDto.getEmail());
 
             superAdminRepository.save(user);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userDetailsUpdatedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_DETAILS_UPDATED_MESSAGE);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.userNotFoundMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.USER_NOT_FOUND_MESSAGE);
 
     }
 
@@ -149,9 +149,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             user.setUsername(userCredentialsDto.getUsername());
             user.setPassword(userCredentialsDto.getPassword());
             superAdminRepository.save(user);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userCredentialsUpdatedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.userNotFoundMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.USER_NOT_FOUND_MESSAGE);
 
     }
 
@@ -166,9 +166,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             picture.setPictureData(file.getBytes());
             user.setPicture(profilePictureRepository.save(picture));
             superAdminRepository.save(user);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userProfilePoctureUpdatedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_PROFILE_PICTURE_UPDATED_MESSAGE);
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.userNotFoundMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.USER_NOT_FOUND_MESSAGE);
 
     }
 
@@ -188,13 +188,13 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (userCreateDto.getPictureFile() != null) {
             profilePicture.setPictureData(userCreateDto.getPictureFile().getBytes());
         } else {
-            byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.defaultImagePath);
+            byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.DEFAULT_IMAGE_PATH);
             profilePicture.setPictureData(defaultPicture);
         }
         user.setPicture(profilePictureRepository.save(profilePicture));
 
         superAdminRepository.save(user);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userCreatedMessage);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREATED_MESSAGE);
     }
 
     @Override
@@ -207,10 +207,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             project.setProjectLead(user);
             projectRepository.save(project);
             addUsersToProject(project.getProjectName(), user.getUserId());
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.projectCreatedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_CREATED_MESSAGE);
 
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userNotFoundMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
     }
 
@@ -233,13 +233,13 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 accessRepository.deleteByUserId(prevUser.getUserId());
                 addUsersToProject(project.getProjectName(), user.getUserId());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userNotFoundMessage);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.USER_NOT_FOUND_MESSAGE);
             }
             projectRepository.save(project);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.projectUpdatedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_UPDATED_MESSAGE);
 
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectNotFoundMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
     }
 
@@ -249,9 +249,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
             projectRepository.delete(project);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.projectDeletedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_DELETED_MESSAGE);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectNotFoundMessage);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
 
     }
 
@@ -266,9 +266,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             access.setUser(user);
             access.setProject(project);
             accessRepository.save(access);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userAddedToProjectMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_ADDED_TO_PROJECT_MESSAGE);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
     }
 
 }

@@ -35,22 +35,20 @@ public class CommentServiceIml implements CommentService {
     @Override
     public ResponseEntity<String> createComment(Long projectId, CommentDto commentDto) throws IOException {
 
-
-        Project project = checkUtils.getProjectFromId(projectId);
-        User user = checkUtils.getUserFromId(Long.valueOf(commentDto.getUserId()));
-
-        if (project == null || user == null) {
-            log.info(ResourceInformation.projectOrUserNotFoundMessage);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
+        Long userId = commentDto.getUserId();
+        ResponseEntity<String> validateUserProject = checkProjectAndUserIfNull(projectId,userId);
+        if(validateUserProject != null){
+            return validateUserProject;
         }
 
-        if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            log.info(ResourceInformation.userHasNoAccessMessage);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userHasNoAccessMessage);
+        ResponseEntity<String> validateUserProjectAccess = checkProjectAndUserAccess(projectId,userId);
+        if(validateUserProjectAccess !=null){
+            return validateUserProjectAccess;
         }
 
         Comment comment = new Comment();
-        Task task = checkUtils.checkTaskExists(Long.valueOf(commentDto.getTaskId()));
+        Task task = checkUtils.checkTaskExists(commentDto.getTaskId());
+        User user = checkUtils.getUserFromId(userId);
         comment.setTaskId(task);
         comment.setUserId(user);
         comment.setMessage(commentDto.getMessage());
@@ -60,51 +58,44 @@ public class CommentServiceIml implements CommentService {
 
         if (file != null && !file.isEmpty()) {
             comment.setFileData(file.getBytes());
-
         } else {
             comment.setFileData(null);
         }
         commentRepository.save(comment);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.commentAddedMessage);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_ADDED_MESSAGE);
     }
 
     @Override
     public ResponseEntity<String> deleteComment(Long projectId, CommentValidation commentValidation) {
 
-        Project project = checkUtils.getProjectFromId(projectId);
-        User user = checkUtils.getUserFromId(commentValidation.getUserId());
-
-        if (project == null || user == null) {
-            log.info(ResourceInformation.projectOrUserNotFoundMessage);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
-
+        Long userId = commentValidation.getUserId();
+        ResponseEntity<String> validateUserProject = checkProjectAndUserIfNull(projectId,userId);
+        if(validateUserProject != null){
+            return validateUserProject;
         }
 
-        if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            log.info(ResourceInformation.userHasNoAccessMessage);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userHasNoAccessMessage);
+        ResponseEntity<String> validateUserProjectAccess = checkProjectAndUserAccess(projectId,userId);
+        if(validateUserProjectAccess !=null){
+            return validateUserProjectAccess;
         }
 
         // try to use custom method
         commentRepository.deleteById(commentValidation.getCommentId());
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.commentDeletedMessage);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_DELETED_MESSAGE);
 
     }
 
     @Override
     public ResponseEntity<String> updateComment(Long projectId, Long userId, Long commentId, UpdateCommentDto updateCommentDto) throws IOException {
 
-        Project project = checkUtils.getProjectFromId(projectId);
-        User user = checkUtils.getUserFromId(userId);
-
-        if (project == null || user == null) {
-            log.info(ResourceInformation.projectOrUserNotFoundMessage);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
+        ResponseEntity<String> validateUserProject = checkProjectAndUserIfNull(projectId,userId);
+        if(validateUserProject != null){
+            return validateUserProject;
         }
 
-        if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            log.info(ResourceInformation.userHasNoAccessMessage);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userHasNoAccessMessage);
+        ResponseEntity<String> validateUserProjectAccess = checkProjectAndUserAccess(projectId,userId);
+        if(validateUserProjectAccess !=null){
+            return validateUserProjectAccess;
         }
 
         Optional<Comment> optComment = commentRepository.findById(commentId);
@@ -120,10 +111,10 @@ public class CommentServiceIml implements CommentService {
                 comment.setFileData(null);
             }
             commentRepository.save(comment);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.commentUpdatedMessage);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_UPDATED_MESSAGE);
         }
-        log.info(ResourceInformation.commentNotFoundMessage);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.commentNotFoundMessage);
+        log.info(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
     }
 
     @Override
@@ -132,12 +123,30 @@ public class CommentServiceIml implements CommentService {
         if(checkNum != 1) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
-                    .body(ResourceInformation.taskDoesNotBelongToProjectMessage);
+                    .body(ResourceInformation.TASK_DOES_NOT_BELONG_TO_PROJECT_MESSAGE);
         }
         return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(commentRepository.findAllByCommentByTaskId(taskId));
     }
 
+    private ResponseEntity<String> checkProjectAndUserAccess(Long projectId, Long userId) {
+        User user = checkUtils.getUserFromId(userId);
+        if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
+            log.info(ResourceInformation.USER_HAS_NO_ACCESS_MESSAGE);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.USER_HAS_NO_ACCESS_MESSAGE);
+        }
+        return null;
+    }
+
+    private ResponseEntity<String> checkProjectAndUserIfNull(Long projectId, Long userId) {
+        Project project = checkUtils.getProjectFromId(projectId);
+        User user = checkUtils.getUserFromId(userId);
+        if (project == null || user == null) {
+            log.info(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
+        }
+        return null;
+    }
 
 }
