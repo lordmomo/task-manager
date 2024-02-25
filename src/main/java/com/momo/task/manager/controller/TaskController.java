@@ -26,7 +26,7 @@ public class TaskController {
     CheckUtils checkUtils;
 
     @PostMapping("/create-tasks")
-    private ResponseEntity<String> createTask(@ModelAttribute TaskDto taskDto) throws IOException {
+    public ResponseEntity<String> createTask(@ModelAttribute TaskDto taskDto) throws IOException {
         return taskService.createTask(taskDto);
     }
 
@@ -49,7 +49,7 @@ public class TaskController {
     }
 
     @GetMapping("/check")
-    private Long check(@RequestBody CheckDto checkDto) {
+    public Long check(@RequestBody CheckDto checkDto) {
         return checkUtils.checkUserProjectAccess(checkDto.getUserId(), checkDto.getProjectId());
     }
 }

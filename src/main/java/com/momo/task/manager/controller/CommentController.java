@@ -19,19 +19,19 @@ public class CommentController {
     CommentService commentService;
 
     @PostMapping("/projects/{projectId}/comment")
-    private ResponseEntity<String> createComment(@PathVariable("projectId") Long projectId,
+    public ResponseEntity<String> createComment(@PathVariable("projectId") Long projectId,
                                                 @ModelAttribute CommentDto commentDto) throws IOException {
         return commentService.createComment(projectId,commentDto);
     }
 
 
     @DeleteMapping("/projects/{projectId}/comment/delete")
-    private ResponseEntity<String> deleteComment(@PathVariable("projectId") Long projectId,@RequestBody CommentValidation commentValidation) {
+    public ResponseEntity<String> deleteComment(@PathVariable("projectId") Long projectId,@RequestBody CommentValidation commentValidation) {
         return commentService.deleteComment(projectId,commentValidation);
     }
 
     @PutMapping("/projects/{projectId}/comment/{commentId}/update/{userId}")
-    private ResponseEntity<String> updateComment(@PathVariable("projectId") Long projectId,
+    public ResponseEntity<String> updateComment(@PathVariable("projectId") Long projectId,
                                  @PathVariable("commentId")Long commentId,
                                  @PathVariable("userId") Long userId,
                                  @ModelAttribute UpdateCommentDto updateCommentDto) throws IOException {
@@ -39,7 +39,7 @@ public class CommentController {
     }
 
     @GetMapping("/projects/{projectId}/{taskId}/list-all-comments")
-    private ResponseEntity<?> listOfAllComments(@PathVariable("projectId")Long projectId,@PathVariable("taskId")Long taskId){
+    public ResponseEntity<?> listOfAllComments(@PathVariable("projectId")Long projectId,@PathVariable("taskId")Long taskId){
         return commentService.listAllComments(projectId,taskId);
     }
 
