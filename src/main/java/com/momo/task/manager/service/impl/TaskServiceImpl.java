@@ -5,18 +5,19 @@ import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
+import com.momo.task.manager.utils.ResourceInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,16 +44,11 @@ public class TaskServiceImpl implements TaskService {
     @Autowired
     CheckUtils checkUtils;
     ModelMapper mapper;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-
     @Autowired
     public TaskServiceImpl() {
         this.mapper = new ModelMapper();
         configureModelMapper();
     }
-
-
-//    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     private void configureModelMapper() {
         // Use strict matching strategy to avoid conflicts
@@ -66,7 +62,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void createTask(TaskDto taskDto) throws IOException {
+    public ResponseEntity<String> createTask(TaskDto taskDto) throws IOException {
 
         Long checkReporterHasAccessToProject = checkUtils.checkUserProjectAccess(
                 taskDto.getReporterId(), taskDto.getProject()
@@ -99,27 +95,34 @@ public class TaskServiceImpl implements TaskService {
                     file.setFileData(null);
                 }
                 fileRepository.save(file);
-                log.info("save done in both repo");
+                log.info(ResourceInformation.taskCreatedMessage);
+                return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.taskCreatedMessage);
             } else {
                 log.info("Assignee has no access to project");
-                throw new RuntimeException();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.assigneeHasNoAccessToProjectMessage);
             }
         } else {
             log.info("Reporter has no access to project");
-            throw new RuntimeException();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.reporterHasNoAccessToProjectMessage);
         }
 
     }
 
     @Override
-    public void deleteTask(Long taskId) {
-        fileRepository.deleteByTaskId(taskId);
-        commentRepository.findAllByCommentByTaskId(taskId);
-        taskRepository.deleteById(taskId);
+    public ResponseEntity<String> deleteTask(Long taskId) {
+        Optional<Task> optionalTask = taskRepository.findById(taskId);
+        if(optionalTask.isPresent()) {
+            fileRepository.deleteByTaskId(taskId);
+            commentRepository.findAllByCommentByTaskId(taskId);
+            taskRepository.deleteById(taskId);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.taskDeletedMessage);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.taskNotFoundMessage);
+
     }
 
     @Override
-    public void updateTask(Long taskId, TaskDto taskDto) throws ParseException {
+    public ResponseEntity<String> updateTask(Long taskId, TaskDto taskDto) {
         Optional<Task> optTask = taskRepository.findById(taskId);
         if (optTask.isPresent()) {
             Task task = optTask.get();
@@ -153,7 +156,7 @@ public class TaskServiceImpl implements TaskService {
                 if (user.isPresent()) {
                     task.setAssigneeId(user.get());
                 } else {
-                    log.info("Assignee user not found");
+                    log.info(ResourceInformation.assigneeNotFoundMessage);
                 }
             }
             if (task.getReporterId() != null) {
@@ -161,7 +164,7 @@ public class TaskServiceImpl implements TaskService {
                 if (user.isPresent()) {
                     task.setReporterId(user.get());
                 } else {
-                    log.info("Reporter User not found");
+                    log.info(ResourceInformation.reporterNotFoundMessage);
                 }
             }
             if (task.getStageId() != null) {
@@ -169,7 +172,7 @@ public class TaskServiceImpl implements TaskService {
                 if (stages.isPresent()) {
                     task.setStageId(stages.get());
                 } else {
-                    log.info("Stage not found");
+                    log.info(ResourceInformation.stageNotFoundMessage);
                 }
             }
 
@@ -183,21 +186,25 @@ public class TaskServiceImpl implements TaskService {
 
             taskRepository.save(task);
             log.info("save success in service");
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.taskUpdatedMessage);
+
         } else {
             log.info("save failed in service");
-            throw new RuntimeException();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.taskNotFoundMessage);
         }
     }
 
     @Override
-    public List<Task> getAllTask(Long projectId) {
+    public ResponseEntity<?> getAllTask(Long projectId) {
         Optional<Project> project = projectRepository.findById(projectId);
         if (project.isPresent()) {
             log.info("project found");
-            return taskRepository.findByProdId(projectId);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(taskRepository.findByProdId(projectId));
         } else {
             log.info("project not found");
-            return null;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectNotFoundMessage);
         }
     }
 

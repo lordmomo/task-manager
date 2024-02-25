@@ -1,7 +1,6 @@
 package com.momo.task.manager.controller;
 
 import com.momo.task.manager.dto.*;
-import com.momo.task.manager.model.Project;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -19,25 +18,22 @@ public class SuperAdminController {
     SuperAdminService superAdminService;
 
     @PostMapping("/create-projects")
-    public String createProject(@RequestBody ProjectDto projectDto) {
-        superAdminService.createProject(projectDto);
-        return "Project created successfully";
+    public ResponseEntity<String> createProject(@RequestBody ProjectDto projectDto) {
+        return superAdminService.createProject(projectDto);
     }
     @PutMapping("/update-project/{projectId}")
-    public String updateProject(@PathVariable("projectId") Long projectId,@RequestBody UpdateProjectDto updateProjectDto) {
-        superAdminService.updateProject(projectId,updateProjectDto);
-        return "Project created successfully";
+    public ResponseEntity<String> updateProject(@PathVariable("projectId") Long projectId,@RequestBody UpdateProjectDto updateProjectDto) {
+        return superAdminService.updateProject(projectId,updateProjectDto);
     }
 
     @DeleteMapping("/delete-project/{projectId}")
-    public String deleteProject(@PathVariable("projectId") Long projectId){
-        superAdminService.deleteProject(projectId);
-        return "Project deleted successfully";
+    public ResponseEntity<String> deleteProject(@PathVariable("projectId") Long projectId){
+        return superAdminService.deleteProject(projectId);
     }
 
     //@ModelAttribute User user
     @PostMapping("/create-admin")
-    public String createAdmin(@RequestParam String firstName,
+    public ResponseEntity<String> createAdmin(@RequestParam String firstName,
                               @RequestParam String lastName,
                               @RequestParam String email,
                               @RequestParam String username,
@@ -50,7 +46,7 @@ public class SuperAdminController {
     }
 
     @PostMapping("/create-user")
-    public String createUser(@RequestParam String firstName,
+    public ResponseEntity<String> createUser(@RequestParam String firstName,
                               @RequestParam String lastName,
                               @RequestParam String email,
                               @RequestParam String username,
@@ -62,63 +58,36 @@ public class SuperAdminController {
         return superAdminService.createUser(firstName,lastName,email,username,password,role,picture);
     }
     @GetMapping("/get-user-details/{userId}")
-    public ResponseEntity<?> showUserDetails(@PathVariable("userId") Long userId){
-        UserDto userDto = superAdminService.getUserDetails(userId);
-        return ResponseEntity.ok(userDto);
+    public ResponseEntity<UserDto> showUserDetails(@PathVariable("userId") Long userId){
+        return superAdminService.getUserDetails(userId);
     }
 
     @GetMapping("/get-all-users")
     public ResponseEntity<List<UserDto>> showAllUsers(){
-        List<UserDto> userDtoList = superAdminService.getAllUsers();
-        return ResponseEntity.ok(userDtoList);
+        return superAdminService.getAllUsers();
     }
     @DeleteMapping("/remove-user/{userId}")
     public ResponseEntity<String> removeUser(@PathVariable("userId")Long userId){
-        boolean check = superAdminService.removeUser(userId);
-        if(!check){
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("User not found");
-        }
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body("User removed!!!");
+        return superAdminService.removeUser(userId);
     }
 
     @PutMapping("/update-user-details/{userId}")
     public ResponseEntity<String> updateUserDetails(@PathVariable("userId")Long userId,@RequestBody UserDetailsDto userDetailsDto){
-        boolean check = superAdminService.updateUserDetails(userId,userDetailsDto);
-        if(!check){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body("User details updated!!!");
+        return superAdminService.updateUserDetails(userId,userDetailsDto);
     }
 
     @PutMapping("/update-user-credentials/{userId}")
     public ResponseEntity<String> updateUserCredentials(@PathVariable("userId")Long userId, @RequestBody UserCredentialsDto userCredentialsDto){
-        boolean check = superAdminService.updateUserCredentials(userId,userCredentialsDto);
-        if(!check){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body("User credentials updated!!!");
+        return superAdminService.updateUserCredentials(userId,userCredentialsDto);
     }
 
     @PutMapping("/update-user-profile-picture/{userId}")
     public ResponseEntity<String> updateUserProfilePicture(@PathVariable("userId")Long userId, @RequestParam MultipartFile newPicture) throws IOException {
-        boolean check = superAdminService.updateUserProfilePicture(userId,newPicture);
-        if(!check){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body("User profile picture updated!!!");
+       return superAdminService.updateUserProfilePicture(userId,newPicture);
     }
 
     @PostMapping("/{projectName}/add-users/{userId}")
     public ResponseEntity<String> addUsersToProject(@PathVariable("projectName") String projectName, @PathVariable("userId") Long userId){
-        boolean check = superAdminService.addUsersToProject(projectName,userId);
-        if(!check){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User or Project not found");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body("User added to project!!!");
-
+        return superAdminService.addUsersToProject(projectName,userId);
     }
 }

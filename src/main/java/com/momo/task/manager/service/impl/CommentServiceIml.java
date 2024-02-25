@@ -10,14 +10,16 @@ import com.momo.task.manager.model.User;
 import com.momo.task.manager.repository.CommentRepository;
 import com.momo.task.manager.service.interfaces.CommentService;
 import com.momo.task.manager.utils.CheckUtils;
+import com.momo.task.manager.utils.ResourceInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,22 +32,21 @@ public class CommentServiceIml implements CommentService {
     @Autowired
     CommentRepository commentRepository;
 
-
     @Override
-    public void createComment(Long projectId, CommentDto commentDto) throws IOException {
+    public ResponseEntity<String> createComment(Long projectId, CommentDto commentDto) throws IOException {
 
 
         Project project = checkUtils.getProjectFromId(projectId);
         User user = checkUtils.getUserFromId(Long.valueOf(commentDto.getUserId()));
 
         if (project == null || user == null) {
-            log.info("project or user is not found");
-            return;
+            log.info(ResourceInformation.projectOrUserNotFoundMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
         }
 
         if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            log.info("User has no access to project");
-            return;
+            log.info(ResourceInformation.userHasNoAccessMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userHasNoAccessMessage);
         }
 
         Comment comment = new Comment();
@@ -64,45 +65,46 @@ public class CommentServiceIml implements CommentService {
             comment.setFileData(null);
         }
         commentRepository.save(comment);
-
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.commentAddedMessage);
     }
 
     @Override
-    public void deleteComment(Long projectId, CommentValidation commentValidation) {
+    public ResponseEntity<String> deleteComment(Long projectId, CommentValidation commentValidation) {
 
         Project project = checkUtils.getProjectFromId(projectId);
         User user = checkUtils.getUserFromId(commentValidation.getUserId());
 
         if (project == null || user == null) {
-            log.info("project or user is not found");
-            return;
+            log.info(ResourceInformation.projectOrUserNotFoundMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
+
         }
 
         if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            log.info("User has no access to project");
-            return;
+            log.info(ResourceInformation.userHasNoAccessMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userHasNoAccessMessage);
         }
 
         // try to use custom method
-
         commentRepository.deleteById(commentValidation.getCommentId());
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.commentDeletedMessage);
 
     }
 
     @Override
-    public void updateComment(Long projectId, Long userId, Long commentId, UpdateCommentDto updateCommentDto) throws IOException {
+    public ResponseEntity<String> updateComment(Long projectId, Long userId, Long commentId, UpdateCommentDto updateCommentDto) throws IOException {
 
         Project project = checkUtils.getProjectFromId(projectId);
         User user = checkUtils.getUserFromId(userId);
 
         if (project == null || user == null) {
-            log.info("project or user is not found");
-            return;
+            log.info(ResourceInformation.projectOrUserNotFoundMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
         }
 
         if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            log.info("User has no access to project");
-            return;
+            log.info(ResourceInformation.userHasNoAccessMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userHasNoAccessMessage);
         }
 
         Optional<Comment> optComment = commentRepository.findById(commentId);
@@ -118,15 +120,23 @@ public class CommentServiceIml implements CommentService {
                 comment.setFileData(null);
             }
             commentRepository.save(comment);
-        } else {
-            log.info("Comment not found");
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.commentUpdatedMessage);
         }
-
+        log.info(ResourceInformation.commentNotFoundMessage);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.commentNotFoundMessage);
     }
 
     @Override
-    public List<Comment> listAllComments(Long projectId,Long taskId) {
-        return commentRepository.findAllByCommentByTaskId(taskId);
+    public ResponseEntity<?> listAllComments(Long projectId,Long taskId) {
+        Long checkNum = checkUtils.checkTaskIdBelongsToProjectId(projectId,taskId);
+        if(checkNum != 1) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ResourceInformation.taskDoesNotBelongToProjectMessage);
+        }
+        return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(commentRepository.findAllByCommentByTaskId(taskId));
     }
 
 

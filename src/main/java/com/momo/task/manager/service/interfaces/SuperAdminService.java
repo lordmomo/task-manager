@@ -1,7 +1,7 @@
 package com.momo.task.manager.service.interfaces;
 
 import com.momo.task.manager.dto.*;
-import com.momo.task.manager.model.Project;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -9,31 +9,31 @@ import java.util.List;
 
 public interface SuperAdminService {
 
-    String createAdmin(String firstName, String lastName, String email,
-                       String username, String password, Long role,
-                       MultipartFile picture) throws IOException;
+    ResponseEntity<String> createAdmin(String firstName, String lastName, String email,
+                                       String username, String password, Long role,
+                                       MultipartFile picture) throws IOException;
 
-    UserDto getUserDetails(Long userId);
+    ResponseEntity<String> createUser(String firstName, String lastName, String email,
+                                      String username, String password, Long role,
+                                      MultipartFile picture) throws IOException;
 
-    List<UserDto> getAllUsers();
+    ResponseEntity<UserDto> getUserDetails(Long userId);
 
-    boolean removeUser(Long userId);
+    ResponseEntity<List<UserDto>> getAllUsers();
 
-    boolean updateUserDetails(Long userId, UserDetailsDto userDetailsDto);
+    ResponseEntity<String> removeUser(Long userId);
 
-    boolean updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto);
+    ResponseEntity<String> updateUserDetails(Long userId, UserDetailsDto userDetailsDto);
 
-    boolean updateUserProfilePicture(Long userId, MultipartFile file) throws IOException;
+    ResponseEntity<String> updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto);
 
-    String createUser(String firstName, String lastName, String email,
-                      String username, String password, Long role,
-                      MultipartFile picture) throws IOException;
+    ResponseEntity<String> updateUserProfilePicture(Long userId, MultipartFile file) throws IOException;
 
-    void createProject(ProjectDto projectDto);
+    ResponseEntity<String> createProject(ProjectDto projectDto);
 
-    void updateProject(Long projectId, UpdateProjectDto updateProjectDto);
+    ResponseEntity<String> updateProject(Long projectId, UpdateProjectDto updateProjectDto);
 
-    void deleteProject(Long projectId);
+    ResponseEntity<String> deleteProject(Long projectId);
 
-    boolean addUsersToProject(String projectName, Long userId);
+    ResponseEntity<String> addUsersToProject(String projectName, Long userId);
 }

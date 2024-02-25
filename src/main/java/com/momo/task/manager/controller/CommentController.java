@@ -3,13 +3,13 @@ package com.momo.task.manager.controller;
 import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.dto.CommentValidation;
 import com.momo.task.manager.dto.UpdateCommentDto;
-import com.momo.task.manager.model.Comment;
 import com.momo.task.manager.service.interfaces.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/cmt")
@@ -18,32 +18,28 @@ public class CommentController {
     @Autowired
     CommentService commentService;
 
-    // add for no file upload
     @PostMapping("/projects/{projectId}/comment")
-    private String createComment(@PathVariable("projectId") Long projectId,
-                                 @ModelAttribute CommentDto commentDto) throws IOException {
-        commentService.createComment(projectId,commentDto);
-        return "comment added.";
+    private ResponseEntity<String> createComment(@PathVariable("projectId") Long projectId,
+                                                @ModelAttribute CommentDto commentDto) throws IOException {
+        return commentService.createComment(projectId,commentDto);
     }
 
 
     @DeleteMapping("/projects/{projectId}/comment/delete")
-    private String deleteComment(@PathVariable("projectId") Long projectId,@RequestBody CommentValidation commentValidation) {
-        commentService.deleteComment(projectId,commentValidation);
-        return "comment deleted.";
+    private ResponseEntity<String> deleteComment(@PathVariable("projectId") Long projectId,@RequestBody CommentValidation commentValidation) {
+        return commentService.deleteComment(projectId,commentValidation);
     }
 
     @PutMapping("/projects/{projectId}/comment/{commentId}/update/{userId}")
-    private String updateComment(@PathVariable("projectId") Long projectId,
+    private ResponseEntity<String> updateComment(@PathVariable("projectId") Long projectId,
                                  @PathVariable("commentId")Long commentId,
                                  @PathVariable("userId") Long userId,
                                  @ModelAttribute UpdateCommentDto updateCommentDto) throws IOException {
-        commentService.updateComment(projectId,userId,commentId,updateCommentDto);
-        return "Update success";
+        return commentService.updateComment(projectId,userId,commentId,updateCommentDto);
     }
 
     @GetMapping("/projects/{projectId}/{taskId}/list-all-comments")
-    private List<Comment> listOfAllComments(@PathVariable("projectId")Long projectId,@PathVariable("taskId")Long taskId){
+    private ResponseEntity<?> listOfAllComments(@PathVariable("projectId")Long projectId,@PathVariable("taskId")Long taskId){
         return commentService.listAllComments(projectId,taskId);
     }
 

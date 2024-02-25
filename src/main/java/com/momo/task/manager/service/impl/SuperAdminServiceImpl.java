@@ -4,8 +4,11 @@ import com.momo.task.manager.dto.*;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
+import com.momo.task.manager.utils.ResourceInformation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,9 +49,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public String createAdmin(String firstName, String lastName, String email,
-                              String username, String password, Long roleId,
-                              MultipartFile picture) throws IOException {
+    public ResponseEntity<String> createAdmin(String firstName, String lastName, String email,
+                                              String username, String password, Long roleId,
+                                              MultipartFile picture) throws IOException {
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
@@ -57,9 +60,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPassword(password);
 
         Role optRole = roleRepository.findById(roleId)
-                .orElseThrow(() -> {
-                    return new RuntimeException("Role Not found");
-                });
+                .orElseThrow(() -> new RuntimeException(ResourceInformation.roleNotFoundMessage));
 
         user.setRole(optRole);
 
@@ -68,45 +69,56 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPicture(profilePictureRepository.save(profilePicture));
 
         superAdminRepository.save(user);
-        return "Successfully created admin";
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResourceInformation.adminCreatedMessage);
     }
 
     @Override
-    public UserDto getUserDetails(Long userId) {
+    public ResponseEntity<UserDto> getUserDetails(Long userId) {
         Optional<User> optUser = superAdminRepository.findById(userId);
 
         if (optUser.isPresent()) {
             User user = optUser.get();
-            return mapper.map(user, UserDto.class);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(mapper.map(user, UserDto.class));
         }
         return null;
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
+    public ResponseEntity<List<UserDto>> getAllUsers() {
         List<User> userList = superAdminRepository.findAll();
         List<UserDto> userDtoList = new ArrayList<>();
         for (User user : userList) {
             UserDto userDto = mapper.map(user, UserDto.class);
             userDtoList.add(userDto);
         }
-        return userDtoList;
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userDtoList);
     }
 
     @Override
-    public boolean removeUser(Long userId) {
+    public ResponseEntity<String> removeUser(Long userId) {
         Optional<User> optUser = superAdminRepository.findById(userId);
         if (optUser.isPresent()) {
             User user = optUser.get();
             superAdminRepository.delete(user);
             profilePictureRepository.delete(user.getPicture());
-            return true;
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(ResourceInformation.userDeletedMessage);
         }
-        return false;
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ResourceInformation.userNotFoundMessage);
+
     }
 
     @Override
-    public boolean updateUserDetails(Long userId, UserDetailsDto userDetailsDto) {
+    public ResponseEntity<String> updateUserDetails(Long userId, UserDetailsDto userDetailsDto) {
         Optional<User> optUser = superAdminRepository.findById(userId);
         if (optUser.isPresent()) {
 
@@ -116,45 +128,45 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             user.setEmail(userDetailsDto.getEmail());
 
             superAdminRepository.save(user);
-            return true;
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userDetailsUpdatedMessage);
         }
-        return false;
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.userNotFoundMessage);
+
     }
 
     @Override
-    public boolean updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto) {
+    public ResponseEntity<String> updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto) {
         Optional<User> optUser = superAdminRepository.findById(userId);
         if (optUser.isPresent()) {
             User user = optUser.get();
             user.setUsername(userCredentialsDto.getUsername());
             user.setPassword(userCredentialsDto.getPassword());
             superAdminRepository.save(user);
-            return true;
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userCredentialsUpdatedMessage);
         }
-        return false;
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.userNotFoundMessage);
+
     }
 
     @Override
-    public boolean updateUserProfilePicture(Long userId, MultipartFile file) throws IOException {
+    public ResponseEntity<String> updateUserProfilePicture(Long userId, MultipartFile file) throws IOException {
         Optional<User> optUser = superAdminRepository.findById(userId);
         if (optUser.isPresent()) {
             User user = optUser.get();
             var userPPId = user.getPicture().getProfilePictureId();
             Optional<ProfilePicture> profilePicture = profilePictureRepository.findById(userPPId);
-            if (profilePicture.isPresent()) {
-                ProfilePicture picture = profilePicture.get();
-                picture.setPictureData(file.getBytes());
-                user.setPicture(profilePictureRepository.save(picture));
-                superAdminRepository.save(user);
-                return true;
-            }
-            return false;
+            ProfilePicture picture = profilePicture.orElseGet(ProfilePicture::new);
+            picture.setPictureData(file.getBytes());
+            user.setPicture(profilePictureRepository.save(picture));
+            superAdminRepository.save(user);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userProfilePoctureUpdatedMessage);
         }
-        return false;
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResourceInformation.userNotFoundMessage);
+
     }
 
     @Override
-    public String createUser(String firstName, String lastName, String email,
+    public ResponseEntity<String> createUser(String firstName, String lastName, String email,
                              String username, String password, Long roleId,
                              MultipartFile picture) throws IOException {
         User user = new User();
@@ -165,9 +177,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPassword(password);
 
         Role optRole = roleRepository.findById(roleId)
-                .orElseThrow(() -> {
-                    return new RuntimeException("Role Not found");
-                });
+                .orElseThrow(() -> new RuntimeException(ResourceInformation.roleNotFoundMessage));
 
         user.setRole(optRole);
 
@@ -176,11 +186,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPicture(profilePictureRepository.save(profilePicture));
 
         superAdminRepository.save(user);
-        return "Successfully created user";
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userCreatedMessage);
     }
 
     @Override
-    public void createProject(ProjectDto projectDto) {
+    public ResponseEntity<String> createProject(ProjectDto projectDto) {
 
         Project project = mapper.map(projectDto, Project.class);
         Optional<User> optUser = superAdminRepository.findById(projectDto.getProjectLead());
@@ -189,13 +199,15 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             project.setProjectLead(user);
             projectRepository.save(project);
             addUsersToProject(project.getProjectName(), user.getUserId());
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.projectCreatedMessage);
+
         } else {
-            throw new RuntimeException();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userNotFoundMessage);
         }
     }
 
     @Override
-    public void updateProject(Long projectId, UpdateProjectDto updateProjectDto) {
+    public ResponseEntity<String> updateProject(Long projectId, UpdateProjectDto updateProjectDto) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
@@ -213,26 +225,30 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 accessRepository.deleteByUserId(prevUser.getUserId());
                 addUsersToProject(project.getProjectName(), user.getUserId());
             } else {
-                throw new RuntimeException();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.userNotFoundMessage);
             }
             projectRepository.save(project);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.projectUpdatedMessage);
 
         } else {
-            throw new RuntimeException();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectNotFoundMessage);
         }
     }
 
     @Override
-    public void deleteProject(Long projectId) {
+    public ResponseEntity<String> deleteProject(Long projectId) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
             projectRepository.delete(project);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.projectDeletedMessage);
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectNotFoundMessage);
+
     }
 
     @Override
-    public boolean addUsersToProject(String projectName, Long userId) {
+    public ResponseEntity<String> addUsersToProject(String projectName, Long userId) {
         Optional<User> optionalUser = superAdminRepository.findById(userId);
         Optional<Project> optionalProject = projectRepository.findByProjectName(projectName);
         if (optionalUser.isPresent() && optionalProject.isPresent()) {
@@ -242,9 +258,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             access.setUser(user);
             access.setProject(project);
             accessRepository.save(access);
-            return true;
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.userAddedToProjectMessage);
         }
-        return false;
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.projectOrUserNotFoundMessage);
     }
 
 }
