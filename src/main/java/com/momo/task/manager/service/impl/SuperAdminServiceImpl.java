@@ -114,6 +114,30 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .status(HttpStatus.OK)
                 .body(userDtoList);
     }
+    @Override
+    public ResponseEntity<List<UserResponseDto>> getOnlyUsers() {
+        List<User> userList = superAdminRepository.findOnlyUsers();
+        List<UserResponseDto> userDtoList = new ArrayList<>();
+        for (User user : userList) {
+            UserResponseDto userDto = mapper.map(user, UserResponseDto.class);
+            userDtoList.add(userDto);
+        }
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userDtoList);
+    }
+
+    @Override
+    public ResponseEntity<List<UserResponseDto>> getOnlyAdmins() {
+        List<User> userList = superAdminRepository.findOnlyAdmins();
+        List<UserResponseDto> userDtoList = new ArrayList<>();
+        for (User user : userList) {
+            UserResponseDto userDto = mapper.map(user, UserResponseDto.class);
+            userDtoList.add(userDto);
+        }
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userDtoList);    }
 
     @Override
     public ResponseEntity<String> removeUser(Long userId) {

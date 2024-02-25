@@ -32,4 +32,8 @@ public interface SuperAdminService {
     ResponseEntity<String> deleteProject(Long projectId);
 
     ResponseEntity<String> addUsersToProject(String projectName, Long userId);
+
+    ResponseEntity<List<UserResponseDto>> getOnlyUsers();
+
+    ResponseEntity<List<UserResponseDto>> getOnlyAdmins();
 }

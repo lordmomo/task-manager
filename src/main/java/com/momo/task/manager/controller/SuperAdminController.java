@@ -52,6 +52,19 @@ public class SuperAdminController {
     public ResponseEntity<List<UserResponseDto>> showAllUsers(){
         return superAdminService.getAllUsers();
     }
+
+
+    @GetMapping("/get-only-users")
+    public ResponseEntity<List<UserResponseDto>> showOnlyUsers(){
+        return superAdminService.getOnlyUsers();
+    }
+
+
+    @GetMapping("/get-only-admins")
+    public ResponseEntity<List<UserResponseDto>> showOnlyAdmins(){
+        return superAdminService.getOnlyAdmins();
+    }
+
     @DeleteMapping("/remove-user/{userId}")
     public ResponseEntity<String> removeUser(@PathVariable("userId")Long userId){
         return superAdminService.removeUser(userId);
