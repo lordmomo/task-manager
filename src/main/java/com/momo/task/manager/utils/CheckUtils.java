@@ -28,31 +28,17 @@ public class CheckUtils {
     public Long checkUserProjectAccess(Long userId, Long projectId) {
         return accessRepository.validateUserProjectRelation(userId, projectId);
     }
-
     public Long checkTaskIdBelongsToProjectId(Long projectId,Long taskId){
         return taskRepository.validateCheckTaskIdBelongsToProjectId(projectId,taskId);
     }
-
-    public Project checkProjectExists(Long projectId) {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-        return optionalProject.orElse(null);
-    }
-
     public Task checkTaskExists(Long taskId) {
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         return optionalTask.orElse(null);
     }
-
-    public User checkUserExists(Long userId) {
-        Optional<User> optionalUser = superAdminRepository.findById(userId);
-        return optionalUser.orElse(null);
-    }
-
     public Project getProjectFromId(Long projectId){
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         return optionalProject.orElse(null);
     }
-
     public User getUserFromId(Long userId){
         Optional<User> optionalUser = superAdminRepository.findById(userId);
         return optionalUser.orElse(null);
@@ -61,7 +47,6 @@ public class CheckUtils {
         Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findById(statusId);
         return optionalTaskStatus.orElse(null);
     }
-
     public Stages getStageFromId(Long stageId){
         Optional<Stages> optionalStages = stagesRepository.findById(stageId);
         return optionalStages.orElse(null);

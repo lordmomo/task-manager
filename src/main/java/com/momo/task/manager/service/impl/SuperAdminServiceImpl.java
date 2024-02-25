@@ -2,7 +2,6 @@ package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.*;
 import com.momo.task.manager.model.*;
-
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import org.modelmapper.ModelMapper;
@@ -41,9 +40,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         configureModelMapper();
     }
 
-    private void configureModelMapper(){
+    private void configureModelMapper() {
         mapper.createTypeMap(User.class, UserDto.class)
-                .addMapping(src -> src.getPicture().getPictureData(),UserDto::setPictureFile);
+                .addMapping(src -> src.getPicture().getPictureData(), UserDto::setPictureFile);
     }
 
     @Override
@@ -58,7 +57,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPassword(password);
 
         Role optRole = roleRepository.findById(roleId)
-                .orElseThrow( () -> {
+                .orElseThrow(() -> {
                     return new RuntimeException("Role Not found");
                 });
 
@@ -76,9 +75,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     public UserDto getUserDetails(Long userId) {
         Optional<User> optUser = superAdminRepository.findById(userId);
 
-        if(optUser.isPresent()){
+        if (optUser.isPresent()) {
             User user = optUser.get();
-//            return user;
             return mapper.map(user, UserDto.class);
         }
         return null;
@@ -88,7 +86,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     public List<UserDto> getAllUsers() {
         List<User> userList = superAdminRepository.findAll();
         List<UserDto> userDtoList = new ArrayList<>();
-        for(User user : userList){
+        for (User user : userList) {
             UserDto userDto = mapper.map(user, UserDto.class);
             userDtoList.add(userDto);
         }
@@ -98,7 +96,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public boolean removeUser(Long userId) {
         Optional<User> optUser = superAdminRepository.findById(userId);
-        if(optUser.isPresent()){
+        if (optUser.isPresent()) {
             User user = optUser.get();
             superAdminRepository.delete(user);
             profilePictureRepository.delete(user.getPicture());
@@ -110,7 +108,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public boolean updateUserDetails(Long userId, UserDetailsDto userDetailsDto) {
         Optional<User> optUser = superAdminRepository.findById(userId);
-        if(optUser.isPresent()){
+        if (optUser.isPresent()) {
 
             User user = optUser.get();
             user.setFirstName(userDetailsDto.getFirstName());
@@ -126,7 +124,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public boolean updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto) {
         Optional<User> optUser = superAdminRepository.findById(userId);
-        if(optUser.isPresent()){
+        if (optUser.isPresent()) {
             User user = optUser.get();
             user.setUsername(userCredentialsDto.getUsername());
             user.setPassword(userCredentialsDto.getPassword());
@@ -139,11 +137,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public boolean updateUserProfilePicture(Long userId, MultipartFile file) throws IOException {
         Optional<User> optUser = superAdminRepository.findById(userId);
-        if(optUser.isPresent()){
+        if (optUser.isPresent()) {
             User user = optUser.get();
             var userPPId = user.getPicture().getProfilePictureId();
             Optional<ProfilePicture> profilePicture = profilePictureRepository.findById(userPPId);
-            if(profilePicture.isPresent()){
+            if (profilePicture.isPresent()) {
                 ProfilePicture picture = profilePicture.get();
                 picture.setPictureData(file.getBytes());
                 user.setPicture(profilePictureRepository.save(picture));
@@ -167,7 +165,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPassword(password);
 
         Role optRole = roleRepository.findById(roleId)
-                .orElseThrow( () -> {
+                .orElseThrow(() -> {
                     return new RuntimeException("Role Not found");
                 });
 
@@ -184,15 +182,14 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public void createProject(ProjectDto projectDto) {
 
-        Project project = mapper.map(projectDto,Project.class);
+        Project project = mapper.map(projectDto, Project.class);
         Optional<User> optUser = superAdminRepository.findById(projectDto.getProjectLead());
-        if(optUser.isPresent()){
+        if (optUser.isPresent()) {
             User user = optUser.get();
             project.setProjectLead(user);
             projectRepository.save(project);
             addUsersToProject(project.getProjectName(), user.getUserId());
-        }
-        else{
+        } else {
             throw new RuntimeException();
         }
     }
@@ -200,28 +197,27 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public void updateProject(Long projectId, UpdateProjectDto updateProjectDto) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isPresent()){
+        if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
             User prevUser = project.getProjectLead();
-            if(!project.getKey().isEmpty() && project.getKey() != null){
+            if (!project.getKey().isEmpty() && project.getKey() != null) {
                 project.setKey(updateProjectDto.getKey());
             }
-            if(!project.getProjectName().isEmpty() && project.getProjectName() != null){
+            if (!project.getProjectName().isEmpty() && project.getProjectName() != null) {
                 project.setProjectName(updateProjectDto.getProjectName());
             }
             Optional<User> optionalUser = superAdminRepository.findById(updateProjectDto.getProjectLead());
-            if (optionalUser.isPresent()){
+            if (optionalUser.isPresent()) {
                 User user = optionalUser.get();
                 project.setProjectLead(user);
                 accessRepository.deleteByUserId(prevUser.getUserId());
                 addUsersToProject(project.getProjectName(), user.getUserId());
-            }
-            else{
+            } else {
                 throw new RuntimeException();
             }
             projectRepository.save(project);
 
-        }else{
+        } else {
             throw new RuntimeException();
         }
     }
@@ -229,7 +225,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public void deleteProject(Long projectId) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
-        if(optionalProject.isPresent()){
+        if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
             projectRepository.delete(project);
         }
@@ -239,7 +235,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     public boolean addUsersToProject(String projectName, Long userId) {
         Optional<User> optionalUser = superAdminRepository.findById(userId);
         Optional<Project> optionalProject = projectRepository.findByProjectName(projectName);
-        if(optionalUser.isPresent() && optionalProject.isPresent()){
+        if (optionalUser.isPresent() && optionalProject.isPresent()) {
             User user = optionalUser.get();
             Project project = optionalProject.get();
             Access access = new Access();

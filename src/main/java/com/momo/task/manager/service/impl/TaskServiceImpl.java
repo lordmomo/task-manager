@@ -114,7 +114,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void deleteTask(Long taskId) {
         fileRepository.deleteByTaskId(taskId);
-        commentRepository.findAllByTaskId_TaskId(taskId);
+        commentRepository.findAllByCommentByTaskId(taskId);
         taskRepository.deleteById(taskId);
     }
 

@@ -10,6 +10,7 @@ import com.momo.task.manager.model.User;
 import com.momo.task.manager.repository.CommentRepository;
 import com.momo.task.manager.service.interfaces.CommentService;
 import com.momo.task.manager.utils.CheckUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class CommentServiceIml implements CommentService {
 
     @Autowired
@@ -33,16 +35,16 @@ public class CommentServiceIml implements CommentService {
     public void createComment(Long projectId, CommentDto commentDto) throws IOException {
 
 
-        Project project = checkUtils.checkProjectExists(projectId);
-        User user = checkUtils.checkUserExists(Long.valueOf(commentDto.getUserId()));
+        Project project = checkUtils.getProjectFromId(projectId);
+        User user = checkUtils.getUserFromId(Long.valueOf(commentDto.getUserId()));
 
         if (project == null || user == null) {
-            System.out.println("project or user is not found");
+            log.info("project or user is not found");
             return;
         }
 
         if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            System.out.println("User has no access to project");
+            log.info("User has no access to project");
             return;
         }
 
@@ -68,16 +70,16 @@ public class CommentServiceIml implements CommentService {
     @Override
     public void deleteComment(Long projectId, CommentValidation commentValidation) {
 
-        Project project = checkUtils.checkProjectExists(projectId);
-        User user = checkUtils.checkUserExists(commentValidation.getUserId());
+        Project project = checkUtils.getProjectFromId(projectId);
+        User user = checkUtils.getUserFromId(commentValidation.getUserId());
 
         if (project == null || user == null) {
-            System.out.println("project or user is not found");
+            log.info("project or user is not found");
             return;
         }
 
         if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            System.out.println("User has no access to project");
+            log.info("User has no access to project");
             return;
         }
 
@@ -90,16 +92,16 @@ public class CommentServiceIml implements CommentService {
     @Override
     public void updateComment(Long projectId, Long userId, Long commentId, UpdateCommentDto updateCommentDto) throws IOException {
 
-        Project project = checkUtils.checkProjectExists(projectId);
-        User user = checkUtils.checkUserExists(userId);
+        Project project = checkUtils.getProjectFromId(projectId);
+        User user = checkUtils.getUserFromId(userId);
 
         if (project == null || user == null) {
-            System.out.println("project or user is not found");
+            log.info("project or user is not found");
             return;
         }
 
         if (checkUtils.checkUserProjectAccess(user.getUserId(), projectId) != 1) {
-            System.out.println("User has no access to project");
+            log.info("User has no access to project");
             return;
         }
 
@@ -117,20 +119,14 @@ public class CommentServiceIml implements CommentService {
             }
             commentRepository.save(comment);
         } else {
-            System.out.println("Comment not found");
+            log.info("Comment not found");
         }
 
     }
 
     @Override
     public List<Comment> listAllComments(Long projectId,Long taskId) {
-
-//        Long checkValue = checkUtils.checkTaskIdBelongsToProjectId(projectId, taskId);
-//        if(checkValue!= 1) {
-//            System.out.println("invalid access");
-//            return null;
-//        }
-        return commentRepository.findAllByTaskId_TaskId(taskId);
+        return commentRepository.findAllByCommentByTaskId(taskId);
     }
 
 
