@@ -5,9 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
 
     @Query(nativeQuery = true,value = "DELETE FROM COMMENT c WHERE c.task_id = :taskId AND c.fullName = :fullName ")
     void deleteByTaskAndName(String fullName, Long taskId);
+    List<Comment> findAllByTaskId_TaskId(Long taskId);
+
 }

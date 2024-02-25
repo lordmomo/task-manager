@@ -29,6 +29,10 @@ public class CheckUtils {
         return accessRepository.validateUserProjectRelation(userId, projectId);
     }
 
+    public Long checkTaskIdBelongsToProjectId(Long projectId,Long taskId){
+        return taskRepository.validateCheckTaskIdBelongsToProjectId(projectId,taskId);
+    }
+
     public Project checkProjectExists(Long projectId) {
         Optional<Project> optionalProject = projectRepository.findById(projectId);
         return optionalProject.orElse(null);

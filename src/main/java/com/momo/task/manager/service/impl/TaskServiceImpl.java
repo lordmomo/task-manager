@@ -5,6 +5,7 @@ import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +16,18 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class TaskServiceImpl implements TaskService {
     @Autowired
     TaskRepository taskRepository;
 
+    @Autowired
+    CommentRepository commentRepository;
     @Autowired
     FileRepository fileRepository;
 
@@ -95,13 +100,13 @@ public class TaskServiceImpl implements TaskService {
                     file.setFileData(null);
                 }
                 fileRepository.save(file);
-                System.out.println("save done in both repo");
+                log.info("save done in both repo");
             } else {
-                System.out.println("Assignee has no access to project");
+                log.info("Assignee has no access to project");
                 throw new RuntimeException();
             }
         } else {
-            System.out.println("Reporter has no access to project");
+            log.info("Reporter has no access to project");
             throw new RuntimeException();
         }
 
@@ -110,6 +115,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void deleteTask(Long taskId) {
         fileRepository.deleteByTaskId(taskId);
+        commentRepository.findAllByTaskId_TaskId(taskId);
         taskRepository.deleteById(taskId);
     }
 
@@ -131,7 +137,7 @@ public class TaskServiceImpl implements TaskService {
                 if (status.isPresent()) {
                     task.setStatus(status.get());
                 } else {
-                    System.out.println("task status not found");
+                    log.info("task status not found");
                 }
             }
             if (task.getLabel() != null && !"".equalsIgnoreCase(task.getLabel())) {
@@ -148,7 +154,7 @@ public class TaskServiceImpl implements TaskService {
                 if (user.isPresent()) {
                     task.setAssigneeId(user.get());
                 } else {
-                    System.out.println("User not found");
+                    log.info("Assignee user not found");
                 }
             }
             if (task.getReporterId() != null) {
@@ -156,7 +162,7 @@ public class TaskServiceImpl implements TaskService {
                 if (user.isPresent()) {
                     task.setReporterId(user.get());
                 } else {
-                    System.out.println("User not found");
+                    log.info("Reporter User not found");
                 }
             }
             if (task.getStageId() != null) {
@@ -164,7 +170,7 @@ public class TaskServiceImpl implements TaskService {
                 if (stages.isPresent()) {
                     task.setStageId(stages.get());
                 } else {
-                    System.out.println("User not found");
+                    log.info("Stage not found");
                 }
             }
 
@@ -177,9 +183,9 @@ public class TaskServiceImpl implements TaskService {
             task.setUpdatedStatusDate(currentDateTime);
 
             taskRepository.save(task);
-            System.out.println("save success in service");
+            log.info("save success in service");
         } else {
-            System.out.println("save failed in service");
+            log.info("save failed in service");
             throw new RuntimeException();
         }
     }
@@ -188,10 +194,11 @@ public class TaskServiceImpl implements TaskService {
     public List<Task> getAllTask(Long projectId) {
         Optional<Project> project = projectRepository.findById(projectId);
         if (project.isPresent()) {
-            return taskRepository.findAllByProject_ProjectId(project.get().getProjectId());
+            log.info("project found");
+            return taskRepository.findByProdId(projectId);
         } else {
-            System.out.println("project not found");
-            return null;
+            log.info("project not found");
+            return Collections.emptyList();
         }
     }
 

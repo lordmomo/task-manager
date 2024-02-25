@@ -3,11 +3,13 @@ package com.momo.task.manager.controller;
 import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.dto.CommentValidation;
 import com.momo.task.manager.dto.UpdateCommentDto;
+import com.momo.task.manager.model.Comment;
 import com.momo.task.manager.service.interfaces.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/cmt")
@@ -39,4 +41,10 @@ public class CommentController {
         commentService.updateComment(projectId,userId,commentId,updateCommentDto);
         return "Update success";
     }
+
+    @GetMapping("/projects/{projectId}/{taskId}/list-all-comments")
+    private List<Comment> listOfAllComments(@PathVariable("projectId")Long projectId,@PathVariable("taskId")Long taskId){
+        return commentService.listAllComments(projectId,taskId);
+    }
+
 }

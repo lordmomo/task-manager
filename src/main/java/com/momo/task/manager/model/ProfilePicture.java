@@ -1,7 +1,6 @@
 package com.momo.task.manager.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +21,7 @@ public class ProfilePicture {
     private Long profilePictureId;
 
     @Lob
-    @Column(name = "profileImage",columnDefinition = "LONGBLOB")
+    @Column(name = "profileImage", columnDefinition = "LONGBLOB")
     private byte[] pictureData;
 
     @Transient

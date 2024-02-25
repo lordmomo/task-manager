@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,6 +27,7 @@ public class CommentServiceIml implements CommentService {
 
     @Autowired
     CommentRepository commentRepository;
+
 
     @Override
     public void createComment(Long projectId, CommentDto commentDto) throws IOException {
@@ -118,6 +120,17 @@ public class CommentServiceIml implements CommentService {
             System.out.println("Comment not found");
         }
 
+    }
+
+    @Override
+    public List<Comment> listAllComments(Long projectId,Long taskId) {
+
+//        Long checkValue = checkUtils.checkTaskIdBelongsToProjectId(projectId, taskId);
+//        if(checkValue!= 1) {
+//            System.out.println("invalid access");
+//            return null;
+//        }
+        return commentRepository.findAllByTaskId_TaskId(taskId);
     }
 
 

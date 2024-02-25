@@ -15,6 +15,7 @@ public class TaskStatus {
     @Id
     @Column(name = "status_id")
     private Long statusId;
-    @Column(name = "status_name",nullable = false)
+
+    @Column(name = "status_name", nullable = false)
     private String statusName;
 }

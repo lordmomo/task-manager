@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Data
@@ -23,7 +22,7 @@ public class File {
 
     @Lob
     @Nullable
-    @Column(name = "file",columnDefinition = "LONGBLOB")
+    @Column(name = "file", columnDefinition = "LONGBLOB")
     private byte[] fileData;
 
     @ManyToOne
