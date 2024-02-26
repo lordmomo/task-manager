@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class CommentDto {
-    Long taskId;
     Long userId;
     String message;
 

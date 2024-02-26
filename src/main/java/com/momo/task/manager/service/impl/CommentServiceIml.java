@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -34,7 +35,7 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> createComment(Long projectId, CommentDto commentDto) throws IOException {
+    public ResponseEntity<String> createComment(Long projectId,Long taskId, CommentDto commentDto) throws IOException {
 
         Long userId = commentDto.getUserId();
         ResponseEntity<String> validateUserProject = checkProjectAndUserIfNull(projectId,userId);
@@ -48,7 +49,7 @@ public class CommentServiceIml implements CommentService {
         }
 
         Comment comment = new Comment();
-        Task task = checkUtils.checkTaskExists(commentDto.getTaskId());
+        Task task = checkUtils.checkTaskExists(taskId);
         User user = checkUtils.getUserFromId(userId);
         comment.setTaskId(task);
         comment.setUserId(user);
@@ -67,7 +68,7 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> deleteComment(Long projectId, CommentValidation commentValidation) {
+    public ResponseEntity<String> deleteComment(Long projectId, Long taskId, Long commentId,CommentValidation commentValidation) {
 
         Long userId = commentValidation.getUserId();
         ResponseEntity<String> validateUserProject = checkProjectAndUserIfNull(projectId,userId);
@@ -80,15 +81,21 @@ public class CommentServiceIml implements CommentService {
             return validateUserProjectAccess;
         }
 
+        ResponseEntity<String> validateTaskIsOfProject =checkUtils.checkIfTaskBelongsToProject(projectId,taskId);
+        if(validateTaskIsOfProject != null){
+            return validateTaskIsOfProject;
+        }
+
         // try to use custom method
-        commentRepository.deleteById(commentValidation.getCommentId());
+        commentRepository.deleteById(commentId);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_DELETED_MESSAGE);
 
     }
 
     @Override
-    public ResponseEntity<String> updateComment(Long projectId, Long userId, Long commentId, UpdateCommentDto updateCommentDto) throws IOException {
+    public ResponseEntity<String> updateComment(Long projectId,Long taskId, Long commentId, UpdateCommentDto updateCommentDto) throws IOException {
 
+        Long userId = updateCommentDto.getUserId();
         ResponseEntity<String> validateUserProject = checkProjectAndUserIfNull(projectId,userId);
         if(validateUserProject != null){
             return validateUserProject;
@@ -97,6 +104,11 @@ public class CommentServiceIml implements CommentService {
         ResponseEntity<String> validateUserProjectAccess = checkProjectAndUserAccess(projectId,userId);
         if(validateUserProjectAccess !=null){
             return validateUserProjectAccess;
+        }
+
+        ResponseEntity<String> validateTaskIsOfProject =checkUtils.checkIfTaskBelongsToProject(projectId,taskId);
+        if(validateTaskIsOfProject != null){
+            return validateTaskIsOfProject;
         }
 
         Optional<Comment> optComment = commentRepository.findById(commentId);
@@ -119,7 +131,7 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<?> listAllComments(Long projectId,Long taskId) {
+    public ResponseEntity<Object> listAllComments(Long projectId, Long taskId) {
         Long checkNum = checkUtils.checkTaskIdBelongsToProjectId(projectId,taskId);
         if(checkNum != 1) {
             return ResponseEntity

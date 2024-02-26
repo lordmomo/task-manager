@@ -19,4 +19,8 @@ public interface TaskRepository extends JpaRepository<Task,Long> {
             value = "SELECT COUNT(*) FROM task t WHERE t.task_id = :taskId AND t.project_id = :projectId"
     )
     Long validateCheckTaskIdBelongsToProjectId(Long projectId, Long taskId);
+
+    @Query(nativeQuery = true,
+            value = "SELECT COUNT(1) FROM task t WHERE t.task_id = :taskId AND t.project_id = :projectId")
+    Long findTaskIdBelongsToProjectId(Long projectId, Long taskId);
 }

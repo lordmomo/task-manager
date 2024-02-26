@@ -4,6 +4,7 @@ import com.momo.task.manager.dto.CheckDto;
 import com.momo.task.manager.dto.TaskDto;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
+import com.momo.task.manager.utils.ResourceInformation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,32 +15,34 @@ import java.text.ParseException;
 
 
 @RestController
-@RequestMapping("/task")
+@RequestMapping(ResourceInformation.MAIN_TASK_KEY)
 public class TaskController {
-    @Autowired
     TaskService taskService;
-
-    @Autowired
     CheckUtils checkUtils;
+    @Autowired
+    public TaskController(TaskService taskService, CheckUtils checkUtils) {
+        this.taskService = taskService;
+        this.checkUtils = checkUtils;
+    }
 
-    @PostMapping("/create-tasks")
+    @PostMapping(ResourceInformation.CREATE_TASKS_ENDPOINT)
     public ResponseEntity<String> createTask(@ModelAttribute TaskDto taskDto) throws IOException {
         return taskService.createTask(taskDto);
     }
 
-    @DeleteMapping("/delete-task/{taskId}")
+    @DeleteMapping(ResourceInformation.DELETE_TASKS_ENDPOINT)
     public String deleteTask(@PathVariable("taskId") Long taskId) {
         taskService.deleteTask(taskId);
         return "task removed";
     }
 
-    @PutMapping("/update-task/{taskId}")
+    @PutMapping(ResourceInformation.UPDATE_TASKS_ENDPOINT)
     public String updateTask(@PathVariable("taskId") Long taskId, @RequestBody TaskDto taskDto) throws ParseException {
         taskService.updateTask(taskId, taskDto);
         return "update successfully";
     }
 
-    @GetMapping("/projects/{projectId}/all-tasks")
+    @GetMapping(ResourceInformation.GET_ALL_TASKS_IN_PROJECT_ENDPOINT)
     public ResponseEntity<?> getAllTasksOfProject(@PathVariable("projectId") Long projectId) {
         return taskService.getAllTask(projectId);
     }

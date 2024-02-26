@@ -7,13 +7,14 @@ import com.momo.task.manager.dto.UpdateCommentDto;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public interface CommentService {
-    ResponseEntity<String> createComment(Long projectId, CommentDto commentDto) throws IOException;
+    ResponseEntity<String> createComment(Long projectId,Long taskId, CommentDto commentDto) throws IOException;
 
-    ResponseEntity<String> deleteComment(Long projectId, CommentValidation commentValidation);
+    ResponseEntity<String> deleteComment(Long projectId, Long taskId, Long commentId,CommentValidation commentValidation);
 
-    ResponseEntity<String> updateComment(Long projectId, Long userId,Long commentId,UpdateCommentDto updateCommentDto) throws IOException;
+    ResponseEntity<String> updateComment(Long projectId,Long taskId, Long commentId,UpdateCommentDto updateCommentDto) throws IOException;
 
-    ResponseEntity<?> listAllComments(Long projectId,Long taskId);
+    ResponseEntity<Object> listAllComments(Long projectId, Long taskId);
 }
