@@ -1,6 +1,8 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.*;
+import com.momo.task.manager.exception.PictureDataException;
+import com.momo.task.manager.exception.UserNotFoundException;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
@@ -82,7 +84,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             try {
                 profilePicture.setPictureData(pictureFile.getBytes());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
             }
         } else {
             byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.DEFAULT_IMAGE_PATH);
@@ -180,14 +182,18 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> updateUserProfilePicture(Long userId, MultipartFile file) throws IOException {
+    public ResponseEntity<String> updateUserProfilePicture(Long userId, MultipartFile file) {
         Optional<User> optUser = superAdminRepository.findById(userId);
         if (optUser.isPresent()) {
             User user = optUser.get();
             var userPPId = user.getPicture().getProfilePictureId();
             Optional<ProfilePicture> profilePicture = profilePictureRepository.findById(userPPId);
             ProfilePicture picture = profilePicture.orElseGet(ProfilePicture::new);
-            picture.setPictureData(file.getBytes());
+            try {
+                picture.setPictureData(file.getBytes());
+            } catch (IOException e) {
+                throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+            }
             user.setPicture(profilePictureRepository.save(picture));
             superAdminRepository.save(user);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_PROFILE_PICTURE_UPDATED_MESSAGE);
@@ -236,7 +242,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             accessRepository.deleteByUserId(prevUser.getUserId());
             addUsersToProject(project.getProjectName(), user.getUserId());
         } else {
-            throw new RuntimeException();
+            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
     }
 

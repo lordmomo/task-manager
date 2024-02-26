@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -85,8 +84,6 @@ public class CommentServiceIml implements CommentService {
         if(validateTaskIsOfProject != null){
             return validateTaskIsOfProject;
         }
-
-        // try to use custom method
         commentRepository.deleteById(commentId);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_DELETED_MESSAGE);
 

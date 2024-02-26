@@ -1,6 +1,9 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.TaskDto;
+import com.momo.task.manager.exception.TaskStageNotFoundException;
+import com.momo.task.manager.exception.TaskStatusNotFoundException;
+import com.momo.task.manager.exception.UserNotFoundException;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.service.interfaces.TaskService;
@@ -77,7 +80,6 @@ public class TaskServiceImpl implements TaskService {
             log.info(ResourceInformation.TASK_CREATED_MESSAGE);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
         }
-        log.info("Assignee has no access to project");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.ASSIGNEE_OR_REPORTER_HAS_NO_ACCESS_TO_PROJECT_MESSAGE);
 
     }
@@ -137,11 +139,9 @@ public class TaskServiceImpl implements TaskService {
             task.setUpdatedFlag(true);
             updateTaskDateFields(task);
             taskRepository.save(task);
-            log.info("save success in service");
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_UPDATED_MESSAGE);
 
         } else {
-            log.info("save failed in service");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
 
@@ -171,7 +171,7 @@ public class TaskServiceImpl implements TaskService {
                 task.setReporterId(user.get());
             } else {
                 log.info(ResourceInformation.REPORTER_NOT_FOUND_MESSAGE);
-//                throw new RuntimeException();
+                throw new UserNotFoundException(ResourceInformation.REPORTER_NOT_FOUND_MESSAGE);
             }
         }
     }
@@ -179,10 +179,10 @@ public class TaskServiceImpl implements TaskService {
         if(userId != null){
             Optional<User> user = superAdminRepository.findById(userId);
             if (user.isPresent()) {
-                task.setReporterId(user.get());
+                task.setAssigneeId(user.get());
             } else {
                 log.info(ResourceInformation.ASSIGNEE_NOT_FOUND_MESSAGE);
-//                throw new RuntimeException();
+                throw new UserNotFoundException(ResourceInformation.ASSIGNEE_NOT_FOUND_MESSAGE);
             }
         }
     }
@@ -194,6 +194,7 @@ public class TaskServiceImpl implements TaskService {
                 task.setStageId(stages.get());
             } else {
                 log.info(ResourceInformation.STAGE_NOT_FOUND_MESSAGE);
+                throw new TaskStageNotFoundException(ResourceInformation.STAGE_NOT_FOUND_MESSAGE);
             }
         }
     }
@@ -204,7 +205,8 @@ public class TaskServiceImpl implements TaskService {
             if (status.isPresent()) {
                 task.setStatus(status.get());
             } else {
-                log.info("task status not found");
+                log.info(ResourceInformation.STATUS_NOT_FOUND_MESSAGE);
+                throw new TaskStatusNotFoundException(ResourceInformation.STATUS_NOT_FOUND_MESSAGE);
             }
         }
     }
@@ -232,7 +234,6 @@ public class TaskServiceImpl implements TaskService {
     public ResponseEntity<?> getAllTask(Long projectId) {
         Optional<Project> project = projectRepository.findById(projectId);
         if (project.isPresent()) {
-            log.info("project found");
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(taskRepository.findByProdId(projectId));

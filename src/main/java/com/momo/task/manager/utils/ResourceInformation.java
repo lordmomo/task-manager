@@ -21,8 +21,12 @@ public class ResourceInformation {
     public static final String REPORTER_NOT_FOUND_MESSAGE = "Reporter not found";
     public static final String STAGE_NOT_FOUND_MESSAGE = "Stage not found";
 
+    public static final String STATUS_NOT_FOUND_MESSAGE = "Status not found";
+
     public static final String ROLE_NOT_FOUND_MESSAGE = "Role not found";
     public static final String ASSIGNEE_OR_REPORTER_HAS_NO_ACCESS_TO_PROJECT_MESSAGE = "Assignee or Reporter has no access to project";
+
+    public static final String PICTURE_DATA_EXCEPTION_MESSAGE = "Error setting picture data";
 
 
 
