@@ -19,27 +19,19 @@ public class SuperAdminController {
     SuperAdminService superAdminService;
 
     @PostMapping(ResourceInformation.CREATE_PROJECTS_ENDPOINT)
-    public ResponseEntity<String> createProject(@RequestBody ProjectDto projectDto) {
+    public ResponseEntity<String> createProjects(@RequestBody ProjectDto projectDto) {
         return superAdminService.createProject(projectDto);
     }
     @PutMapping(ResourceInformation.UPDATE_PROJECTS_ENDPOINT)
-    public ResponseEntity<String> updateProject(@PathVariable("projectId") Long projectId,@RequestBody UpdateProjectDto updateProjectDto) {
+    public ResponseEntity<String> updateProjects(@PathVariable("projectId") Long projectId,@RequestBody UpdateProjectDto updateProjectDto) {
         return superAdminService.updateProject(projectId,updateProjectDto);
     }
-
     @DeleteMapping(ResourceInformation.DELETE_PROJECTS_ENDPOINT)
-    public ResponseEntity<String> deleteProject(@PathVariable("projectId") Long projectId){
+    public ResponseEntity<String> deleteProjects(@PathVariable("projectId") Long projectId){
         return superAdminService.deleteProject(projectId);
     }
-
-    @PostMapping(ResourceInformation.CREATE_ADMINS_ENDPOINT)
-    public ResponseEntity<String> createAdmin(@ModelAttribute UserCreateDto userCreateDto) throws IOException {
-
-        return superAdminService.createAdmin(userCreateDto);
-    }
-
     @PostMapping(ResourceInformation.CREATE_USERS_ENDPOINT)
-    public ResponseEntity<String> createUser(@ModelAttribute UserCreateDto userCreateDto) throws IOException {
+    public ResponseEntity<String> createUsers(@ModelAttribute UserCreateDto userCreateDto) throws IOException {
 
         return superAdminService.createUser(userCreateDto);
     }
@@ -55,18 +47,13 @@ public class SuperAdminController {
 
 
     @GetMapping(ResourceInformation.GET_ONLY_USERS_ENDPOINT)
-    public ResponseEntity<List<UserResponseDto>> showOnlyUsers(){
-        return superAdminService.getOnlyUsers();
+    public ResponseEntity<List<UserResponseDto>> showUsers(@RequestParam Long roleId){
+        return superAdminService.getUsers(roleId);
     }
 
-
-    @GetMapping(ResourceInformation.GET_ONLY_ADMINS_ENDPOINT)
-    public ResponseEntity<List<UserResponseDto>> showOnlyAdmins(){
-        return superAdminService.getOnlyAdmins();
-    }
 
     @DeleteMapping(ResourceInformation.DELETE_USERS_ENDPOINT)
-    public ResponseEntity<String> removeUser(@PathVariable("userId")Long userId){
+    public ResponseEntity<String> removeUsers(@PathVariable("userId")Long userId){
         return superAdminService.removeUser(userId);
     }
 
@@ -81,12 +68,12 @@ public class SuperAdminController {
     }
 
     @PutMapping(ResourceInformation.UPDATE_USERS_PROFILE_PICTURE_ENDPOINT)
-    public ResponseEntity<String> updateUserProfilePicture(@PathVariable("userId")Long userId, @RequestParam MultipartFile newPicture) throws IOException {
+    public ResponseEntity<String> updateUserProfilePictures(@PathVariable("userId")Long userId, @RequestParam MultipartFile newPicture) throws IOException {
        return superAdminService.updateUserProfilePicture(userId,newPicture);
     }
 
     @PostMapping(ResourceInformation.ADD_USERS_TO_PROJECT_ENDPOINT)
-    public ResponseEntity<String> addUsersToProject(@PathVariable("projectName") String projectName, @PathVariable("userId") Long userId){
+    public ResponseEntity<String> addUsersToProjects(@PathVariable("projectName") String projectName, @PathVariable("userId") Long userId){
         return superAdminService.addUsersToProject(projectName,userId);
     }
 }

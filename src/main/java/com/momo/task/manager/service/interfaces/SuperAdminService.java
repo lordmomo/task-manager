@@ -9,9 +9,7 @@ import java.util.List;
 
 public interface SuperAdminService {
 
-    ResponseEntity<String> createAdmin(UserCreateDto userCreateDto) throws IOException;
-
-    ResponseEntity<String> createUser(UserCreateDto userCreateDto) throws IOException;
+    ResponseEntity<String> createUser(UserCreateDto userCreateDto);
 
     ResponseEntity<UserResponseDto> getUserDetails(Long userId);
 
@@ -33,7 +31,6 @@ public interface SuperAdminService {
 
     ResponseEntity<String> addUsersToProject(String projectName, Long userId);
 
-    ResponseEntity<List<UserResponseDto>> getOnlyUsers();
+    ResponseEntity<List<UserResponseDto>> getUsers(Long role);
 
-    ResponseEntity<List<UserResponseDto>> getOnlyAdmins();
 }

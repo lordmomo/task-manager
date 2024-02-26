@@ -10,9 +10,6 @@ import java.util.List;
 @Repository
 public interface SuperAdminRepository extends JpaRepository<User,Long> {
     @Query(nativeQuery = true,
-            value = "SELECT * FROM USER u where u.role = 3")
-    List<User> findOnlyUsers();
-    @Query(nativeQuery = true,
-            value = "SELECT * FROM USER u where u.role = 2")
-    List<User> findOnlyAdmins();
+            value = "SELECT * FROM USER u where u.role = :role")
+    List<User> findUsersByRole(Long role);
 }

@@ -26,24 +26,24 @@ public class TaskController {
     }
 
     @PostMapping(ResourceInformation.CREATE_TASKS_ENDPOINT)
-    public ResponseEntity<String> createTask(@ModelAttribute TaskDto taskDto) throws IOException {
+    public ResponseEntity<String> createTasks(@ModelAttribute TaskDto taskDto) throws IOException {
         return taskService.createTask(taskDto);
     }
 
     @DeleteMapping(ResourceInformation.DELETE_TASKS_ENDPOINT)
-    public String deleteTask(@PathVariable("taskId") Long taskId) {
+    public String deleteTasks(@PathVariable("taskId") Long taskId) {
         taskService.deleteTask(taskId);
         return "task removed";
     }
 
     @PutMapping(ResourceInformation.UPDATE_TASKS_ENDPOINT)
-    public String updateTask(@PathVariable("taskId") Long taskId, @RequestBody TaskDto taskDto) throws ParseException {
+    public String updateTasks(@PathVariable("taskId") Long taskId, @RequestBody TaskDto taskDto) throws ParseException {
         taskService.updateTask(taskId, taskDto);
         return "update successfully";
     }
 
     @GetMapping(ResourceInformation.GET_ALL_TASKS_IN_PROJECT_ENDPOINT)
-    public ResponseEntity<?> getAllTasksOfProject(@PathVariable("projectId") Long projectId) {
+    public ResponseEntity<?> getAllTasksOfProjects(@PathVariable("projectId") Long projectId) {
         return taskService.getAllTask(projectId);
     }
 

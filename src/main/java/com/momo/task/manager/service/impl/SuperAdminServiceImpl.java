@@ -29,13 +29,6 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     ModelMapper mapper;
     ImageLoader imageLoader;
 
-
-    // Constructor for initialization
-//    public SuperAdminServiceImpl() {
-//        this.mapper = new ModelMapper();
-//        configureModelMapper();
-//    }
-
     @Autowired
     public SuperAdminServiceImpl(SuperAdminRepository superAdminRepository,
                                  RoleRepository roleRepository,
@@ -61,32 +54,41 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> createAdmin(UserCreateDto userCreateDto) throws IOException {
-
+    public ResponseEntity<String> createUser(UserCreateDto userCreateDto) {
         User user = new User();
+        createUserFromDto(user, userCreateDto);
+        setRoleForUser(user, userCreateDto.getRoleId());
+        setProfilePictureForUser(user, userCreateDto.getPictureFile());
+        superAdminRepository.save(user);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREATED_MESSAGE);
+    }
+
+    private void createUserFromDto(User user, UserCreateDto userCreateDto) {
         user.setFirstName(userCreateDto.getFirstName());
         user.setLastName(userCreateDto.getLastName());
         user.setEmail(userCreateDto.getEmail());
         user.setUsername(userCreateDto.getUsername());
         user.setPassword(userCreateDto.getPassword());
+    }
 
-        Optional<Role> optRole = roleRepository.findById(2L);
-
+    private void setRoleForUser(User user, Long roleId) {
+        Optional<Role> optRole = roleRepository.findById(roleId);
         optRole.ifPresent(user::setRole);
+    }
 
+    private void setProfilePictureForUser(User user, MultipartFile pictureFile) {
         ProfilePicture profilePicture = new ProfilePicture();
-        if (userCreateDto.getPictureFile() != null) {
-            profilePicture.setPictureData(userCreateDto.getPictureFile().getBytes());
+        if (pictureFile != null) {
+            try {
+                profilePicture.setPictureData(pictureFile.getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.DEFAULT_IMAGE_PATH);
             profilePicture.setPictureData(defaultPicture);
         }
         user.setPicture(profilePictureRepository.save(profilePicture));
-
-        superAdminRepository.save(user);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ResourceInformation.ADMIN_CREATED_MESSAGE);
     }
 
     @Override
@@ -114,9 +116,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .status(HttpStatus.OK)
                 .body(userDtoList);
     }
+
     @Override
-    public ResponseEntity<List<UserResponseDto>> getOnlyUsers() {
-        List<User> userList = superAdminRepository.findOnlyUsers();
+    public ResponseEntity<List<UserResponseDto>> getUsers(Long role) {
+        List<User> userList = superAdminRepository.findUsersByRole(role);
         List<UserResponseDto> userDtoList = new ArrayList<>();
         for (User user : userList) {
             UserResponseDto userDto = mapper.map(user, UserResponseDto.class);
@@ -127,17 +130,6 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .body(userDtoList);
     }
 
-    @Override
-    public ResponseEntity<List<UserResponseDto>> getOnlyAdmins() {
-        List<User> userList = superAdminRepository.findOnlyAdmins();
-        List<UserResponseDto> userDtoList = new ArrayList<>();
-        for (User user : userList) {
-            UserResponseDto userDto = mapper.map(user, UserResponseDto.class);
-            userDtoList.add(userDto);
-        }
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(userDtoList);    }
 
     @Override
     public ResponseEntity<String> removeUser(Long userId) {
@@ -205,31 +197,6 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> createUser(UserCreateDto userCreateDto) throws IOException {
-        User user = new User();
-        user.setFirstName(userCreateDto.getFirstName());
-        user.setLastName(userCreateDto.getLastName());
-        user.setEmail(userCreateDto.getEmail());
-        user.setUsername(userCreateDto.getUsername());
-        user.setPassword(userCreateDto.getPassword());
-
-        Optional<Role> optRole = roleRepository.findById(3L);
-        optRole.ifPresent(user::setRole);
-
-        ProfilePicture profilePicture = new ProfilePicture();
-        if (userCreateDto.getPictureFile() != null) {
-            profilePicture.setPictureData(userCreateDto.getPictureFile().getBytes());
-        } else {
-            byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.DEFAULT_IMAGE_PATH);
-            profilePicture.setPictureData(defaultPicture);
-        }
-        user.setPicture(profilePictureRepository.save(profilePicture));
-
-        superAdminRepository.save(user);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREATED_MESSAGE);
-    }
-
-    @Override
     public ResponseEntity<String> createProject(ProjectDto projectDto) {
 
         Project project = mapper.map(projectDto, Project.class);
@@ -252,26 +219,33 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
             User prevUser = project.getProjectLead();
-            if (!project.getKey().isEmpty() && project.getKey() != null) {
-                project.setKey(updateProjectDto.getKey());
-            }
-            if (!project.getProjectName().isEmpty() && project.getProjectName() != null) {
-                project.setProjectName(updateProjectDto.getProjectName());
-            }
-            Optional<User> optionalUser = superAdminRepository.findById(updateProjectDto.getProjectLead());
-            if (optionalUser.isPresent()) {
-                User user = optionalUser.get();
-                project.setProjectLead(user);
-                accessRepository.deleteByUserId(prevUser.getUserId());
-                addUsersToProject(project.getProjectName(), user.getUserId());
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.USER_NOT_FOUND_MESSAGE);
-            }
+            updateGeneralProjectDetails(project,updateProjectDto);
+            updateProjectLead(prevUser,project,updateProjectDto);
             projectRepository.save(project);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_UPDATED_MESSAGE);
-
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+        }
+    }
+
+    private void updateProjectLead(User prevUser, Project project, UpdateProjectDto updateProjectDto) {
+        Optional<User> optionalUser = superAdminRepository.findById(updateProjectDto.getProjectLead());
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            project.setProjectLead(user);
+            accessRepository.deleteByUserId(prevUser.getUserId());
+            addUsersToProject(project.getProjectName(), user.getUserId());
+        } else {
+            throw new RuntimeException();
+        }
+    }
+
+    private void updateGeneralProjectDetails(Project project, UpdateProjectDto updateProjectDto) {
+        if (!project.getKey().isEmpty() && project.getKey() != null) {
+            project.setKey(updateProjectDto.getKey());
+        }
+        if (!project.getProjectName().isEmpty() && project.getProjectName() != null) {
+            project.setProjectName(updateProjectDto.getProjectName());
         }
     }
 

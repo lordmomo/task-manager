@@ -22,8 +22,7 @@ public class ResourceInformation {
     public static final String STAGE_NOT_FOUND_MESSAGE = "Stage not found";
 
     public static final String ROLE_NOT_FOUND_MESSAGE = "Role not found";
-    public static final String ASSIGNEE_HAS_NO_ACCESS_TO_PROJECT_MESSAGE = "Assignee has no access to project";
-    public static final String REPORTER_HAS_NO_ACCESS_TO_PROJECT_MESSAGE = "Reporter has no access to project";
+    public static final String ASSIGNEE_OR_REPORTER_HAS_NO_ACCESS_TO_PROJECT_MESSAGE = "Assignee or Reporter has no access to project";
 
 
 
