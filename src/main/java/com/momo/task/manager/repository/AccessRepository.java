@@ -20,7 +20,6 @@ public interface AccessRepository extends JpaRepository<Access,Long> {
 
     @Query(nativeQuery = true,
             value = "select * " +
-                    "case when count(*)=1 then true else false end " +
                     "FROM access a where a.accessed_user_id = :userId AND a.accessed_project_id = :projectId ;"
     )
     Access validateUserProjectRelation(Long userId,Long projectId);

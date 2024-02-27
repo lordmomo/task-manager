@@ -1,5 +1,6 @@
 package com.momo.task.manager.utils;
 
+import com.momo.task.manager.exception.CommentNotFoundException;
 import com.momo.task.manager.exception.TaskDoesNotBelongToProjectException;
 import com.momo.task.manager.exception.UserHasNoAccessToProjectException;
 import com.momo.task.manager.exception.UserNotFoundException;
@@ -18,13 +19,15 @@ public class CheckUtils {
     TaskRepository taskRepository;
     TaskStatusRepository taskStatusRepository;
     StagesRepository stagesRepository;
+    CommentRepository commentRepository;
     @Autowired
     public CheckUtils(AccessRepository accessRepository,
                       ProjectRepository projectRepository,
                       SuperAdminRepository superAdminRepository,
                       TaskRepository taskRepository,
                       TaskStatusRepository taskStatusRepository,
-                      StagesRepository stagesRepository) {
+                      StagesRepository stagesRepository,
+                      CommentRepository commentRepository) {
 
         this.accessRepository = accessRepository;
         this.projectRepository = projectRepository;
@@ -32,6 +35,7 @@ public class CheckUtils {
         this.taskRepository = taskRepository;
         this.taskStatusRepository = taskStatusRepository;
         this.stagesRepository = stagesRepository;
+        this.commentRepository = commentRepository;
     }
 
     public boolean checkUserProjectAccess(Long userId, Long projectId) {
@@ -74,4 +78,10 @@ public class CheckUtils {
 
     }
 
+    public void checkIfCommentExists(Long commentId){
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if(optionalComment.isEmpty()){
+            throw new CommentNotFoundException(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
+        }
+    }
 }

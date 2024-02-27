@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -42,5 +43,21 @@ public class Comment {
     @Nullable
     @Column(name = "file", columnDefinition = "LONGBLOB")
     private byte[] fileData;
+
+    @Column(name = "active_flg")
+    private boolean activeFlg;
+
+    @Column(name ="updated_flg")
+    private boolean updatedFlg;
+
+    @Column(name = "updated_date")
+    private Date updatedDate;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
 
 }

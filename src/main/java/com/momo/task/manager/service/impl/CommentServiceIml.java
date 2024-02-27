@@ -3,10 +3,7 @@ package com.momo.task.manager.service.impl;
 import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.dto.CommentValidation;
 import com.momo.task.manager.dto.UpdateCommentDto;
-import com.momo.task.manager.exception.PictureDataException;
-import com.momo.task.manager.exception.TaskDoesNotBelongToProjectException;
-import com.momo.task.manager.exception.UserHasNoAccessToProjectException;
-import com.momo.task.manager.exception.UserNotFoundException;
+import com.momo.task.manager.exception.*;
 import com.momo.task.manager.model.Comment;
 import com.momo.task.manager.model.Project;
 import com.momo.task.manager.model.Task;
@@ -23,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -58,13 +56,17 @@ public class CommentServiceIml implements CommentService {
             Long userId = commentValidation.getUserId();
             this.performCommonValidations(projectId, userId);
             this.checkUtils.checkIfTaskBelongsToProject(projectId, taskId);
-            commentRepository.deleteById(commentId);
+            this.checkUtils.checkIfCommentExists(commentId);
+            commentRepository.deleteByCommentId(commentId);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_DELETED_MESSAGE);
         } catch (UserNotFoundException e) {
             throw new UserNotFoundException(e.getMessage());
         } catch (TaskDoesNotBelongToProjectException e) {
             throw new TaskDoesNotBelongToProjectException(e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (CommentNotFoundException e){
+            throw new CommentNotFoundException(e.getMessage());
+        }catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -106,6 +108,8 @@ public class CommentServiceIml implements CommentService {
         if (optComment.isPresent()) {
             Comment comment = optComment.get();
             comment.setMessage(updateCommentDto.getMessage());
+            comment.setUpdatedFlg(true);
+            comment.setUpdatedDate(new Date());
             MultipartFile file = updateCommentDto.getDocumentFile();
             //check is file is null , delete then null too
             saveFileInComment(comment, file);
@@ -121,6 +125,9 @@ public class CommentServiceIml implements CommentService {
             comment.setUserId(user);
             comment.setMessage(commentDto.getMessage());
             comment.setMessagePostDate(new Date());
+            comment.setActiveFlg(true);
+            comment.setStartDate(LocalDate.now());
+            comment.setEndDate(LocalDate.of(9999,12,31));
         } catch (NullPointerException e) {
             throw new NullPointerException(e.getMessage());
         }

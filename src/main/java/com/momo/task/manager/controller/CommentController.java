@@ -27,7 +27,7 @@ public class CommentController {
     }
 
 
-    @DeleteMapping(ResourceEndpoints.DELETE_COMMENTS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.DELETE_COMMENTS_ENDPOINT)
     public ResponseEntity<String> deleteComment(@PathVariable("projectId") Long projectId,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
