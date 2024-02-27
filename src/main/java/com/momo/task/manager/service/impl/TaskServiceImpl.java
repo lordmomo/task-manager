@@ -72,22 +72,16 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public ResponseEntity<String> createTask(TaskDto taskDto) {
-        try {
-            if (hasUserAccessToProject(taskDto.getAssigneeId(), taskDto.getProject()) &&
-                    hasUserAccessToProject(taskDto.getReporterId(), taskDto.getProject())
-            ) {
-                Task task = createTaskFromDto(taskDto);
-                taskRepository.save(task);
-                saveTaskFile(task, taskDto.getFile());
-                log.info(ResourceInformation.TASK_CREATED_MESSAGE);
-                return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
-            } else {
-                return null;
-            }
-        } catch (UserHasNoAccessToProjectException e) {
-            throw new UserHasNoAccessToProjectException(e.getMessage());
-        } catch (PictureDataException e) {
-            throw new PictureDataException(e.getMessage());
+        if (hasUserAccessToProject(taskDto.getAssigneeId(), taskDto.getProject()) &&
+                hasUserAccessToProject(taskDto.getReporterId(), taskDto.getProject())
+        ) {
+            Task task = createTaskFromDto(taskDto);
+            taskRepository.save(task);
+            saveTaskFile(task, taskDto.getFile());
+            log.info(ResourceInformation.TASK_CREATED_MESSAGE);
+            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
+        } else {
+            return null;
         }
     }
 
@@ -123,13 +117,24 @@ public class TaskServiceImpl implements TaskService {
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_UPDATED_MESSAGE);
     }
 
+    @Override
+    public ResponseEntity<List<Task>> getAllTask(Long projectId) {
+        Optional<Project> project = projectRepository.findById(projectId);
+        if (project.isEmpty()) {
+            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+        }
+        List<Task> taskList = taskRepository.findByProdId(projectId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(taskList);
+    }
+
+
     private void updateTaskFile(Task task, MultipartFile mFile) {
 
         File file = fileRepository.findFileByTaskId(task.getTaskId());
         file.setTask(task);
-        file.setActiveFlg(true);
-        file.setUpdatedFlg(true);
-        file.setUpdatedDate(LocalDate.now());
+        setFlagForFileUpdate(file);
         if (mFile != null && !mFile.isEmpty()) {
             try {
                 file.setFileData(mFile.getBytes());
@@ -143,17 +148,6 @@ public class TaskServiceImpl implements TaskService {
         log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
     }
 
-    @Override
-    public ResponseEntity<List<Task>> getAllTask(Long projectId) {
-        Optional<Project> project = projectRepository.findById(projectId);
-        if (project.isEmpty()) {
-            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
-        }
-        List<Task> taskList = taskRepository.findByProdId(projectId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(taskList);
-    }
 
     private void updateTaskDateFields(Task task) {
         LocalDateTime currentDateTime = LocalDateTime.now();
@@ -198,7 +192,6 @@ public class TaskServiceImpl implements TaskService {
                 throw new TaskStageNotFoundException(ResourceInformation.STAGE_NOT_FOUND_MESSAGE);
             }
             task.setStageId(stages.get());
-
         }
     }
 
@@ -255,10 +248,7 @@ public class TaskServiceImpl implements TaskService {
     private void saveTaskFile(Task task, MultipartFile mFile) {
         File file = new File();
         file.setTask(task);
-        file.setActiveFlg(true);
-        file.setUpdatedFlg(false);
-        file.setStartDate(LocalDate.now());
-        file.setEndDate(LocalDate.of(9999, 12, 31));
+        setFlagForFileCreation(file);
         if (mFile != null && !mFile.isEmpty()) {
             try {
                 file.setFileData(mFile.getBytes());
@@ -272,5 +262,17 @@ public class TaskServiceImpl implements TaskService {
         log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
     }
 
+    private void setFlagForFileCreation(File file) {
+        file.setActiveFlg(true);
+        file.setUpdatedFlg(false);
+        file.setStartDate(LocalDate.now());
+        file.setEndDate(LocalDate.of(9999, 12, 31));
+    }
+
+    private void setFlagForFileUpdate(File file) {
+        file.setActiveFlg(true);
+        file.setUpdatedFlg(true);
+        file.setUpdatedDate(LocalDate.now());
+    }
 
 }

@@ -51,7 +51,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.profilePictureRepository = profilePictureRepository;
         this.projectRepository = projectRepository;
         this.taskRepository = taskRepository;
-        this.commentRepository =commentRepository;
+        this.commentRepository = commentRepository;
         this.accessRepository = accessRepository;
         this.mapper = mapper;
         this.imageLoader = imageLoader;
@@ -72,6 +72,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         superAdminRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREATED_MESSAGE);
     }
+
     @Override
     public ResponseEntity<UserResponseDto> getUserDetails(Long userId) {
         Optional<User> optUser = superAdminRepository.findById(userId);
@@ -84,6 +85,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .status(HttpStatus.OK)
                 .body(mapper.map(user, UserResponseDto.class));
     }
+
     @Override
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<User> userList = superAdminRepository.findAll();
@@ -96,6 +98,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                 .status(HttpStatus.OK)
                 .body(userDtoList);
     }
+
     @Override
     public ResponseEntity<List<UserResponseDto>> getUsers(Long role) {
         List<User> userList = superAdminRepository.findUsersByRole(role);
@@ -120,11 +123,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         User user = optUser.get();
         superAdminRepository.deleteByUserId(user.getUserId());
         profilePictureRepository.deleteByPictureId(user.getPicture().getProfilePictureId());
-        accessRepository.deleteByUserId(userId);
+        accessRepository.deleteByUserId(user.getUserId());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResourceInformation.USER_DELETED_MESSAGE);
     }
+
     @Override
     public ResponseEntity<String> updateUserDetails(Long userId, UserDetailsDto userDetailsDto) {
         Optional<User> optUser = superAdminRepository.findById(userId);
@@ -135,8 +139,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setFirstName(userDetailsDto.getFirstName());
         user.setLastName(userDetailsDto.getLastName());
         user.setEmail(userDetailsDto.getEmail());
-        user.setUpdatedFlg(true);
-        user.setUpdatedDate(LocalDate.now());
+        setFlagForUserUpdate(user);
         superAdminRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_DETAILS_UPDATED_MESSAGE);
     }
@@ -150,11 +153,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         User user = optUser.get();
         user.setUsername(userCredentialsDto.getUsername());
         user.setPassword(userCredentialsDto.getPassword());
-        user.setUpdatedFlg(true);
-        user.setUpdatedDate(LocalDate.now());
+        setFlagForUserUpdate(user);
         superAdminRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
     }
+
     @Override
     public ResponseEntity<String> updateUserProfilePicture(Long userId, MultipartFile file) {
         Optional<User> optUser = superAdminRepository.findById(userId);
@@ -165,11 +168,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         var userPPId = user.getPicture().getProfilePictureId();
         Optional<ProfilePicture> profilePicture = profilePictureRepository.findById(userPPId);
         ProfilePicture picture = profilePicture.orElseGet(ProfilePicture::new);
-        picture.setUpdatedFlg(true);
-        picture.setUpdatedDate(LocalDate.now());
         updateProfilePictureForUser(user, file, picture);
-        user.setUpdatedFlg(true);
-        user.setUpdatedDate(LocalDate.now());
+        setFlagForUserUpdate(user);
         superAdminRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_PROFILE_PICTURE_UPDATED_MESSAGE);
     }
@@ -182,15 +182,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
-            User user = optUser.get();
-            project.setProjectLead(user);
-            project.setActiveFlg(true);
-            project.setUpdatedFlg(false);
-            project.setStartDate(LocalDate.now());
-            project.setEndDate(LocalDate.of(9999,12,31));
-            projectRepository.save(project);
-            addUsersToProject(project.getProjectName(), user.getUserId());
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_CREATED_MESSAGE);
+        User user = optUser.get();
+        project.setProjectLead(user);
+        setFlagForProjectCreation(project);
+        projectRepository.save(project);
+        addUsersToProject(project.getProjectName(), user.getUserId());
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_CREATED_MESSAGE);
     }
 
     @Override
@@ -220,7 +217,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         projectRepository.deleteProjectById(project.getProjectId());
         List<Long> taskIdsInProject = taskRepository.getAllTaskIdFromProjectId(project.getProjectId());
         taskRepository.deleteByProjectId(project.getProjectId());
-        for(Long taskId : taskIdsInProject){
+        for (Long taskId : taskIdsInProject) {
             commentRepository.deleteByTaskId(taskId);
         }
         accessRepository.deleteProjectById(project.getProjectId());
@@ -239,23 +236,18 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         Access access = new Access();
         access.setUser(user);
         access.setProject(project);
-        access.setActiveFlg(true);
-        access.setUpdatedFlg(false);
-        access.setStartDate(LocalDate.now());
-        access.setEndDate(LocalDate.of(9999,12,31));
+        setFlagForAccessCreation(access);
         accessRepository.save(access);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_ADDED_TO_PROJECT_MESSAGE);
     }
+
     private void createUserFromDto(User user, UserCreateDto userCreateDto) {
         user.setFirstName(userCreateDto.getFirstName());
         user.setLastName(userCreateDto.getLastName());
         user.setEmail(userCreateDto.getEmail());
         user.setUsername(userCreateDto.getUsername());
         user.setPassword(userCreateDto.getPassword());
-        user.setActiveFlg(true);
-        user.setUpdatedFlg(false);
-        user.setStartDate(LocalDate.now());
-        user.setEndDate(LocalDate.of(9999,12,31));
+        setFlagForUserCreation(user);
     }
 
     private void setRoleForUser(User user, Long roleId) {
@@ -275,18 +267,15 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.DEFAULT_IMAGE_PATH);
             profilePicture.setPictureData(defaultPicture);
         }
-        profilePicture.setActiveFlg(true);
-        profilePicture.setUpdatedFlg(false);
-        profilePicture.setStartDate(LocalDate.now());
-        profilePicture.setEndDate(LocalDate.of(9999,12,31));
+        setFlagForProfilePictureCreation(profilePicture);
         user.setPicture(profilePictureRepository.save(profilePicture));
     }
+
     private void updateProfilePictureForUser(User user, MultipartFile pictureFile, ProfilePicture profilePicture) {
         if (pictureFile != null) {
             try {
                 profilePicture.setPictureData(pictureFile.getBytes());
-                profilePicture.setUpdatedFlg(true);
-                profilePicture.setUpdatedDate(LocalDate.now());
+                setFlagForProfilePictureUpdate(profilePicture);
 
             } catch (IOException e) {
                 throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
@@ -295,6 +284,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
         user.setPicture(profilePictureRepository.save(profilePicture));
     }
+
     private void updateProjectLead(User prevUser, Project project, UpdateProjectDto updateProjectDto) {
         Optional<User> optionalUser = superAdminRepository.findById(updateProjectDto.getProjectLead());
         if (optionalUser.isEmpty()) {
@@ -313,6 +303,44 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (!project.getProjectName().isEmpty() && project.getProjectName() != null) {
             project.setProjectName(updateProjectDto.getProjectName());
         }
+    }
+
+    private void setFlagForUserCreation(User user) {
+        user.setActiveFlg(true);
+        user.setUpdatedFlg(false);
+        user.setStartDate(LocalDate.now());
+        user.setEndDate(LocalDate.of(9999, 12, 31));
+    }
+
+    private void setFlagForProfilePictureCreation(ProfilePicture profilePicture) {
+        profilePicture.setActiveFlg(true);
+        profilePicture.setUpdatedFlg(false);
+        profilePicture.setStartDate(LocalDate.now());
+        profilePicture.setEndDate(LocalDate.of(9999, 12, 31));
+    }
+
+    private void setFlagForProjectCreation(Project project) {
+        project.setActiveFlg(true);
+        project.setUpdatedFlg(false);
+        project.setStartDate(LocalDate.now());
+        project.setEndDate(LocalDate.of(9999, 12, 31));
+    }
+
+    private void setFlagForAccessCreation(Access access) {
+        access.setActiveFlg(true);
+        access.setUpdatedFlg(false);
+        access.setStartDate(LocalDate.now());
+        access.setEndDate(LocalDate.of(9999, 12, 31));
+    }
+
+    private void setFlagForUserUpdate(User user) {
+        user.setUpdatedFlg(true);
+        user.setUpdatedDate(LocalDate.now());
+    }
+
+    private void setFlagForProfilePictureUpdate(ProfilePicture picture) {
+        picture.setUpdatedFlg(true);
+        picture.setUpdatedDate(LocalDate.now());
     }
 
 }

@@ -63,10 +63,9 @@ public class CommentServiceIml implements CommentService {
             throw new UserNotFoundException(e.getMessage());
         } catch (TaskDoesNotBelongToProjectException e) {
             throw new TaskDoesNotBelongToProjectException(e.getMessage());
-        }
-        catch (CommentNotFoundException e){
+        } catch (CommentNotFoundException e) {
             throw new CommentNotFoundException(e.getMessage());
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -125,9 +124,7 @@ public class CommentServiceIml implements CommentService {
             comment.setUserId(user);
             comment.setMessage(commentDto.getMessage());
             comment.setMessagePostDate(new Date());
-            comment.setActiveFlg(true);
-            comment.setStartDate(LocalDate.now());
-            comment.setEndDate(LocalDate.of(9999,12,31));
+            setFlagForCommentCreation(comment);
         } catch (NullPointerException e) {
             throw new NullPointerException(e.getMessage());
         }
@@ -161,11 +158,9 @@ public class CommentServiceIml implements CommentService {
         try {
             User user = checkUtils.getUserFromId(userId);
             checkUtils.checkUserProjectAccess(user.getUserId(), projectId);
-        }
-        catch (UserHasNoAccessToProjectException e){
+        } catch (UserHasNoAccessToProjectException e) {
             throw new UserHasNoAccessToProjectException(e.getMessage());
-        }
-        catch (UserNotFoundException e){
+        } catch (UserNotFoundException e) {
             throw new UserNotFoundException(e.getMessage());
         }
     }
@@ -176,5 +171,12 @@ public class CommentServiceIml implements CommentService {
         if (project == null || user == null) {
             throw new UserNotFoundException(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
         }
+    }
+
+    private void setFlagForCommentCreation(Comment comment) {
+        comment.setActiveFlg(true);
+        comment.setUpdatedFlg(false);
+        comment.setStartDate(LocalDate.now());
+        comment.setEndDate(LocalDate.of(9999, 12, 31));
     }
 }
