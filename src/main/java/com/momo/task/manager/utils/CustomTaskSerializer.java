@@ -23,7 +23,7 @@ public class CustomTaskSerializer extends JsonSerializer<Task> {
         jsonGenerator.writeObjectField("assigneeId", task.getAssigneeId().getUserId());
         jsonGenerator.writeObjectField("reporterId", task.getReporterId().getUserId());
         jsonGenerator.writeObjectField("stageId", task.getStageId().getId());
-        jsonGenerator.writeBooleanField("updatedFlag", task.isUpdatedFlag());
+        jsonGenerator.writeBooleanField("updatedFlag", task.isUpdatedFlg());
         jsonGenerator.writeObjectField("updatedDate", task.getUpdatedDate());
         jsonGenerator.writeObjectField("updatedStageDate", task.getUpdatedStageDate());
         jsonGenerator.writeObjectField("updatedStatusDate", task.getUpdatedStatusDate());

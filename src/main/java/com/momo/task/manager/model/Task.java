@@ -51,9 +51,6 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "project_id")
     private Project project;
-//
-//    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
-//    private List<File> files;
 
     @ManyToOne
     @JoinColumn(name = "assignee", referencedColumnName = "user_id", nullable = false)
@@ -67,8 +64,11 @@ public class Task {
     @JoinColumn(name = "stage_id", referencedColumnName = "stage_id", nullable = false)
     private Stages stageId;
 
-    @Column(name = "updated_flag", nullable = false)
-    boolean updatedFlag;
+    @Column(name = "active_flg", nullable = false)
+    boolean activeFlg;
+
+    @Column(name = "updated_flg", nullable = false)
+    boolean updatedFlg;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "updated_date")

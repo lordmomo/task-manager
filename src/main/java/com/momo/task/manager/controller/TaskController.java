@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 
@@ -28,17 +26,17 @@ public class TaskController {
     }
 
     @PostMapping(ResourceEndpoints.CREATE_TASKS_ENDPOINT)
-    public ResponseEntity<String> createTasks(@ModelAttribute TaskDto taskDto) throws IOException {
+    public ResponseEntity<String> createTasks(@ModelAttribute TaskDto taskDto) {
         return taskService.createTask(taskDto);
     }
 
-    @DeleteMapping(ResourceEndpoints.DELETE_TASKS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.DELETE_TASKS_ENDPOINT)
     public ResponseEntity<String> deleteTasks(@PathVariable("taskId") Long taskId) {
         return taskService.deleteTask(taskId);
     }
 
-    @PutMapping(ResourceEndpoints.UPDATE_TASKS_ENDPOINT)
-    public ResponseEntity<String> updateTasks(@PathVariable("taskId") Long taskId, @RequestBody TaskDto taskDto) throws ParseException {
+    @PostMapping(value = ResourceEndpoints.UPDATE_TASKS_ENDPOINT)
+    public ResponseEntity<String> updateTasks(@PathVariable("taskId") Long taskId, @ModelAttribute TaskDto taskDto) {
         return taskService.updateTask(taskId, taskDto);
     }
 

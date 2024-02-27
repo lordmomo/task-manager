@@ -39,7 +39,7 @@ public class ResourceEndpoints {
     //TASK controller endpoints
     public static final String CREATE_TASKS_ENDPOINT = "/tasks";
     public static final String DELETE_TASKS_ENDPOINT = "/tasks/{taskId}";
-    public static final String UPDATE_TASKS_ENDPOINT = "/tasks/{taskId}";
+    public static final String UPDATE_TASKS_ENDPOINT = "/tasks/{taskId}/update";
     public static final String GET_ALL_TASKS_IN_PROJECT_ENDPOINT = "projects/{projectId}/tasks";
 
 

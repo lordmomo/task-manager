@@ -4,16 +4,14 @@ import com.momo.task.manager.dto.TaskDto;
 import com.momo.task.manager.model.Task;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 public interface TaskService {
-    ResponseEntity<String> createTask(TaskDto taskDto) throws IOException;
+    ResponseEntity<String> createTask(TaskDto taskDto);
 
     ResponseEntity<String> deleteTask(Long taskId);
 
-    ResponseEntity<String> updateTask(Long taskId, TaskDto taskDto) throws ParseException;
+    ResponseEntity<String> updateTask(Long taskId, TaskDto taskDto);
 
     ResponseEntity<List<Task>>getAllTask(Long projectId);
 }

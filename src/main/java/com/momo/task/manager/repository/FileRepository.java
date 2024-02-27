@@ -13,8 +13,19 @@ public interface FileRepository extends JpaRepository<File,Long> {
     @Modifying
     @Transactional
     @Query(nativeQuery = true,
-            value = "DELETE FROM file f WHERE f.task_id = :taskId" )
+            value = "UPDATE file f " +
+            "SET f.active_flg = 0 , " +
+            "f.updated_flg = 1, " +
+            "f.updated_date = NOW(), " +
+            "f.end_date = CURRENT_DATE " +
+            "WHERE f.task_id = :taskId")
     void deleteByTaskId(Long taskId);
+
+    @Query(nativeQuery = true,
+            value = "SELECT * " +
+                    "FROM file f " +
+                    "WHERE f.task_id = :taskId")
+    File findFileByTaskId(Long taskId);
 }
 
 
