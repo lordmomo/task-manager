@@ -1,11 +1,11 @@
 package com.momo.task.manager.utils;
 
+import com.momo.task.manager.exception.TaskDoesNotBelongToProjectException;
+import com.momo.task.manager.exception.UserHasNoAccessToProjectException;
+import com.momo.task.manager.exception.UserNotFoundException;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -34,12 +34,14 @@ public class CheckUtils {
         this.stagesRepository = stagesRepository;
     }
 
-    public Long checkUserProjectAccess(Long userId, Long projectId) {
-        return accessRepository.validateUserProjectRelation(userId, projectId);
+    public boolean checkUserProjectAccess(Long userId, Long projectId) {
+        Access check = accessRepository.validateUserProjectRelation(userId, projectId);
+        if(check == null){
+            throw new UserHasNoAccessToProjectException(ResourceInformation.USER_HAS_NO_ACCESS_MESSAGE);
+        }
+        return true;
     }
-    public Long checkTaskIdBelongsToProjectId(Long projectId,Long taskId){
-        return taskRepository.validateCheckTaskIdBelongsToProjectId(projectId,taskId);
-    }
+
     public Task checkTaskExists(Long taskId) {
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         return optionalTask.orElse(null);
@@ -50,7 +52,10 @@ public class CheckUtils {
     }
     public User getUserFromId(Long userId){
         Optional<User> optionalUser = superAdminRepository.findById(userId);
-        return optionalUser.orElse(null);
+        if(optionalUser.isEmpty()){
+            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+        }
+        return optionalUser.get();
     }
     public TaskStatus getStatusFromId(Long statusId){
         Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findById(statusId);
@@ -61,21 +66,12 @@ public class CheckUtils {
         return optionalStages.orElse(null);
     }
 
-    public ResponseEntity<String> checkIfTaskBelongsToProject(Long projectId, Long taskId){
-        Optional<Task> optionalTask = taskRepository.findById(taskId);
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
-
-        if(optionalTask.isEmpty() || optionalProject.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task or Project not found");
+    public void checkIfTaskBelongsToProject(Long projectId,Long taskId){
+        Task check = taskRepository.doesTaskIdBelongToProjectId(projectId,taskId);
+        if(check==null){
+            throw new TaskDoesNotBelongToProjectException("Error in task and project relationship [Duplicate data]");
         }
 
-        Long checkNum = taskRepository.findTaskIdBelongsToProjectId(projectId,taskId);
-        if(checkNum == 1 ){
-            return null;
-        }
-        else{
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Error in task and project relationship [Duplicate data]");
-        }
     }
 
 }

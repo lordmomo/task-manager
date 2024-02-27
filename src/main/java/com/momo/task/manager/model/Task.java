@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
+
 
 @Entity
 @Data
@@ -51,9 +51,9 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "project_id")
     private Project project;
-
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
-    private List<File> files;
+//
+//    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+//    private List<File> files;
 
     @ManyToOne
     @JoinColumn(name = "assignee", referencedColumnName = "user_id", nullable = false)

@@ -8,11 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
-
-    @Query(nativeQuery = true,
-            value = "DELETE FROM COMMENT c WHERE c.task_id = :taskId AND c.fullName = :fullName "
-            )
-    void deleteByTaskAndName(String fullName, Long taskId);
     @Query(nativeQuery = true,
             value = "SELECT * FROM COMMENT c where c.task_id = :taskId"
             )
