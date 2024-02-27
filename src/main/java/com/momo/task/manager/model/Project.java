@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -33,5 +35,21 @@ public class Project {
     @ManyToOne
     @JoinColumn(name = "project_lead", referencedColumnName = "user_id")
     private User projectLead;
+
+    @Column(name = "active_flg")
+    private boolean activeFlg;
+
+    @Column(name = "updated_flg")
+    private boolean updatedFlg;
+
+    @Column(name = "updated_date")
+    private LocalDate updatedDate;
+
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
 }

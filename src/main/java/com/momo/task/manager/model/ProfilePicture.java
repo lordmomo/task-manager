@@ -8,11 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "profile_picture")
 public class ProfilePicture {
 
     @Id
@@ -27,4 +30,19 @@ public class ProfilePicture {
     @Transient
     @JsonIgnore
     private MultipartFile pictureFile;
+
+    @Column(name = "active_flg")
+    private boolean activeFlg;
+
+    @Column(name = "updated_flg")
+    private boolean updatedFlg;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    @Column(name = "updated_date")
+    private LocalDate updatedDate;
 }

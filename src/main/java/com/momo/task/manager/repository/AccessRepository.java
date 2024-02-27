@@ -10,11 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface AccessRepository extends JpaRepository<Access,Long> {
 
-    @Modifying
     @Transactional
-    @Query (nativeQuery = true,
-            value = " DELETE FROM access a WHERE a.accessed_user_id = :userId"
-            )
+    @Modifying
+    @Query(nativeQuery = true,
+            value = "UPDATE access a " +
+                    "SET a.active_flg = 0 , " +
+                    "a.updated_flg = 1, " +
+                    "a.updated_date = NOW(), " +
+                    "a.end_date = CURRENT_DATE " +
+                    "WHERE a.accessed_user_id = :userId ")
     void deleteByUserId (Long userId);
 
 
@@ -23,4 +27,15 @@ public interface AccessRepository extends JpaRepository<Access,Long> {
                     "FROM access a where a.accessed_user_id = :userId AND a.accessed_project_id = :projectId ;"
     )
     Access validateUserProjectRelation(Long userId,Long projectId);
+
+    @Transactional
+    @Modifying
+    @Query(nativeQuery = true,
+            value = "UPDATE access a " +
+                    "SET a.active_flg = 0 , " +
+                    "a.updated_flg = 1, " +
+                    "a.updated_date = NOW(), " +
+                    "a.end_date = CURRENT_DATE " +
+                    "WHERE a.accessed_project_id = :projectId ")
+    void deleteProjectById(Long projectId);
 }

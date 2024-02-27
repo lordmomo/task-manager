@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -42,6 +44,21 @@ public class User {
     @JoinColumn(name = "profile_image", referencedColumnName = "profile_picture_id")
     @Nullable
     private ProfilePicture picture;
+
+    @Column(name = "active_flg")
+    private boolean activeFlg;
+
+    @Column(name = "updated_flg")
+    private boolean updatedFlg;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    @Column(name = "updated_date")
+    private LocalDate updatedDate;
 
     public String fullName() {
         return firstName + " " + lastName;

@@ -23,12 +23,12 @@ public class SuperAdminController {
         return superAdminService.createProject(projectDto);
     }
 
-    @PutMapping(ResourceEndpoints.UPDATE_PROJECTS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.UPDATE_PROJECTS_ENDPOINT)
     public ResponseEntity<String> updateProjects(@PathVariable("projectId") Long projectId, @RequestBody UpdateProjectDto updateProjectDto) {
         return superAdminService.updateProject(projectId, updateProjectDto);
     }
 
-    @DeleteMapping(ResourceEndpoints.DELETE_PROJECTS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.DELETE_PROJECTS_ENDPOINT)
     public ResponseEntity<String> deleteProjects(@PathVariable("projectId") Long projectId) {
         return superAdminService.deleteProject(projectId);
     }
@@ -56,22 +56,22 @@ public class SuperAdminController {
     }
 
 
-    @DeleteMapping(ResourceEndpoints.DELETE_USERS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.DELETE_USERS_ENDPOINT)
     public ResponseEntity<String> removeUsers(@PathVariable("userId") Long userId) {
         return superAdminService.removeUser(userId);
     }
 
-    @PutMapping(ResourceEndpoints.UPDATE_USERS_DETAILS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.UPDATE_USERS_DETAILS_ENDPOINT)
     public ResponseEntity<String> updateUserDetails(@PathVariable("userId") Long userId, @RequestBody UserDetailsDto userDetailsDto) {
         return superAdminService.updateUserDetails(userId, userDetailsDto);
     }
 
-    @PutMapping(ResourceEndpoints.UPDATE_USERS_CREDENTIALS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.UPDATE_USERS_CREDENTIALS_ENDPOINT)
     public ResponseEntity<String> updateUserCredentials(@PathVariable("userId") Long userId, @RequestBody UserCredentialsDto userCredentialsDto) {
         return superAdminService.updateUserCredentials(userId, userCredentialsDto);
     }
 
-    @PutMapping(ResourceEndpoints.UPDATE_USERS_PROFILE_PICTURE_ENDPOINT)
+    @PostMapping(ResourceEndpoints.UPDATE_USERS_PROFILE_PICTURE_ENDPOINT)
     public ResponseEntity<String> updateUserProfilePictures(@PathVariable("userId") Long userId, @RequestParam MultipartFile newPicture) throws IOException {
         return superAdminService.updateUserProfilePicture(userId, newPicture);
     }

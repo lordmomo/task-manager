@@ -23,7 +23,7 @@ public class ResourceInformation {
     public static final String PICTURE_DATA_EXCEPTION_MESSAGE = "Error setting picture data";
     public static final String ADMIN_CREATED_MESSAGE = "Admin created successfully";
     public static final String USER_CREATED_MESSAGE = "User created successfully";
-    public static final String USER_DELETED_MESSAGE = "User created successfully";
+    public static final String USER_DELETED_MESSAGE = "User deleted successfully";
     public static final String USER_DETAILS_UPDATED_MESSAGE = "User details updated successfully";
     public static final String USER_CREDENTIALS_UPDATED_MESSAGE = "User credentials updated successfully";
     public static final String USER_PROFILE_PICTURE_UPDATED_MESSAGE = "User profile picture updated successfully";
