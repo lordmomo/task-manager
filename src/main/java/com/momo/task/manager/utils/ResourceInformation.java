@@ -3,6 +3,8 @@ package com.momo.task.manager.utils;
 
 import org.springframework.security.core.parameters.P;
 
+import javax.swing.plaf.PanelUI;
+
 public class ResourceInformation {
 
     private ResourceInformation() {
@@ -48,6 +50,54 @@ public class ResourceInformation {
     public static final String ILLEGAL_ACCESS_ERROR_MESSAGE = "Illegal Argument while fetching the username !!";
 
     public static final String BAD_CREDENTIALS_MESSAGE = "Invalid email or password";
+
+    //      Bean validations
+
+    public static final String UPDATE_DATE_BEAN_VALIDATION_MESSAGE = "Update date must be in the past or present";
+    public static final String START_DATE_BEAN_VALIDATION_MESSAGE = "Start date must be in the past or present";
+    public static final String END_DATE_BEAN_VALIDATION_MESSAGE = "End date must be in the future or present";
+    public static final String MESSAGE_POSTED_DATE_BEAN_VALIDATION_MESSAGE = "Message posted date must be in the past or present ";
+
+
+    public static final String ROLE_NOT_BLANK_VALIDATION_MESSAGE = "Role name is required";
+    public static final String STATUS_NOT_BLANK_VALIDATION_MESSAGE = "Status name is required";
+
+    public static final String PASSWORD_LENGTH_MESSAGE = "Password length must be at least 8 characters";
+    public static final String PASSWORD_REQUIRED_MESSAGE = "Password is required";
+
+    public static final String USERNAME_LENGTH_MESSAGE = "Username length must be between 6 and 16 characters";
+    public static final String USERNAME_REQUIRED_MESSAGE = "Username is required";
+
+    public static final String INVALID_EMAIL_FORMAT_MESSAGE = "Invalid email format";
+    public static final String EMAIL_REQUIRED_MESSAGE = "Email is required";
+
+    public static final String FIRST_NAME_LENGTH_MESSAGE = "First name must be between 3 and 16 characters";
+    public static final String FIRST_NAME_REQUIRED_MESSAGE = "First name is required";
+
+    public static final String LAST_NAME_LENGTH_MESSAGE = "Last name must be between 3 and 16 characters";
+    public static final String LAST_NAME_REQUIRED_MESSAGE = "Last name is required";
+
+
+    public static final String PROJECT_NAME_REQUIRED_MESSAGE = "Project name is required";
+    public static final String PROJECT_KEY_REQUIRED_MESSAGE = "Project key is required";
+    public static final String PROJECT_TEMPLATE_REQUIRED_MESSAGE = "Project template is required";
+    public static final String PROJECT_TYPE_REQUIRED_MESSAGE = "Project type is required";
+
+    public static final String TASK_NAME_REQUIRED_MESSAGE = "Task name is required";
+
+    public static final String TASK_DESCRIPTION_REQUIRED_MESSAGE = "Task description is required";
+
+    public static final String TASK_TYPE_REQUIRED_MESSAGE = "Task type is required";
+
+    public static final String TASK_LABEL_REQUIRED_MESSAGE = "Task label is required";
+
+    public static final String TASK_START_DATE_REQUIRED_MESSAGE = "Start date is required";
+
+    public static final String TASK_END_DATE_REQUIRED_MESSAGE = "End date is required";
+
+
+
+
 
 
 }

@@ -1,7 +1,11 @@
 package com.momo.task.manager.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.momo.task.manager.utils.ResourceInformation;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,12 +41,15 @@ public class ProfilePicture {
     @Column(name = "updated_flg")
     private boolean updatedFlg;
 
+    @PastOrPresent(message = ResourceInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "start_date")
     private LocalDate startDate;
 
+    @FutureOrPresent(message = ResourceInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "updated_date")
     private LocalDate updatedDate;
 }

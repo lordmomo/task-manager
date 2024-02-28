@@ -1,6 +1,10 @@
 package com.momo.task.manager.model;
 
+import com.momo.task.manager.utils.ResourceInformation;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,17 +22,21 @@ public class Project {
     @Column(name = "project_id")
     private Long projectId;
 
+    @NotBlank(message = ResourceInformation.PROJECT_NAME_REQUIRED_MESSAGE)
     @Column(name = "project_name", nullable = false)
     private String projectName;
 
     // distinguishly  identify project
+    @NotBlank(message =ResourceInformation.PROJECT_KEY_REQUIRED_MESSAGE)
     @Column(name = "project_key", nullable = false)
     private String key;
 
     // kanban,scrum
+    @NotBlank(message = ResourceInformation.PROJECT_TEMPLATE_REQUIRED_MESSAGE)
     @Column(name = "project_template", nullable = false)
     private String template;
     //team, company managed
+    @NotBlank(message = ResourceInformation.PROJECT_TYPE_REQUIRED_MESSAGE)
     @Column(name = "project_type", nullable = false)
     private String type;
 
@@ -42,13 +50,15 @@ public class Project {
     @Column(name = "updated_flg")
     private boolean updatedFlg;
 
+    @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "updated_date")
     private LocalDate updatedDate;
 
-
+    @PastOrPresent(message = ResourceInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "start_date")
     private LocalDate startDate;
 
+    @FutureOrPresent(message = ResourceInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "end_date")
     private LocalDate endDate;
 
