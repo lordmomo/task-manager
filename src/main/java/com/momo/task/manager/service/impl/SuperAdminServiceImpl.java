@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +33,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     TaskRepository taskRepository;
     AccessRepository accessRepository;
     CommentRepository commentRepository;
+    FileRepository fileRepository;
     ModelMapper mapper;
     ImageLoader imageLoader;
     PasswordEncoder passwordEncoder;
@@ -45,6 +46,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                                  TaskRepository taskRepository,
                                  AccessRepository accessRepository,
                                  CommentRepository commentRepository,
+                                 FileRepository fileRepository,
                                  ModelMapper mapper,
                                  ImageLoader imageLoader,
                                  PasswordEncoder passwordEncoder) {
@@ -56,6 +58,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.taskRepository = taskRepository;
         this.commentRepository = commentRepository;
         this.accessRepository = accessRepository;
+        this.fileRepository=fileRepository;
         this.mapper = mapper;
         this.imageLoader = imageLoader;
         this.passwordEncoder = passwordEncoder;
@@ -190,7 +193,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         project.setProjectLead(user);
         setFlagForProjectCreation(project);
         projectRepository.save(project);
-        addUsersToProject(project.getProjectName(), user.getUsername());
+        addUsersToProject(project.getProjectKey(), user.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_CREATED_MESSAGE);
     }
 
@@ -202,10 +205,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         Project project = optionalProject.get();
         User prevUser = project.getProjectLead();
-        updateGeneralProjectDetails(project, updateProjectDto);
         updateProjectLead(prevUser, project, updateProjectDto);
+        updateGeneralProjectDetails(project, updateProjectDto);
         project.setUpdatedFlg(true);
-        project.setUpdatedDate(LocalDate.now());
+        project.setUpdatedDate(LocalDateTime.now());
         projectRepository.save(project);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_UPDATED_MESSAGE);
     }
@@ -222,6 +225,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         List<Long> taskIdsInProject = taskRepository.getAllTaskIdFromProjectId(projectId);
         taskRepository.deleteByProjectId(projectId);
         for (Long taskId : taskIdsInProject) {
+            fileRepository.deleteByTaskId(taskId);
             commentRepository.deleteByTaskId(taskId);
         }
         accessRepository.deleteProjectById(projectId);
@@ -229,11 +233,14 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> addUsersToProject(String projectKey, String  username) {
+    public ResponseEntity<String> addUsersToProject(String projectKey, String username) {
         Optional<User> optionalUser = superAdminRepository.findByUsername(username);
         Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
-        if (optionalUser.isEmpty() || optionalProject.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+        }
+        if (optionalProject.isEmpty()) {
+            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
         User user = optionalUser.get();
         Project project = optionalProject.get();
@@ -295,9 +302,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         User user = optionalUser.get();
+        if (updateProjectDto.getProjectLead().equals(prevUser.getUserId())) {
+            return;
+        }
         project.setProjectLead(user);
         accessRepository.deleteByUserId(prevUser.getUserId());
-        addUsersToProject(project.getProjectName(), user.getUsername());
+        addUsersToProject(project.getProjectKey(), user.getUsername());
     }
 
     private void updateGeneralProjectDetails(Project project, UpdateProjectDto updateProjectDto) {
@@ -312,39 +322,40 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     private void setFlagForUserCreation(User user) {
         user.setActiveFlg(true);
         user.setUpdatedFlg(false);
-        user.setStartDate(LocalDate.now());
-        user.setEndDate(LocalDate.of(9999, 12, 31));
+        user.setStartDate(LocalDateTime.now());
+        user.setEndDate(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
     }
 
     private void setFlagForProfilePictureCreation(ProfilePicture profilePicture) {
         profilePicture.setActiveFlg(true);
         profilePicture.setUpdatedFlg(false);
-        profilePicture.setStartDate(LocalDate.now());
-        profilePicture.setEndDate(LocalDate.of(9999, 12, 31));
+        profilePicture.setStartDate(LocalDateTime.now());
+        profilePicture.setEndDate(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
     }
 
     private void setFlagForProjectCreation(Project project) {
         project.setActiveFlg(true);
         project.setUpdatedFlg(false);
-        project.setStartDate(LocalDate.now());
-        project.setEndDate(LocalDate.of(9999, 12, 31));
+        project.setStartDate(LocalDateTime.now());
+        project.setEndDate(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
     }
 
     private void setFlagForAccessCreation(Access access) {
         access.setActiveFlg(true);
         access.setUpdatedFlg(false);
-        access.setStartDate(LocalDate.now());
-        access.setEndDate(LocalDate.of(9999, 12, 31));
+        access.setStartDate(LocalDateTime.now());
+        access.setEndDate(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
     }
+
 
     private void setFlagForUserUpdate(User user) {
         user.setUpdatedFlg(true);
-        user.setUpdatedDate(LocalDate.now());
+        user.setUpdatedDate(LocalDateTime.now());
     }
 
     private void setFlagForProfilePictureUpdate(ProfilePicture picture) {
         picture.setUpdatedFlg(true);
-        picture.setUpdatedDate(LocalDate.now());
+        picture.setUpdatedDate(LocalDateTime.now());
     }
 
 }

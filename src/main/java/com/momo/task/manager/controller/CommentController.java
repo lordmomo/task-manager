@@ -33,16 +33,18 @@ public class CommentController {
     public ResponseEntity<String> deleteComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
+                                                @PathVariable("username") String username,
                                                 @RequestBody CommentValidation commentValidation) {
-        return commentService.deleteComment(projectKey, taskId, commentId, commentValidation);
+        return commentService.deleteComment(projectKey, taskId, commentId, username,commentValidation);
     }
     @PreAuthorize("#username == authentication.name")
-    @PutMapping(ResourceEndpoints.UPDATE_COMMENTS_ENDPOINT)
+    @PostMapping(ResourceEndpoints.UPDATE_COMMENTS_ENDPOINT)
     public ResponseEntity<String> updateComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
-                                                @ModelAttribute UpdateCommentDto updateCommentDto) throws IOException {
-        return commentService.updateComment(projectKey, taskId, commentId, updateCommentDto);
+                                                @PathVariable("username") String username,
+                                                @ModelAttribute UpdateCommentDto updateCommentDto) {
+        return commentService.updateComment(projectKey, taskId, commentId, username,updateCommentDto);
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")

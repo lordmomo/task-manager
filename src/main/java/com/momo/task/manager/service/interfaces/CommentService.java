@@ -12,9 +12,9 @@ import java.util.Objects;
 public interface CommentService {
     ResponseEntity<String> createComment(String projectKey,Long taskId, CommentDto commentDto) throws IOException;
 
-    ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId,CommentValidation commentValidation);
+    ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId,String username,CommentValidation commentValidation);
 
-    ResponseEntity<String> updateComment(String projectKey,Long taskId, Long commentId,UpdateCommentDto updateCommentDto) throws IOException;
+    ResponseEntity<String> updateComment(String projectKey,Long taskId, Long commentId,String username,UpdateCommentDto updateCommentDto);
 
     ResponseEntity<Object> listAllComments(String projectKey, Long taskId);
 }

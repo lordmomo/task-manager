@@ -1,7 +1,5 @@
 package com.momo.task.manager.dto;
 
-import com.momo.task.manager.model.User;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class ProjectDto {
 
     private String projectName;
-    private String key;
+    private String projectKey;
     private String template;
     private String type;
     private Long projectLead;

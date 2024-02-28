@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -24,12 +24,12 @@ public class Project {
     private Long projectId;
 
     @NotBlank(message = ResourceInformation.PROJECT_NAME_REQUIRED_MESSAGE)
-    @Column(name = "project_name", nullable = false,unique = true)
+    @Column(name = "project_name", nullable = false, unique = true)
     private String projectName;
 
     // distinguishly  identify project
-    @NotBlank(message =ResourceInformation.PROJECT_KEY_REQUIRED_MESSAGE)
-    @Column(name = "project_key", nullable = false,unique = true)
+    @NotBlank(message = ResourceInformation.PROJECT_KEY_REQUIRED_MESSAGE)
+    @Column(name = "project_key", nullable = false, unique = true)
     private String projectKey;
 
     // kanban,scrum
@@ -53,14 +53,14 @@ public class Project {
 
     @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "updated_date")
-    private LocalDate updatedDate;
+    private LocalDateTime updatedDate;
 
     @PastOrPresent(message = ResourceInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "start_date")
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     @FutureOrPresent(message = ResourceInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "end_date")
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
 }

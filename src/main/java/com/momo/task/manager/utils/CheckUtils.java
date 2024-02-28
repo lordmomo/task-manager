@@ -62,6 +62,14 @@ public class CheckUtils {
         }
         return optionalUser.get();
     }
+
+    public Long getUserIdFromUsername(String username){
+        Optional<User> optionalUser = superAdminRepository.findByUsername(username);
+        if(optionalUser.isEmpty()){
+            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+        }
+        return optionalUser.get().getUserId();
+    }
     public TaskStatus getStatusFromId(Long statusId){
         Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findById(statusId);
         return optionalTaskStatus.orElse(null);
@@ -85,5 +93,9 @@ public class CheckUtils {
         if(optionalComment.isEmpty()){
             throw new CommentNotFoundException(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
         }
+    }
+
+    public Long getUserIdFromCommentId(Long commentId) {
+        return commentRepository.getUserIdFromCommentId(commentId);
     }
 }

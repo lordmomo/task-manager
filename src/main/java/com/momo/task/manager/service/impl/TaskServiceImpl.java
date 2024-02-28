@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,8 +72,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public ResponseEntity<String> createTask(TaskDto taskDto) {
-        if (hasUserAccessToProject(taskDto.getAssigneeId(), taskDto.getProject()) &&
-                hasUserAccessToProject(taskDto.getReporterId(), taskDto.getProject())
+        if (hasUserAccessToProject(taskDto.getAssigneeId(), taskDto.getProjectKey()) &&
+                hasUserAccessToProject(taskDto.getReporterId(), taskDto.getProjectKey())
         ) {
             Task task = createTaskFromDto(taskDto);
             taskRepository.save(task);
@@ -109,11 +109,11 @@ public class TaskServiceImpl implements TaskService {
         }
         //try catch if project in taskDto is null
         Task task = optTask.get();
+        updateTaskFile(task, taskDto.getFile());
         updateTaskFields(task, taskDto);
         task.setUpdatedFlg(true);
         updateTaskDateFields(task);
         taskRepository.save(task);
-        updateTaskFile(task, taskDto.getFile());
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_UPDATED_MESSAGE);
     }
 
@@ -132,17 +132,33 @@ public class TaskServiceImpl implements TaskService {
 
     private void updateTaskFile(Task task, MultipartFile mFile) {
 
-        File file = fileRepository.findFileByTaskId(task.getTaskId());
+
+        Optional<File> optFile = Optional.ofNullable(fileRepository.findFileByTaskId(task.getTaskId()));
+        if(optFile.isPresent()){
+            File file = optFile.get();
+            try {
+                if (!Arrays.equals(file.getFileData(), mFile.getBytes())) {
+                    if (!mFile.isEmpty()) {
+                        file.setFileData(mFile.getBytes());
+                    } else {
+                        file.setFileData(null);
+                    }
+                    setFlagForFileUpdate(file);
+                }
+                return;
+            } catch (IOException e) {
+                throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+            }
+        }
+        File file = new File();
         file.setTask(task);
-        setFlagForFileUpdate(file);
+        setFlagForFileCreation(file);
         if (mFile != null && !mFile.isEmpty()) {
             try {
                 file.setFileData(mFile.getBytes());
             } catch (IOException e) {
                 throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
             }
-        } else {
-            file.setFileData(null);
         }
         fileRepository.save(file);
         log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
@@ -186,7 +202,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateTaskStage(Task task, TaskDto taskDto) {
-        if (task.getStageId() != null) {
+        if (task.getStageId() != null && taskDto.getStageId()!=null) {
             Optional<Stages> stages = stagesRepository.findById(taskDto.getStageId());
             if (stages.isEmpty()) {
                 throw new TaskStageNotFoundException(ResourceInformation.STAGE_NOT_FOUND_MESSAGE);
@@ -196,7 +212,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateTaskStatus(Task task, TaskDto taskDto) {
-        if (task.getStatus().getStatusId() != null) {
+        if (task.getStatus().getStatusId() != null && taskDto.getStatus()!=null) {
             Optional<TaskStatus> status = taskStatusRepository.findById(taskDto.getStatus());
             if (status.isEmpty()) {
                 throw new TaskStatusNotFoundException(ResourceInformation.STATUS_NOT_FOUND_MESSAGE);
@@ -206,20 +222,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateGeneralTaskInformation(Task task, TaskDto taskDto) {
-        if (task.getTaskName() != null && !"".equalsIgnoreCase(task.getTaskName())) {
+        if (task.getTaskName() != null && !"".equalsIgnoreCase(task.getTaskName()) && taskDto.getTaskName()!=null) {
             task.setTaskName(taskDto.getTaskName());
         }
 
-        if (task.getDescription() != null && !"".equalsIgnoreCase(task.getDescription())) {
+        if (task.getDescription() != null && !"".equalsIgnoreCase(task.getDescription()) && taskDto.getDescription()!=null
+        ) {
             task.setDescription(taskDto.getDescription());
         }
-        if (task.getLabel() != null && !"".equalsIgnoreCase(task.getLabel())) {
+        if (task.getLabel() != null && !"".equalsIgnoreCase(task.getLabel()) && taskDto.getLabel()!=null) {
             task.setLabel(taskDto.getLabel());
         }
-        if (task.getStartDate() != null) {
+        if (task.getStartDate() != null && taskDto.getStartDate()!=null) {
             task.setStartDate(taskDto.getStartDate());
         }
-        if (task.getEndDate() != null) {
+        if (task.getEndDate() != null && taskDto.getEndDate()!=null) {
             task.setEndDate(taskDto.getEndDate());
         }
     }
@@ -234,30 +251,29 @@ public class TaskServiceImpl implements TaskService {
         task.setStatus(checkUtils.getStatusFromId(taskDto.getStatus()));
         task.setStartDate(taskDto.getStartDate());
         task.setEndDate(taskDto.getEndDate());
-        task.setProject(checkUtils.getProjectFromId(taskDto.getProject()));
+        task.setProject(checkUtils.getProjectFromKey(taskDto.getProjectKey()));
         task.setAssigneeId(checkUtils.getUserFromId(taskDto.getAssigneeId()));
         task.setReporterId(checkUtils.getUserFromId(taskDto.getReporterId()));
         task.setStageId(checkUtils.getStageFromId(taskDto.getStageId()));
         return task;
     }
 
-    private boolean hasUserAccessToProject(Long userId, Long projectId) {
-        return checkUtils.checkUserProjectAccess(userId, projectId);
+    private boolean hasUserAccessToProject(Long userId, String projectKey) {
+        return checkUtils.checkUserProjectAccess(userId, projectKey);
     }
 
     private void saveTaskFile(Task task, MultipartFile mFile) {
+        if(mFile == null){
+            return;
+        }
         File file = new File();
         file.setTask(task);
         setFlagForFileCreation(file);
-        if (mFile != null && !mFile.isEmpty()) {
             try {
                 file.setFileData(mFile.getBytes());
             } catch (IOException e) {
                 throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
             }
-        } else {
-            file.setFileData(null);
-        }
         fileRepository.save(file);
         log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
     }
@@ -265,14 +281,14 @@ public class TaskServiceImpl implements TaskService {
     private void setFlagForFileCreation(File file) {
         file.setActiveFlg(true);
         file.setUpdatedFlg(false);
-        file.setStartDate(LocalDate.now());
-        file.setEndDate(LocalDate.of(9999, 12, 31));
+        file.setStartDate(LocalDateTime.now());
+        file.setEndDate(LocalDateTime.of(9999,12,31,23,59,59));
     }
 
     private void setFlagForFileUpdate(File file) {
         file.setActiveFlg(true);
         file.setUpdatedFlg(true);
-        file.setUpdatedDate(LocalDate.now());
+        file.setUpdatedDate(LocalDateTime.now());
     }
 
 }

@@ -15,7 +15,7 @@ import org.hibernate.validator.constraints.Length;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -32,11 +32,11 @@ public class User {
     private Long userId;
     @NotBlank(message = ResourceInformation.FIRST_NAME_REQUIRED_MESSAGE)
     @Column(name = "first_name", nullable = false)
-    @Length(min = 3, max = 16,message = ResourceInformation.FIRST_NAME_LENGTH_MESSAGE)
+    @Length(min = 3, max = 16, message = ResourceInformation.FIRST_NAME_LENGTH_MESSAGE)
     private String firstName;
     @NotBlank(message = ResourceInformation.LAST_NAME_REQUIRED_MESSAGE)
     @Column(name = "last_name", nullable = false)
-    @Length(min = 3, max = 16,message = ResourceInformation.LAST_NAME_LENGTH_MESSAGE)
+    @Length(min = 3, max = 16, message = ResourceInformation.LAST_NAME_LENGTH_MESSAGE)
     private String lastName;
 
     @Email(message = ResourceInformation.INVALID_EMAIL_FORMAT_MESSAGE)
@@ -46,12 +46,12 @@ public class User {
 
     @NotBlank(message = ResourceInformation.USERNAME_REQUIRED_MESSAGE)
     @Column(name = "username", unique = true, nullable = false)
-    @Length(min = 6, max = 16,message = ResourceInformation.USERNAME_LENGTH_MESSAGE)
+    @Length(min = 6, max = 16, message = ResourceInformation.USERNAME_LENGTH_MESSAGE)
     private String username;
 
     @NotBlank(message = ResourceInformation.PASSWORD_REQUIRED_MESSAGE)
     @Column(name = "password", nullable = false)
-    @Length(min = 8,message = ResourceInformation.PASSWORD_LENGTH_MESSAGE)
+    @Length(min = 8, message = ResourceInformation.PASSWORD_LENGTH_MESSAGE)
     private String password;
 
     @ManyToOne
@@ -71,21 +71,21 @@ public class User {
 
     @PastOrPresent(message = ResourceInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "start_date")
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     @FutureOrPresent(message = ResourceInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "end_date")
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "updated_date")
-    private LocalDate updatedDate;
+    private LocalDateTime updatedDate;
 
     public String fullName() {
         return firstName + " " + lastName;
     }
 
-    public List<GrantedAuthority> getAuthorities(){
+    public List<GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.getRoleName()));
     }
 

@@ -20,7 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -50,11 +51,16 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId, CommentValidation commentValidation) {
+    public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId,String username, CommentValidation commentValidation) {
 
         try {
-            Long userId = commentValidation.getUserId();
-            this.performCommonValidations(projectKey, userId);
+
+            Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
+            Long userIdOfUserWhoWantsToDeleteComment = checkUtils.getUserIdFromUsername(username);
+            if(!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)){
+                throw new AccessDeniedException("access denied");
+            }
+            this.performCommonValidations(projectKey, userIdOfUserWhoWantsToDeleteComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.checkUtils.checkIfCommentExists(commentId);
             commentRepository.deleteByCommentId(commentId);
@@ -71,10 +77,15 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> updateComment(String projectKey, Long taskId, Long commentId, UpdateCommentDto updateCommentDto) {
+    public ResponseEntity<String> updateComment(String projectKey, Long taskId, Long commentId,
+                                                String username,UpdateCommentDto updateCommentDto) {
         try {
-            Long userId = updateCommentDto.getUserId();
-            this.performCommonValidations(projectKey, userId);
+            Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
+            Long userIdOfUserWhoWantsToUpdateComment = checkUtils.getUserIdFromUsername(username);
+            if(!userIdOfUserWhoWantsToUpdateComment.equals(userIdOfUserWhoCommented)){
+                throw new AccessDeniedException("access denied");
+            }
+            this.performCommonValidations(projectKey, userIdOfUserWhoWantsToUpdateComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.updateCommentFromDto(commentId, updateCommentDto);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_UPDATED_MESSAGE);
@@ -108,7 +119,7 @@ public class CommentServiceIml implements CommentService {
             Comment comment = optComment.get();
             comment.setMessage(updateCommentDto.getMessage());
             comment.setUpdatedFlg(true);
-            comment.setUpdatedDate(new Date());
+            comment.setUpdatedDate(LocalDateTime.now());
             MultipartFile file = updateCommentDto.getDocumentFile();
             //check is file is null , delete then null too
             saveFileInComment(comment, file);
@@ -176,7 +187,7 @@ public class CommentServiceIml implements CommentService {
     private void setFlagForCommentCreation(Comment comment) {
         comment.setActiveFlg(true);
         comment.setUpdatedFlg(false);
-        comment.setStartDate(LocalDate.now());
-        comment.setEndDate(LocalDate.of(9999, 12, 31));
+        comment.setStartDate(LocalDateTime.now());
+        comment.setEndDate(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
     }
 }

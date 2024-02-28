@@ -12,8 +12,8 @@ public class ResourceEndpoints {
 //      Comment controller endpoints
     public static final String MAIN_COMMENT_KEY = "/comment";
     public static final String CREATE_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments";
-    public static final String DELETE_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments/{commentId}";
-    public static final String UPDATE_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments/{commentId}";
+    public static final String DELETE_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments/{commentId}/{username}/delete";
+    public static final String UPDATE_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments/{commentId}/{username}/update";
     public static final String VIEW_ALL_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments";
 
 //      SuperAdmin controller endpoints

@@ -26,6 +26,7 @@ public interface FileRepository extends JpaRepository<File,Long> {
                     "FROM file f " +
                     "WHERE f.task_id = :taskId")
     File findFileByTaskId(Long taskId);
+
 }
 
 

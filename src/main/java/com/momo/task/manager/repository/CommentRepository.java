@@ -36,4 +36,10 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
                     "c.end_date = CURRENT_DATE " +
                     "WHERE c.task_id = :taskId")
     void deleteByTaskId(Long taskId);
+
+    @Query(nativeQuery = true,
+             value = "SELECT c.user_id " +
+                     "FROM COMMENT c " +
+                     "WHERE c.comment_id = :commentId")
+    Long getUserIdFromCommentId(Long commentId);
 }
