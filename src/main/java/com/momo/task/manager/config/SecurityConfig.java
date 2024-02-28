@@ -17,8 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private JwtAuthenticateEntryPoint point;
-    private JwtAuthenticateFilter filter;
+    private final JwtAuthenticateEntryPoint point;
+    private final JwtAuthenticateFilter filter;
 
     @Autowired
     public SecurityConfig(JwtAuthenticateEntryPoint point, JwtAuthenticateFilter filter) {
@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers("/auth/login").permitAll()
-//                                .requestMatchers("/auth/sign-up").permitAll()
+                                .requestMatchers("/auth/refresh-token").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(point))

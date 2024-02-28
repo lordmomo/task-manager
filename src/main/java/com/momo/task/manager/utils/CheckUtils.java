@@ -38,7 +38,8 @@ public class CheckUtils {
         this.commentRepository = commentRepository;
     }
 
-    public boolean checkUserProjectAccess(Long userId, Long projectId) {
+    public boolean checkUserProjectAccess(Long userId, String projectKey) {
+        Long projectId = projectRepository.getProjectIdFromProjectKey(projectKey);
         Access check = accessRepository.validateUserProjectRelation(userId, projectId);
         if(check == null){
             throw new UserHasNoAccessToProjectException(ResourceInformation.USER_HAS_NO_ACCESS_MESSAGE);
@@ -50,8 +51,8 @@ public class CheckUtils {
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         return optionalTask.orElse(null);
     }
-    public Project getProjectFromId(Long projectId){
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
+    public Project getProjectFromKey(String projectKey){
+        Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         return optionalProject.orElse(null);
     }
     public User getUserFromId(Long userId){
@@ -70,7 +71,8 @@ public class CheckUtils {
         return optionalStages.orElse(null);
     }
 
-    public void checkIfTaskBelongsToProject(Long projectId,Long taskId){
+    public void checkIfTaskBelongsToProject(String projectKey,Long taskId){
+        Long projectId = projectRepository.getProjectIdFromProjectKey(projectKey);
         Task check = taskRepository.doesTaskIdBelongToProjectId(projectId,taskId);
         if(check==null){
             throw new TaskDoesNotBelongToProjectException("Error in task and project relationship [Duplicate data]");

@@ -8,6 +8,7 @@ import com.momo.task.manager.utils.CheckUtils;
 import com.momo.task.manager.utils.ResourceEndpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,28 +26,25 @@ public class TaskController {
         this.checkUtils = checkUtils;
     }
 
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(ResourceEndpoints.CREATE_TASKS_ENDPOINT)
     public ResponseEntity<String> createTasks(@ModelAttribute TaskDto taskDto) {
         return taskService.createTask(taskDto);
     }
-
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(ResourceEndpoints.DELETE_TASKS_ENDPOINT)
     public ResponseEntity<String> deleteTasks(@PathVariable("taskId") Long taskId) {
         return taskService.deleteTask(taskId);
     }
-
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = ResourceEndpoints.UPDATE_TASKS_ENDPOINT)
     public ResponseEntity<String> updateTasks(@PathVariable("taskId") Long taskId, @ModelAttribute TaskDto taskDto) {
         return taskService.updateTask(taskId, taskDto);
     }
-
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
     @GetMapping(ResourceEndpoints.GET_ALL_TASKS_IN_PROJECT_ENDPOINT)
-    public ResponseEntity<List<Task>> getAllTasksOfProjects(@PathVariable("projectId") Long projectId) {
-        return taskService.getAllTask(projectId);
+    public ResponseEntity<List<Task>> getAllTasksOfProjects(@PathVariable("projectKey") String projectKey) {
+        return taskService.getAllTask(projectKey);
     }
 
-    @GetMapping("/check")
-    public boolean check(@RequestBody CheckDto checkDto) {
-        return checkUtils.checkUserProjectAccess(checkDto.getUserId(), checkDto.getProjectId());
-    }
 }

@@ -22,4 +22,14 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
                     "p.end_date = CURRENT_DATE " +
                     "WHERE p.project_id = :projectId ")
     void deleteProjectById(Long projectId);
+
+    @Query(nativeQuery = true,
+            value = "SELECT * " +
+                    "FROM project p " +
+                    "WHERE p.project_key = :projectKey ")
+    Optional<Project> findByProjectKey(String projectKey);
+
+    @Query(nativeQuery = true,
+            value="SELECT p.project_id FROM PROJECT p WHERE project_key = :projectKey ")
+    Long getProjectIdFromProjectKey(String projectKey);
 }

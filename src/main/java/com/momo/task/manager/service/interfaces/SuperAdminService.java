@@ -11,25 +11,25 @@ public interface SuperAdminService {
 
     ResponseEntity<String> createUser(UserCreateDto userCreateDto);
 
-    ResponseEntity<UserResponseDto> getUserDetails(Long userId);
+    ResponseEntity<UserResponseDto> getUserDetails(String username);
 
     ResponseEntity<List<UserResponseDto>> getAllUsers();
 
-    ResponseEntity<String> removeUser(Long userId);
+    ResponseEntity<String> removeUser(String username);
 
-    ResponseEntity<String> updateUserDetails(Long userId, UserDetailsDto userDetailsDto);
+    ResponseEntity<String> updateUserDetails(String username, UserDetailsDto userDetailsDto);
 
-    ResponseEntity<String> updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto);
+    ResponseEntity<String> updateUserCredentials(String username, UserCredentialsDto userCredentialsDto);
 
-    ResponseEntity<String> updateUserProfilePicture(Long userId, MultipartFile file) throws IOException;
+    ResponseEntity<String> updateUserProfilePicture(String username, MultipartFile file) throws IOException;
 
     ResponseEntity<String> createProject(ProjectDto projectDto);
 
-    ResponseEntity<String> updateProject(Long projectId, UpdateProjectDto updateProjectDto);
+    ResponseEntity<String> updateProject(String projectKey, UpdateProjectDto updateProjectDto);
 
-    ResponseEntity<String> deleteProject(Long projectId);
+    ResponseEntity<String> deleteProject(String projectKey);
 
-    ResponseEntity<String> addUsersToProject(String projectName, Long userId);
+    ResponseEntity<String> addUsersToProject(String projectKey, String username);
 
     ResponseEntity<List<UserResponseDto>> getUsers(Long role);
 

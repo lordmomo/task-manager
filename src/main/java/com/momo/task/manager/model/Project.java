@@ -24,13 +24,13 @@ public class Project {
     private Long projectId;
 
     @NotBlank(message = ResourceInformation.PROJECT_NAME_REQUIRED_MESSAGE)
-    @Column(name = "project_name", nullable = false)
+    @Column(name = "project_name", nullable = false,unique = true)
     private String projectName;
 
     // distinguishly  identify project
     @NotBlank(message =ResourceInformation.PROJECT_KEY_REQUIRED_MESSAGE)
-    @Column(name = "project_key", nullable = false)
-    private String key;
+    @Column(name = "project_key", nullable = false,unique = true)
+    private String projectKey;
 
     // kanban,scrum
     @NotBlank(message = ResourceInformation.PROJECT_TEMPLATE_REQUIRED_MESSAGE)

@@ -78,8 +78,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<UserResponseDto> getUserDetails(Long userId) {
-        Optional<User> optUser = superAdminRepository.findById(userId);
+    public ResponseEntity<UserResponseDto> getUserDetails(String username) {
+        Optional<User> optUser = superAdminRepository.findByUsername(username);
 
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
@@ -117,10 +117,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> removeUser(Long userId) {
+    public ResponseEntity<String> removeUser(String username) {
 
         //user delete , delete their access, comment
-        Optional<User> optUser = superAdminRepository.findById(userId);
+        Optional<User> optUser = superAdminRepository.findByUsername(username);
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
@@ -134,8 +134,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> updateUserDetails(Long userId, UserDetailsDto userDetailsDto) {
-        Optional<User> optUser = superAdminRepository.findById(userId);
+    public ResponseEntity<String> updateUserDetails(String username, UserDetailsDto userDetailsDto) {
+        Optional<User> optUser = superAdminRepository.findByUsername(username);
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
@@ -149,8 +149,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> updateUserCredentials(Long userId, UserCredentialsDto userCredentialsDto) {
-        Optional<User> optUser = superAdminRepository.findById(userId);
+    public ResponseEntity<String> updateUserCredentials(String username, UserCredentialsDto userCredentialsDto) {
+        Optional<User> optUser = superAdminRepository.findByUsername(username);
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
@@ -163,8 +163,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> updateUserProfilePicture(Long userId, MultipartFile file) {
-        Optional<User> optUser = superAdminRepository.findById(userId);
+    public ResponseEntity<String> updateUserProfilePicture(String username, MultipartFile file) {
+        Optional<User> optUser = superAdminRepository.findByUsername(username);
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
@@ -190,13 +190,13 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         project.setProjectLead(user);
         setFlagForProjectCreation(project);
         projectRepository.save(project);
-        addUsersToProject(project.getProjectName(), user.getUserId());
+        addUsersToProject(project.getProjectName(), user.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_CREATED_MESSAGE);
     }
 
     @Override
-    public ResponseEntity<String> updateProject(Long projectId, UpdateProjectDto updateProjectDto) {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
+    public ResponseEntity<String> updateProject(String projectKey, UpdateProjectDto updateProjectDto) {
+        Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
@@ -211,27 +211,27 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> deleteProject(Long projectId) {
-        Optional<Project> optionalProject = projectRepository.findById(projectId);
+    public ResponseEntity<String> deleteProject(String projectKey) {
+        Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
-        Project project = optionalProject.get();
+        Long projectId = optionalProject.get().getProjectId();
         //check if active flag is zero or not before deletion in every delete operation
-        projectRepository.deleteProjectById(project.getProjectId());
-        List<Long> taskIdsInProject = taskRepository.getAllTaskIdFromProjectId(project.getProjectId());
-        taskRepository.deleteByProjectId(project.getProjectId());
+        projectRepository.deleteProjectById(projectId);
+        List<Long> taskIdsInProject = taskRepository.getAllTaskIdFromProjectId(projectId);
+        taskRepository.deleteByProjectId(projectId);
         for (Long taskId : taskIdsInProject) {
             commentRepository.deleteByTaskId(taskId);
         }
-        accessRepository.deleteProjectById(project.getProjectId());
+        accessRepository.deleteProjectById(projectId);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_DELETED_MESSAGE);
     }
 
     @Override
-    public ResponseEntity<String> addUsersToProject(String projectName, Long userId) {
-        Optional<User> optionalUser = superAdminRepository.findById(userId);
-        Optional<Project> optionalProject = projectRepository.findByProjectName(projectName);
+    public ResponseEntity<String> addUsersToProject(String projectKey, String  username) {
+        Optional<User> optionalUser = superAdminRepository.findByUsername(username);
+        Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         if (optionalUser.isEmpty() || optionalProject.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
@@ -297,12 +297,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         User user = optionalUser.get();
         project.setProjectLead(user);
         accessRepository.deleteByUserId(prevUser.getUserId());
-        addUsersToProject(project.getProjectName(), user.getUserId());
+        addUsersToProject(project.getProjectName(), user.getUsername());
     }
 
     private void updateGeneralProjectDetails(Project project, UpdateProjectDto updateProjectDto) {
-        if (!project.getKey().isEmpty() && project.getKey() != null) {
-            project.setKey(updateProjectDto.getKey());
+        if (!project.getProjectKey().isEmpty() && project.getProjectKey() != null) {
+            project.setProjectKey(updateProjectDto.getKey());
         }
         if (!project.getProjectName().isEmpty() && project.getProjectName() != null) {
             project.setProjectName(updateProjectDto.getProjectName());

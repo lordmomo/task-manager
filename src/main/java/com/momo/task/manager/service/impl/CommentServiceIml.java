@@ -38,9 +38,9 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> createComment(Long projectId, Long taskId, CommentDto commentDto) {
+    public ResponseEntity<String> createComment(String projectKey, Long taskId, CommentDto commentDto) {
         Long userId = commentDto.getUserId();
-        this.performCommonValidations(projectId, userId);
+        this.performCommonValidations(projectKey, userId);
         Comment comment = new Comment();
         createCommentFromDto(comment, userId, taskId, commentDto);
         MultipartFile file = commentDto.getDocumentFile();
@@ -50,12 +50,12 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> deleteComment(Long projectId, Long taskId, Long commentId, CommentValidation commentValidation) {
+    public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId, CommentValidation commentValidation) {
 
         try {
             Long userId = commentValidation.getUserId();
-            this.performCommonValidations(projectId, userId);
-            this.checkUtils.checkIfTaskBelongsToProject(projectId, taskId);
+            this.performCommonValidations(projectKey, userId);
+            this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.checkUtils.checkIfCommentExists(commentId);
             commentRepository.deleteByCommentId(commentId);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_DELETED_MESSAGE);
@@ -71,11 +71,11 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> updateComment(Long projectId, Long taskId, Long commentId, UpdateCommentDto updateCommentDto) {
+    public ResponseEntity<String> updateComment(String projectKey, Long taskId, Long commentId, UpdateCommentDto updateCommentDto) {
         try {
             Long userId = updateCommentDto.getUserId();
-            this.performCommonValidations(projectId, userId);
-            this.checkUtils.checkIfTaskBelongsToProject(projectId, taskId);
+            this.performCommonValidations(projectKey, userId);
+            this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.updateCommentFromDto(commentId, updateCommentDto);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_UPDATED_MESSAGE);
         } catch (TaskDoesNotBelongToProjectException e) {
@@ -88,10 +88,10 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<Object> listAllComments(Long projectId, Long taskId) {
+    public ResponseEntity<Object> listAllComments(String projectKey, Long taskId) {
 
         try {
-            this.checkUtils.checkIfTaskBelongsToProject(projectId, taskId);
+            this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             List<Comment> commentList = commentRepository.findAllByCommentByTaskId(taskId);
             //make commentList Dto..also for task
             return ResponseEntity
@@ -143,10 +143,10 @@ public class CommentServiceIml implements CommentService {
         }
     }
 
-    private void performCommonValidations(Long projectId, Long userId) {
+    private void performCommonValidations(String projectKey, Long userId) {
         try {
-            this.checkProjectAndUserIfNull(projectId, userId);
-            this.checkProjectAndUserAccess(projectId, userId);
+            this.checkProjectAndUserIfNull(projectKey, userId);
+            this.checkProjectAndUserAccess(projectKey, userId);
         } catch (UserNotFoundException e) {
             throw new UserNotFoundException(e.getMessage());
         } catch (UserHasNoAccessToProjectException e) {
@@ -154,10 +154,10 @@ public class CommentServiceIml implements CommentService {
         }
     }
 
-    private void checkProjectAndUserAccess(Long projectId, Long userId) {
+    private void checkProjectAndUserAccess(String projectKey, Long userId) {
         try {
             User user = checkUtils.getUserFromId(userId);
-            checkUtils.checkUserProjectAccess(user.getUserId(), projectId);
+            checkUtils.checkUserProjectAccess(user.getUserId(), projectKey);
         } catch (UserHasNoAccessToProjectException e) {
             throw new UserHasNoAccessToProjectException(e.getMessage());
         } catch (UserNotFoundException e) {
@@ -165,8 +165,8 @@ public class CommentServiceIml implements CommentService {
         }
     }
 
-    private void checkProjectAndUserIfNull(Long projectId, Long userId) {
-        Project project = checkUtils.getProjectFromId(projectId);
+    private void checkProjectAndUserIfNull(String projectKey, Long userId) {
+        Project project = checkUtils.getProjectFromKey(projectKey);
         User user = checkUtils.getUserFromId(userId);
         if (project == null || user == null) {
             throw new UserNotFoundException(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);

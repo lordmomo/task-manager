@@ -118,12 +118,12 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public ResponseEntity<List<Task>> getAllTask(Long projectId) {
-        Optional<Project> project = projectRepository.findById(projectId);
+    public ResponseEntity<List<Task>> getAllTask(String projectKey) {
+        Optional<Project> project = projectRepository.findByProjectKey(projectKey);
         if (project.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
-        List<Task> taskList = taskRepository.findByProdId(projectId);
+        List<Task> taskList = taskRepository.findByProdId(project.get().getProjectId());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(taskList);
