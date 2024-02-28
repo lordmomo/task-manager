@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SuperAdminRepository extends JpaRepository<User,Long> {
@@ -24,4 +25,6 @@ public interface SuperAdminRepository extends JpaRepository<User,Long> {
                     "u.end_date = CURRENT_DATE " +
                     "WHERE u.user_id = :userId ")
     void deleteByUserId(Long userId);
+
+    Optional<User> findByUsername(String username);
 }
