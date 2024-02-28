@@ -58,7 +58,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.taskRepository = taskRepository;
         this.commentRepository = commentRepository;
         this.accessRepository = accessRepository;
-        this.fileRepository=fileRepository;
+        this.fileRepository = fileRepository;
         this.mapper = mapper;
         this.imageLoader = imageLoader;
         this.passwordEncoder = passwordEncoder;
@@ -244,12 +244,17 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         User user = optionalUser.get();
         Project project = optionalProject.get();
+        Access access = createAccess(user, project);
+        accessRepository.save(access);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_ADDED_TO_PROJECT_MESSAGE);
+    }
+
+    private Access createAccess(User user, Project project) {
         Access access = new Access();
         access.setUser(user);
         access.setProject(project);
         setFlagForAccessCreation(access);
-        accessRepository.save(access);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_ADDED_TO_PROJECT_MESSAGE);
+        return access;
     }
 
     private void createUserFromDto(User user, UserCreateDto userCreateDto) {

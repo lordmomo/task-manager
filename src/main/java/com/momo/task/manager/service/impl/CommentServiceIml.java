@@ -3,7 +3,10 @@ package com.momo.task.manager.service.impl;
 import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.dto.CommentValidation;
 import com.momo.task.manager.dto.UpdateCommentDto;
-import com.momo.task.manager.exception.*;
+import com.momo.task.manager.exception.PictureDataException;
+import com.momo.task.manager.exception.TaskDoesNotBelongToProjectException;
+import com.momo.task.manager.exception.UserHasNoAccessToProjectException;
+import com.momo.task.manager.exception.UserNotFoundException;
 import com.momo.task.manager.model.Comment;
 import com.momo.task.manager.model.Project;
 import com.momo.task.manager.model.Task;
@@ -51,13 +54,13 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId,String username, CommentValidation commentValidation) {
+    public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
 
         try {
 
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToDeleteComment = checkUtils.getUserIdFromUsername(username);
-            if(!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)){
+            if (!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)) {
                 throw new AccessDeniedException("access denied");
             }
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToDeleteComment);
@@ -65,34 +68,25 @@ public class CommentServiceIml implements CommentService {
             this.checkUtils.checkIfCommentExists(commentId);
             commentRepository.deleteByCommentId(commentId);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_DELETED_MESSAGE);
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException(e.getMessage());
-        } catch (TaskDoesNotBelongToProjectException e) {
-            throw new TaskDoesNotBelongToProjectException(e.getMessage());
-        } catch (CommentNotFoundException e) {
-            throw new CommentNotFoundException(e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+
     }
 
     @Override
     public ResponseEntity<String> updateComment(String projectKey, Long taskId, Long commentId,
-                                                String username,UpdateCommentDto updateCommentDto) {
+                                                String username, UpdateCommentDto updateCommentDto) {
         try {
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToUpdateComment = checkUtils.getUserIdFromUsername(username);
-            if(!userIdOfUserWhoWantsToUpdateComment.equals(userIdOfUserWhoCommented)){
+            if (!userIdOfUserWhoWantsToUpdateComment.equals(userIdOfUserWhoCommented)) {
                 throw new AccessDeniedException("access denied");
             }
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToUpdateComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.updateCommentFromDto(commentId, updateCommentDto);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_UPDATED_MESSAGE);
-        } catch (TaskDoesNotBelongToProjectException e) {
-            throw new TaskDoesNotBelongToProjectException(e.getMessage());
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException(e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }

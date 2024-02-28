@@ -2,7 +2,6 @@ package com.momo.task.manager.dto;
 
 import jakarta.annotation.Nullable;
 import lombok.Data;
-import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Empty;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
@@ -23,7 +22,6 @@ public class TaskDto {
     private Long stageId;
 
     @Nullable
-
     private MultipartFile file;
 
 }

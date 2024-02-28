@@ -107,7 +107,6 @@ public class TaskServiceImpl implements TaskService {
         if (optTask.isEmpty()) {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
-        //try catch if project in taskDto is null
         Task task = optTask.get();
         updateTaskFile(task, taskDto.getFile());
         updateTaskFields(task, taskDto);
@@ -131,25 +130,15 @@ public class TaskServiceImpl implements TaskService {
 
 
     private void updateTaskFile(Task task, MultipartFile mFile) {
-
-
         Optional<File> optFile = Optional.ofNullable(fileRepository.findFileByTaskId(task.getTaskId()));
-        if(optFile.isPresent()){
+        if (optFile.isPresent()) {
             File file = optFile.get();
-            try {
-                if (!Arrays.equals(file.getFileData(), mFile.getBytes())) {
-                    if (!mFile.isEmpty()) {
-                        file.setFileData(mFile.getBytes());
-                    } else {
-                        file.setFileData(null);
-                    }
-                    setFlagForFileUpdate(file);
-                }
-                return;
-            } catch (IOException e) {
-                throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
-            }
+            updateExistingFile(file, mFile);
         }
+        createNewFile(task, mFile);
+    }
+
+    private void createNewFile(Task task, MultipartFile mFile) {
         File file = new File();
         file.setTask(task);
         setFlagForFileCreation(file);
@@ -162,6 +151,21 @@ public class TaskServiceImpl implements TaskService {
         }
         fileRepository.save(file);
         log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
+    }
+
+    private void updateExistingFile(File file, MultipartFile mFile) {
+        try {
+            if (!Arrays.equals(file.getFileData(), mFile.getBytes())) {
+                if (!mFile.isEmpty()) {
+                    file.setFileData(mFile.getBytes());
+                } else {
+                    file.setFileData(null);
+                }
+                setFlagForFileUpdate(file);
+            }
+        } catch (IOException e) {
+            throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+        }
     }
 
 
@@ -202,7 +206,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateTaskStage(Task task, TaskDto taskDto) {
-        if (task.getStageId() != null && taskDto.getStageId()!=null) {
+        if (task.getStageId() != null && taskDto.getStageId() != null) {
             Optional<Stages> stages = stagesRepository.findById(taskDto.getStageId());
             if (stages.isEmpty()) {
                 throw new TaskStageNotFoundException(ResourceInformation.STAGE_NOT_FOUND_MESSAGE);
@@ -212,7 +216,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateTaskStatus(Task task, TaskDto taskDto) {
-        if (task.getStatus().getStatusId() != null && taskDto.getStatus()!=null) {
+        if (task.getStatus().getStatusId() != null && taskDto.getStatus() != null) {
             Optional<TaskStatus> status = taskStatusRepository.findById(taskDto.getStatus());
             if (status.isEmpty()) {
                 throw new TaskStatusNotFoundException(ResourceInformation.STATUS_NOT_FOUND_MESSAGE);
@@ -222,21 +226,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateGeneralTaskInformation(Task task, TaskDto taskDto) {
-        if (task.getTaskName() != null && !"".equalsIgnoreCase(task.getTaskName()) && taskDto.getTaskName()!=null) {
+        if (task.getTaskName() != null && !"".equalsIgnoreCase(task.getTaskName()) && taskDto.getTaskName() != null) {
             task.setTaskName(taskDto.getTaskName());
         }
 
-        if (task.getDescription() != null && !"".equalsIgnoreCase(task.getDescription()) && taskDto.getDescription()!=null
+        if (task.getDescription() != null && !"".equalsIgnoreCase(task.getDescription()) && taskDto.getDescription() != null
         ) {
             task.setDescription(taskDto.getDescription());
         }
-        if (task.getLabel() != null && !"".equalsIgnoreCase(task.getLabel()) && taskDto.getLabel()!=null) {
+        if (task.getLabel() != null && !"".equalsIgnoreCase(task.getLabel()) && taskDto.getLabel() != null) {
             task.setLabel(taskDto.getLabel());
         }
-        if (task.getStartDate() != null && taskDto.getStartDate()!=null) {
+        if (task.getStartDate() != null && taskDto.getStartDate() != null) {
             task.setStartDate(taskDto.getStartDate());
         }
-        if (task.getEndDate() != null && taskDto.getEndDate()!=null) {
+        if (task.getEndDate() != null && taskDto.getEndDate() != null) {
             task.setEndDate(taskDto.getEndDate());
         }
     }
@@ -263,17 +267,17 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void saveTaskFile(Task task, MultipartFile mFile) {
-        if(mFile == null){
+        if (mFile == null) {
             return;
         }
         File file = new File();
         file.setTask(task);
         setFlagForFileCreation(file);
-            try {
-                file.setFileData(mFile.getBytes());
-            } catch (IOException e) {
-                throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
-            }
+        try {
+            file.setFileData(mFile.getBytes());
+        } catch (IOException e) {
+            throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+        }
         fileRepository.save(file);
         log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
     }
@@ -282,7 +286,7 @@ public class TaskServiceImpl implements TaskService {
         file.setActiveFlg(true);
         file.setUpdatedFlg(false);
         file.setStartDate(LocalDateTime.now());
-        file.setEndDate(LocalDateTime.of(9999,12,31,23,59,59));
+        file.setEndDate(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
     }
 
     private void setFlagForFileUpdate(File file) {
