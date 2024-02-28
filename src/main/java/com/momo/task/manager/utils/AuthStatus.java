@@ -1,0 +1,10 @@
+package com.momo.task.manager.utils;
+
+public enum AuthStatus {
+    USER_CREATED_SUCCESSFULLY,
+    USER_NOT_CREATED,
+    NEW_REFRESH_TOKEN_CREATED_SUCCESSFULLY,
+    NEW_REFRESH_TOKEN_CREATION_FAILED,
+    LOGIN_SUCCESS,
+    LOGIN_FAILED
+}

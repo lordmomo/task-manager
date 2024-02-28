@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,6 +35,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     CommentRepository commentRepository;
     ModelMapper mapper;
     ImageLoader imageLoader;
+    PasswordEncoder passwordEncoder;
 
     @Autowired
     public SuperAdminServiceImpl(SuperAdminRepository superAdminRepository,
@@ -44,7 +46,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                                  AccessRepository accessRepository,
                                  CommentRepository commentRepository,
                                  ModelMapper mapper,
-                                 ImageLoader imageLoader) {
+                                 ImageLoader imageLoader,
+                                 PasswordEncoder passwordEncoder) {
 
         this.superAdminRepository = superAdminRepository;
         this.roleRepository = roleRepository;
@@ -55,6 +58,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.accessRepository = accessRepository;
         this.mapper = mapper;
         this.imageLoader = imageLoader;
+        this.passwordEncoder = passwordEncoder;
         configureModelMapper();
     }
 
@@ -152,7 +156,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         User user = optUser.get();
         user.setUsername(userCredentialsDto.getUsername());
-        user.setPassword(userCredentialsDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userCredentialsDto.getPassword()));
         setFlagForUserUpdate(user);
         superAdminRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
@@ -246,7 +250,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setLastName(userCreateDto.getLastName());
         user.setEmail(userCreateDto.getEmail());
         user.setUsername(userCreateDto.getUsername());
-        user.setPassword(userCreateDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userCreateDto.getPassword()));
         setFlagForUserCreation(user);
     }
 

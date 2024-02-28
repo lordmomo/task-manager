@@ -42,5 +42,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> taskNotFoundException(TaskNotFoundException e){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<String> invalidTokenException(InvalidTokenException e){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+
+    @ExceptionHandler(UserNameNotFoundException.class)
+    public ResponseEntity<String> userNameNotFoundException(UserNameNotFoundException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+
 }
 

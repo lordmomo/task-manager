@@ -13,6 +13,9 @@ public class ResourceInformation {
     public static final String DEFAULT_IMAGE_PATH = "images/profile-svgrepo-com.svg";
     public static final String PROJECT_NOT_FOUND_MESSAGE = "Project not found";
     public static final String USER_NOT_FOUND_MESSAGE = "User not found";
+
+    public static final String USERNAME_NOT_FOUND_MESSAGE = "Username not found";
+
     public static final String PROJECT_OR_USER_NOT_FOUND_MESSAGE = " Project or User not found";
     public static final String USER_HAS_NO_ACCESS_MESSAGE = "User has no access to the project";
     public static final String COMMENT_NOT_FOUND_MESSAGE = "Comment not found";
@@ -46,6 +49,8 @@ public class ResourceInformation {
     public static final String JWT_EXCEPTION_OCCURS_MESSAGE = "Jwt Exception occurs";
     public static final String ILLEGAL_ARGUMENT_OCCURS_MESSAGE ="Illegal Argument error";
     public static final String TOKEN_EXPIRED_MESSAGE ="Token has expired";
+    public static final String TOKEN_INVALID_MESSAGE ="Invalid token";
+
     public static final String MAlFORMED_JWT_EXCEPTION_MESSAGE = "Some changes has been done in token !! Invalid Token";
     public static final String ILLEGAL_ACCESS_ERROR_MESSAGE = "Illegal Argument while fetching the username !!";
 
