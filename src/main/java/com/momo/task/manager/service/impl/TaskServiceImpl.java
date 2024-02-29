@@ -32,6 +32,7 @@ public class TaskServiceImpl implements TaskService {
     SuperAdminRepository superAdminRepository;
     ProjectRepository projectRepository;
     StagesRepository stagesRepository;
+    StatusLogRepository statusLogRepository;
     CheckUtils checkUtils;
     ModelMapper mapper;
 
@@ -43,6 +44,7 @@ public class TaskServiceImpl implements TaskService {
                            SuperAdminRepository superAdminRepository,
                            ProjectRepository projectRepository,
                            StagesRepository stagesRepository,
+                           StatusLogRepository statusLogRepository,
                            CheckUtils checkUtils,
                            ModelMapper mapper) {
 
@@ -53,6 +55,7 @@ public class TaskServiceImpl implements TaskService {
         this.superAdminRepository = superAdminRepository;
         this.projectRepository = projectRepository;
         this.stagesRepository = stagesRepository;
+        this.statusLogRepository = statusLogRepository;
         this.checkUtils = checkUtils;
         this.mapper = mapper;
         configureModelMapper();
@@ -77,6 +80,7 @@ public class TaskServiceImpl implements TaskService {
         ) {
             Task task = createTaskFromDto(taskDto);
             taskRepository.save(task);
+            this.saveStatusLog(task,task.getStatus(),true);
             this.saveTaskFile(task, taskDto.getFile());
             log.info(ResourceInformation.TASK_CREATED_MESSAGE);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
@@ -129,9 +133,13 @@ public class TaskServiceImpl implements TaskService {
         Optional<File> optFile = Optional.ofNullable(fileRepository.findFileByTaskId(task.getTaskId()));
         if (optFile.isPresent()) {
             File file = optFile.get();
-            updateExistingFile(file, mFile);
+            if(mFile != null) {
+                updateExistingFile(file, mFile);
+            }
         }
-        this.createNewFile(task, mFile);
+        else {
+            this.createNewFile(task, mFile);
+        }
     }
 
     private void createNewFile(Task task, MultipartFile mFile) {
@@ -212,14 +220,41 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void updateTaskStatus(Task task, TaskDto taskDto) {
-        if (task.getStatus().getStatusId() != null && taskDto.getStatus() != null) {
-            Optional<TaskStatus> status = taskStatusRepository.findById(taskDto.getStatus());
-            if (status.isEmpty()) {
+        if (task.getStatus().getStatusId() != null
+                && taskDto.getStatus() != null
+                && !taskDto.getStatus().equals(task.getStatus().getStatusId())
+        ) {
+            Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findById(taskDto.getStatus());
+            if (optionalTaskStatus.isEmpty()) {
                 throw new TaskStatusNotFoundException(ResourceInformation.STATUS_NOT_FOUND_MESSAGE);
             }
-            task.setStatus(status.get());
+            TaskStatus status = optionalTaskStatus.get();
+            saveStatusLog(task,status,false);
+            task.setStatus(status);
         }
     }
+
+    private void saveStatusLog(Task task, TaskStatus status, boolean create) {
+        Project project = task.getProject();
+        User user = task.getAssigneeId();
+        TaskStatus previousTaskStatus;
+        if(create){
+            previousTaskStatus = null;
+        }else {
+            previousTaskStatus = task.getStatus();
+        }
+        StatusLog statusLog = StatusLog.builder()
+                                        .projectId(project)
+                .taskId(task)
+                .userId(user)
+                .transitionDate(LocalDateTime.now())
+                .previousStatus(previousTaskStatus)
+                .currentStatus(status)
+                .activeFlag(true)
+                .build();
+        statusLogRepository.save(statusLog);
+    }
+
 
     private void updateGeneralTaskInformation(Task task, TaskDto taskDto) {
         if (task.getTaskName() != null && !"".equalsIgnoreCase(task.getTaskName()) && taskDto.getTaskName() != null) {
@@ -294,6 +329,7 @@ public class TaskServiceImpl implements TaskService {
     private void removeAllTaskRelatedData(Long taskId) {
         fileRepository.deleteByTaskId(taskId);
         commentRepository.deleteByTaskId(taskId);
+        statusLogRepository.deleteByTaskId(taskId);
         taskRepository.deleteByTaskId(taskId);
     }
 
