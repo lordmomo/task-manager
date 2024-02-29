@@ -18,9 +18,8 @@ import java.util.function.Function;
 @Service
 @Slf4j
 public class JwtServiceImpl implements JwtService {
-
-
     private final SecretKey secretKey = Jwts.SIG.HS256.key().build();
+
     private JwtServiceImpl() {
     }
 
@@ -35,6 +34,7 @@ public class JwtServiceImpl implements JwtService {
     public Date getExpirationDateFromToken(String token) {
         return getClaimsFromToken(token, Claims::getExpiration);
     }
+
     @Override
     public <T> T getClaimsFromToken(String token, Function<Claims, T> claimResolver) {
         final Claims claims = getAllClaimsFromToken(token);
@@ -92,12 +92,13 @@ public class JwtServiceImpl implements JwtService {
         var expiration = DateUtils.addMinutes(currentDate, jwtExpirationInMinutes);
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
-                .issuer(   ResourceInformation.TOKEN_ISSUER)
+                .issuer(ResourceInformation.TOKEN_ISSUER)
                 .subject(username)
                 .signWith(secretKey)
                 .issuedAt(currentDate)
                 .expiration(expiration)
-                .compact();    }
+                .compact();
+    }
 
     @Override
     public String generateRefreshToken(String username) {
@@ -106,10 +107,11 @@ public class JwtServiceImpl implements JwtService {
         var expiration = DateUtils.addHours(currentDate, jwtExpirationInHours);
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
-                .issuer(   ResourceInformation.TOKEN_ISSUER)
+                .issuer(ResourceInformation.TOKEN_ISSUER)
                 .subject(username)
                 .signWith(secretKey)
                 .issuedAt(currentDate)
                 .expiration(expiration)
-                .compact();    }
+                .compact();
+    }
 }

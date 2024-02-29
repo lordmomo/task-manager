@@ -27,20 +27,23 @@ public class SuperAdminController {
 
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping(ResourceEndpoints.UPDATE_PROJECTS_ENDPOINT)
-    public ResponseEntity<String> updateProjects(@PathVariable("projectKey") String  projectKey, @RequestBody UpdateProjectDto updateProjectDto) {
+    public ResponseEntity<String> updateProjects(@PathVariable("projectKey") String projectKey, @RequestBody UpdateProjectDto updateProjectDto) {
         return superAdminService.updateProject(projectKey, updateProjectDto);
     }
+
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping(ResourceEndpoints.DELETE_PROJECTS_ENDPOINT)
     public ResponseEntity<String> deleteProjects(@PathVariable("projectKey") String projectKey) {
         return superAdminService.deleteProject(projectKey);
     }
+
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping(ResourceEndpoints.CREATE_USERS_ENDPOINT)
     public ResponseEntity<String> createUsers(@ModelAttribute UserCreateDto userCreateDto) {
 
         return superAdminService.createUser(userCreateDto);
     }
+
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
     @GetMapping(ResourceEndpoints.GET_USERS_DETAILS_ENDPOINT)
     public ResponseEntity<UserResponseDto> showUserDetails(@PathVariable("username") String username) {
@@ -64,22 +67,26 @@ public class SuperAdminController {
     public ResponseEntity<String> removeUsers(@PathVariable("username") String username) {
         return superAdminService.removeUser(username);
     }
+
     @PreAuthorize("hasAuthority('ADMIN') or (hasAuthority('USER') and #username == authentication.name) ")
     @PostMapping(ResourceEndpoints.UPDATE_USERS_DETAILS_ENDPOINT)
     public ResponseEntity<String> updateUserDetails(@PathVariable("username") String username, @RequestBody UserDetailsDto userDetailsDto) {
         return superAdminService.updateUserDetails(username, userDetailsDto);
     }
+
     @PreAuthorize("#username == authentication.name")
     @PostMapping(ResourceEndpoints.UPDATE_USERS_CREDENTIALS_ENDPOINT)
     //add username instead of userId
     public ResponseEntity<String> updateUserCredentials(@PathVariable("username") String username, @RequestBody UserCredentialsDto userCredentialsDto) {
         return superAdminService.updateUserCredentials(username, userCredentialsDto);
     }
+
     @PreAuthorize("#username == authentication.name")
     @PostMapping(ResourceEndpoints.UPDATE_USERS_PROFILE_PICTURE_ENDPOINT)
     public ResponseEntity<String> updateUserProfilePictures(@PathVariable("username") String username, @RequestParam MultipartFile newPicture) throws IOException {
         return superAdminService.updateUserProfilePicture(username, newPicture);
     }
+
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping(ResourceEndpoints.ADD_USERS_TO_PROJECT_ENDPOINT)
     public ResponseEntity<String> addUsersToProjects(@PathVariable("projectKey") String projectKey, @PathVariable("username") String username) {

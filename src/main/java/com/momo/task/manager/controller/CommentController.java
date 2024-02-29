@@ -19,6 +19,7 @@ public class CommentController {
 
     @Autowired
     CommentService commentService;
+
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
     @PostMapping(ResourceEndpoints.CREATE_COMMENTS_ENDPOINT)
     public ResponseEntity<String> createComment(@PathVariable("projectKey") String projectKey,
@@ -35,8 +36,9 @@ public class CommentController {
                                                 @PathVariable("commentId") Long commentId,
                                                 @PathVariable("username") String username,
                                                 @RequestBody CommentValidation commentValidation) {
-        return commentService.deleteComment(projectKey, taskId, commentId, username,commentValidation);
+        return commentService.deleteComment(projectKey, taskId, commentId, username, commentValidation);
     }
+
     @PreAuthorize("#username == authentication.name")
     @PostMapping(ResourceEndpoints.UPDATE_COMMENTS_ENDPOINT)
     public ResponseEntity<String> updateComment(@PathVariable("projectKey") String projectKey,
@@ -44,7 +46,7 @@ public class CommentController {
                                                 @PathVariable("commentId") Long commentId,
                                                 @PathVariable("username") String username,
                                                 @ModelAttribute UpdateCommentDto updateCommentDto) {
-        return commentService.updateComment(projectKey, taskId, commentId, username,updateCommentDto);
+        return commentService.updateComment(projectKey, taskId, commentId, username, updateCommentDto);
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")

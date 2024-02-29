@@ -1,10 +1,5 @@
 package com.momo.task.manager.utils;
 
-
-import org.springframework.security.core.parameters.P;
-
-import javax.swing.plaf.PanelUI;
-
 public class ResourceInformation {
 
     private ResourceInformation() {
@@ -51,7 +46,7 @@ public class ResourceInformation {
     public static final String TOKEN_EXPIRED_MESSAGE ="Token has expired";
     public static final String TOKEN_INVALID_MESSAGE ="Invalid token";
 
-    public static final String MAlFORMED_JWT_EXCEPTION_MESSAGE = "Some changes has been done in token !! Invalid Token";
+    public static final String MALFORMED_JWT_EXCEPTION_MESSAGE = "Some changes has been done in token !! Invalid Token";
     public static final String ILLEGAL_ACCESS_ERROR_MESSAGE = "Illegal Argument while fetching the username !!";
 
     public static final String BAD_CREDENTIALS_MESSAGE = "Invalid email or password";

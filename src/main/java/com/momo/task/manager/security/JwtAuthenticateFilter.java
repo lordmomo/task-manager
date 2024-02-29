@@ -60,7 +60,7 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
                             log.error(ResourceInformation.TOKEN_EXPIRED_MESSAGE);
                             e.printStackTrace();
                         } catch (MalformedJwtException e) {
-                            log.error(ResourceInformation.MAlFORMED_JWT_EXCEPTION_MESSAGE);
+                            log.error(ResourceInformation.MALFORMED_JWT_EXCEPTION_MESSAGE);
                             e.printStackTrace();
                         } catch (Exception e) {
                             e.printStackTrace();

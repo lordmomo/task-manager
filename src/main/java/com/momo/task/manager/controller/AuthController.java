@@ -4,7 +4,6 @@ import com.momo.task.manager.dto.AuthRequestDto;
 import com.momo.task.manager.dto.AuthResponseDto;
 import com.momo.task.manager.exception.InvalidTokenException;
 import com.momo.task.manager.exception.UserNameNotFoundException;
-import com.momo.task.manager.exception.UserNotFoundException;
 import com.momo.task.manager.service.interfaces.AuthService;
 import com.momo.task.manager.service.interfaces.JwtService;
 import com.momo.task.manager.utils.AuthStatus;

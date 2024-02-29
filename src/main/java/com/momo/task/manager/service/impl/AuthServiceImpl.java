@@ -1,6 +1,5 @@
 package com.momo.task.manager.service.impl;
 
-import com.momo.task.manager.repository.SuperAdminRepository;
 import com.momo.task.manager.service.interfaces.AuthService;
 import com.momo.task.manager.service.interfaces.JwtService;
 import com.momo.task.manager.utils.ResourceInformation;
@@ -22,6 +21,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     @Autowired
     private final JwtService jwtServiceImpl;
+
     @Override
     public String login(String username, String password) {
         var authToken = new UsernamePasswordAuthenticationToken(username, password);

@@ -6,7 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class UpdateCommentDto {
-//    Long userId;
     String message;
 
     @Nullable

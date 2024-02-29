@@ -1,6 +1,5 @@
 package com.momo.task.manager.controller;
 
-import com.momo.task.manager.dto.CheckDto;
 import com.momo.task.manager.dto.TaskDto;
 import com.momo.task.manager.model.Task;
 import com.momo.task.manager.service.interfaces.TaskService;
@@ -31,16 +30,19 @@ public class TaskController {
     public ResponseEntity<String> createTasks(@ModelAttribute TaskDto taskDto) {
         return taskService.createTask(taskDto);
     }
+
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(ResourceEndpoints.DELETE_TASKS_ENDPOINT)
     public ResponseEntity<String> deleteTasks(@PathVariable("taskId") Long taskId) {
         return taskService.deleteTask(taskId);
     }
+
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = ResourceEndpoints.UPDATE_TASKS_ENDPOINT)
     public ResponseEntity<String> updateTasks(@PathVariable("taskId") Long taskId, @ModelAttribute TaskDto taskDto) {
         return taskService.updateTask(taskId, taskDto);
     }
+
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
     @GetMapping(ResourceEndpoints.GET_ALL_TASKS_IN_PROJECT_ENDPOINT)
     public ResponseEntity<List<Task>> getAllTasksOfProjects(@PathVariable("projectKey") String projectKey) {
