@@ -4,9 +4,10 @@ import com.momo.task.manager.exception.*;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -18,6 +19,9 @@ public class CheckUtils {
     TaskStatusRepository taskStatusRepository;
     StagesRepository stagesRepository;
     CommentRepository commentRepository;
+    LabelRepository labelRepository;
+    TaskLabelRepository taskLabelRepository;
+
     @Autowired
     public CheckUtils(AccessRepository accessRepository,
                       ProjectRepository projectRepository,
@@ -25,7 +29,9 @@ public class CheckUtils {
                       TaskRepository taskRepository,
                       TaskStatusRepository taskStatusRepository,
                       StagesRepository stagesRepository,
-                      CommentRepository commentRepository) {
+                      CommentRepository commentRepository,
+                      LabelRepository labelRepository,
+                      TaskLabelRepository taskLabelRepository) {
 
         this.accessRepository = accessRepository;
         this.projectRepository = projectRepository;
@@ -34,16 +40,19 @@ public class CheckUtils {
         this.taskStatusRepository = taskStatusRepository;
         this.stagesRepository = stagesRepository;
         this.commentRepository = commentRepository;
+        this.labelRepository = labelRepository;
+        this.taskLabelRepository = taskLabelRepository;
     }
 
     public boolean checkUserProjectAccess(Long userId, String projectKey) {
         Long projectId = projectRepository.getProjectIdFromProjectKey(projectKey);
         Access check = accessRepository.validateUserProjectRelation(userId, projectId);
-        if(check == null){
+        if (check == null) {
             throw new UserHasNoAccessToProjectException(ResourceInformation.USER_HAS_NO_ACCESS_MESSAGE);
         }
         return true;
     }
+
     public void checkProjectAndUserAccess(String projectKey, Long userId) {
         User user = getUserFromId(userId);
         this.checkUserProjectAccess(user.getUserId(), projectKey);
@@ -61,46 +70,50 @@ public class CheckUtils {
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         return optionalTask.orElse(null);
     }
-    public Project getProjectFromKey(String projectKey){
+
+    public Project getProjectFromKey(String projectKey) {
         Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         return optionalProject.orElse(null);
     }
-    public User getUserFromId(Long userId){
+
+    public User getUserFromId(Long userId) {
         Optional<User> optionalUser = superAdminRepository.findById(userId);
-        if(optionalUser.isEmpty()){
+        if (optionalUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         return optionalUser.get();
     }
 
-    public Long getUserIdFromUsername(String username){
+    public Long getUserIdFromUsername(String username) {
         Optional<User> optionalUser = superAdminRepository.findByUsername(username);
-        if(optionalUser.isEmpty()){
+        if (optionalUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         return optionalUser.get().getUserId();
     }
-    public TaskStatus getStatusFromId(Long statusId){
+
+    public TaskStatus getStatusFromId(Long statusId) {
         Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findById(statusId);
         return optionalTaskStatus.orElse(null);
     }
-    public Stages getStageFromId(Long stageId){
+
+    public Stages getStageFromId(Long stageId) {
         Optional<Stages> optionalStages = stagesRepository.findById(stageId);
         return optionalStages.orElse(null);
     }
 
-    public void checkIfTaskBelongsToProject(String projectKey,Long taskId){
+    public void checkIfTaskBelongsToProject(String projectKey, Long taskId) {
         Long projectId = projectRepository.getProjectIdFromProjectKey(projectKey);
-        Task check = taskRepository.doesTaskIdBelongToProjectId(projectId,taskId);
-        if(check==null){
+        Task check = taskRepository.doesTaskIdBelongToProjectId(projectId, taskId);
+        if (check == null) {
             throw new TaskDoesNotBelongToProjectException("Error in task and project relationship [Duplicate data]");
         }
 
     }
 
-    public void checkIfCommentExists(Long commentId){
+    public void checkIfCommentExists(Long commentId) {
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if(optionalComment.isEmpty()){
+        if (optionalComment.isEmpty()) {
             throw new CommentNotFoundException(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
         }
     }
@@ -109,33 +122,71 @@ public class CheckUtils {
         return commentRepository.getUserIdFromCommentId(commentId);
     }
 
-    public boolean checkIfProjectIdDeleted(String projectKey){
+    public boolean checkIfProjectIdDeleted(String projectKey) {
         Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
-        if(optionalProject.isEmpty()){
+        if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
         return optionalProject.get().isActiveFlg();
     }
-    public boolean checkIfTaskIdDeleted(Long taskId){
+
+    public boolean checkIfTaskIdDeleted(Long taskId) {
         Optional<Task> optionalTask = taskRepository.findById(taskId);
-        if(optionalTask.isEmpty()){
+        if (optionalTask.isEmpty()) {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
         return optionalTask.get().isActiveFlg();
     }
 
-    public boolean checkIfCommentIdDeleted(Long commentId){
+    public boolean checkIfCommentIdDeleted(Long commentId) {
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if(optionalComment.isEmpty()){
+        if (optionalComment.isEmpty()) {
             throw new CommentNotFoundException(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
         }
         return optionalComment.get().isActiveFlg();
     }
-    public boolean checkIfUserDeletedByUsername(String username){
+
+    public boolean checkIfUserDeletedByUsername(String username) {
         Optional<User> optionalUser = superAdminRepository.findByUsername(username);
-        if(optionalUser.isEmpty()){
+        if (optionalUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         return optionalUser.get().isActiveFlg();
+    }
+
+    public Label getLabelFromName(String labelName) {
+
+        Optional<Label> existingLabel = labelRepository.findByLabelName(labelName);
+
+        if (existingLabel.isPresent()) {
+            return existingLabel.get();
+        } else {
+            Label newLabel = Label.builder()
+                    .labelName(labelName)
+                    .build();
+            labelRepository.save(newLabel);
+            return newLabel;
+        }
+    }
+
+    public void saveToTaskLabel(Task task, Label label) {
+        TaskLabel taskLabel = TaskLabel.builder()
+                .label(label)
+                .task(task)
+                .build();
+        taskLabelRepository.save(taskLabel);
+    }
+
+    public List<Task> getAllTaskFromLabel(String projectKey, String labelName) {
+        Long labelId = labelRepository.getLabelIdFromName(labelName);
+        List<Long> taskIds = taskLabelRepository.getTaskIdFromLabel(labelId);
+        List<Task> approvedTasks = new ArrayList<>();
+        for(Long task : taskIds){
+            checkIfTaskBelongsToProject(projectKey,task);
+            Optional<Task> taskOptional = taskRepository.findById(task);
+            taskOptional.ifPresent(approvedTasks::add);
+
+        }
+        return approvedTasks;
     }
 }

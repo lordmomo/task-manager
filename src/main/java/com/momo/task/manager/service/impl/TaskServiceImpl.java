@@ -33,6 +33,7 @@ public class TaskServiceImpl implements TaskService {
     ProjectRepository projectRepository;
     StagesRepository stagesRepository;
     StatusLogRepository statusLogRepository;
+    LabelRepository labelRepository;
     CheckUtils checkUtils;
     ModelMapper mapper;
 
@@ -45,6 +46,7 @@ public class TaskServiceImpl implements TaskService {
                            ProjectRepository projectRepository,
                            StagesRepository stagesRepository,
                            StatusLogRepository statusLogRepository,
+                           LabelRepository labelRepository,
                            CheckUtils checkUtils,
                            ModelMapper mapper) {
 
@@ -56,6 +58,7 @@ public class TaskServiceImpl implements TaskService {
         this.projectRepository = projectRepository;
         this.stagesRepository = stagesRepository;
         this.statusLogRepository = statusLogRepository;
+        this.labelRepository = labelRepository;
         this.checkUtils = checkUtils;
         this.mapper = mapper;
         configureModelMapper();
@@ -67,7 +70,6 @@ public class TaskServiceImpl implements TaskService {
 
         // Explicitly define mappings to avoid conflicts
         mapper.createTypeMap(TaskDto.class, Task.class)
-                .addMapping(TaskDto::getLabel, Task::setLabel)
                 .addMapping(TaskDto::getReporterId, Task::setReporterId)
                 .addMapping(TaskDto::getAssigneeId, Task::setAssigneeId)
                 .addMapping(TaskDto::getStageId, Task::setStageId);
@@ -80,12 +82,22 @@ public class TaskServiceImpl implements TaskService {
         ) {
             Task task = createTaskFromDto(taskDto);
             taskRepository.save(task);
-            this.saveStatusLog(task,task.getStatus(),true);
+            this.saveTaskLabel(task, taskDto.getLabel());
+            this.saveStatusLog(task, task.getStatus(), true);
             this.saveTaskFile(task, taskDto.getFile());
             log.info(ResourceInformation.TASK_CREATED_MESSAGE);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
         } else {
             return null;
+        }
+    }
+
+    private void saveTaskLabel(Task task, List<String> labelNames) {
+        if (labelNames != null && !labelNames.isEmpty()) {
+            for (String name : labelNames) {
+                Label label = checkUtils.getLabelFromName(name);
+                checkUtils.saveToTaskLabel(task, label);
+            }
         }
     }
 
@@ -97,7 +109,7 @@ public class TaskServiceImpl implements TaskService {
         if (optionalTask.isEmpty()) {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
-        if(!optionalTask.get().isActiveFlg()){
+        if (!optionalTask.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         this.removeAllTaskRelatedData(taskId);
@@ -111,7 +123,7 @@ public class TaskServiceImpl implements TaskService {
         if (optTask.isEmpty()) {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
-        if(!optTask.get().isActiveFlg()){
+        if (!optTask.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         Task task = optTask.get();
@@ -135,16 +147,33 @@ public class TaskServiceImpl implements TaskService {
                 .body(taskList);
     }
 
+    @Override
+    public ResponseEntity<List<Task>> getAllTaskOfLabel(String projectKey, String labelName) {
+        Optional<Project> project = projectRepository.findByProjectKey(projectKey);
+        if (project.isEmpty()) {
+            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+        }
+        Optional<Label> label = labelRepository.findByLabelName(labelName);
+        if (label.isEmpty()){
+            throw new LabelNotFoundException(ResourceInformation.LABEL_NOT_FOUND);
+        }
+
+        List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey,labelName);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(taskList);
+
+    }
+
 
     private void updateTaskFile(Task task, MultipartFile mFile) {
         Optional<File> optFile = Optional.ofNullable(fileRepository.findFileByTaskId(task.getTaskId()));
         if (optFile.isPresent()) {
             File file = optFile.get();
-            if(mFile != null) {
+            if (mFile != null) {
                 updateExistingFile(file, mFile);
             }
-        }
-        else {
+        } else {
             this.createNewFile(task, mFile);
         }
     }
@@ -202,7 +231,7 @@ public class TaskServiceImpl implements TaskService {
             if (user.isEmpty()) {
                 throw new UserNotFoundException(ResourceInformation.REPORTER_NOT_FOUND_MESSAGE);
             }
-            if(user.get().isActiveFlg()){
+            if (user.get().isActiveFlg()) {
                 throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
             }
             task.setReporterId(user.get());
@@ -215,7 +244,7 @@ public class TaskServiceImpl implements TaskService {
             if (user.isEmpty()) {
                 throw new UserNotFoundException(ResourceInformation.ASSIGNEE_NOT_FOUND_MESSAGE);
             }
-            if(user.get().isActiveFlg()){
+            if (user.get().isActiveFlg()) {
                 throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
             }
             task.setAssigneeId(user.get());
@@ -242,7 +271,7 @@ public class TaskServiceImpl implements TaskService {
                 throw new TaskStatusNotFoundException(ResourceInformation.STATUS_NOT_FOUND_MESSAGE);
             }
             TaskStatus status = optionalTaskStatus.get();
-            saveStatusLog(task,status,false);
+            saveStatusLog(task, status, false);
             task.setStatus(status);
         }
     }
@@ -251,13 +280,13 @@ public class TaskServiceImpl implements TaskService {
         Project project = task.getProject();
         User user = task.getAssigneeId();
         TaskStatus previousTaskStatus;
-        if(create){
+        if (create) {
             previousTaskStatus = null;
-        }else {
+        } else {
             previousTaskStatus = task.getStatus();
         }
         StatusLog statusLog = StatusLog.builder()
-                                        .projectId(project)
+                .projectId(project)
                 .taskId(task)
                 .userId(user)
                 .transitionDate(LocalDateTime.now())
@@ -278,9 +307,9 @@ public class TaskServiceImpl implements TaskService {
         ) {
             task.setDescription(taskDto.getDescription());
         }
-        if (task.getLabel() != null && !"".equalsIgnoreCase(task.getLabel()) && taskDto.getLabel() != null) {
-            task.setLabel(taskDto.getLabel());
-        }
+//        if (taskDto.getLabel() != null) {
+//            updateTaskLabels(task, taskDto.getLabel());
+//        }
         if (task.getStartDate() != null && taskDto.getStartDate() != null) {
             task.setStartDate(taskDto.getStartDate());
         }
@@ -289,13 +318,24 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+//    private void updateTaskLabels(Task task, List<String> labelNames) {
+//        if (labelNames != null && !labelNames.isEmpty()) {
+//            Set<Label> labels = labelNames.stream()
+//                    .map(labelName -> checkUtils.getLabelFromName(labelName))
+//                    .collect(Collectors.toSet());
+//            task.setLabels(labels);
+//        } else {
+//            task.setLabels(Collections.emptySet());
+//        }
+//    }
+
     private Task createTaskFromDto(TaskDto taskDto) {
         Task task = new Task();
         task.setActiveFlg(true);
         task.setTaskName(taskDto.getTaskName());
         task.setDescription(taskDto.getDescription());
         task.setType(taskDto.getType());
-        task.setLabel(taskDto.getLabel());
+//        task.setLabel(taskDto.getLabel());
         task.setStatus(checkUtils.getStatusFromId(taskDto.getStatus()));
         task.setStartDate(taskDto.getStartDate());
         task.setEndDate(taskDto.getEndDate());

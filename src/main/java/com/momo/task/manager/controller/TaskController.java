@@ -49,4 +49,10 @@ public class TaskController {
         return taskService.getAllTask(projectKey);
     }
 
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
+    @GetMapping(ResourceEndpoints.GET_ALL_TASKS_OF_LABEL)
+    public ResponseEntity<List<Task>> getAllTasksOfLabel(@PathVariable("projectKey") String projectKey,@PathVariable("labelName") String labelName) {
+        return taskService.getAllTaskOfLabel(projectKey,labelName);
+    }
+
 }

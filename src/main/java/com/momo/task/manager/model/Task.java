@@ -14,7 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.*;
 
 
 @Entity
@@ -45,9 +45,17 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "task_status", referencedColumnName = "status_id")
     private TaskStatus status;
-    @NotBlank(message = ResourceInformation.TASK_LABEL_REQUIRED_MESSAGE)
-    @Column(name = "task_label")
-    private String label;
+//
+//    @Column(name = "task_label")
+//    private String label;
+//    @ManyToMany
+//    @JoinTable(
+//            name = "task_label",
+//            joinColumns = @JoinColumn(name = "task_id"),
+//            inverseJoinColumns = @JoinColumn(name = "label_id")
+//    )
+//    private List<Label> labels = new ArrayList<>();
+
     @NotNull(message = ResourceInformation.TASK_START_DATE_REQUIRED_MESSAGE)
     @Column(name = "start_date", nullable = false)
     private Date startDate;

@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class TaskDto {
@@ -13,7 +14,7 @@ public class TaskDto {
     private String description;
     private Long status;
     private String type;
-    private String label;
+    private List<String> label;
     private String projectKey;
     private Date startDate;
     private Date endDate;

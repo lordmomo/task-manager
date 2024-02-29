@@ -3,6 +3,7 @@ package com.momo.task.manager.utils;
 public class ResourceInformation {
 
     public static final String DATA_HAS_DELETED_MESSAGE ="Data has been deleted" ;
+    public static final String LABEL_NOT_FOUND = "Label not found" ;
 
     private ResourceInformation() {
         throw new IllegalStateException();

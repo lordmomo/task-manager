@@ -43,6 +43,8 @@ public class ResourceEndpoints {
     public static final String DELETE_TASKS_ENDPOINT = "/tasks/{taskId}";
     public static final String UPDATE_TASKS_ENDPOINT = "/tasks/{taskId}/update";
     public static final String GET_ALL_TASKS_IN_PROJECT_ENDPOINT = "projects/{projectKey}/tasks";
+    public static final String GET_ALL_TASKS_OF_LABEL = "projects/{projectKey}/tasks/{labelName}";
+
 
 
 }

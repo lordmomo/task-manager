@@ -55,6 +55,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> dataHasBeenDeletedException(DataHasBeenDeletedException e){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
-
+    @ExceptionHandler(LabelNotFoundException.class)
+    public ResponseEntity<String> labelNotFoundException(LabelNotFoundException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
 }
 

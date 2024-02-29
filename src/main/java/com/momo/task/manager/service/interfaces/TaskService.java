@@ -14,4 +14,6 @@ public interface TaskService {
     ResponseEntity<String> updateTask(Long taskId, TaskDto taskDto);
 
     ResponseEntity<List<Task>>getAllTask(String projectKey);
+
+    ResponseEntity<List<Task>> getAllTaskOfLabel(String projectKey, String labelName);
 }
