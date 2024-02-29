@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
     @Query(nativeQuery = true,
-            value = "SELECT * FROM COMMENT c where c.task_id = :taskId"
+            value = "SELECT * FROM COMMENT c where c.task_id = :taskId AND c.active_flg = 1"
             )
     List<Comment> findAllByCommentByTaskId(Long taskId);
 
@@ -22,7 +22,7 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
                     "SET c.active_flg = 0 , " +
                     "c.updated_flg = 1, " +
                     "c.updated_date = NOW(), " +
-                    "c.end_date = CURRENT_DATE " +
+                    "c.end_date = NOW() " +
                     "WHERE c.comment_id = :commentId")
     void deleteByCommentId(Long commentId);
 
@@ -33,7 +33,7 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
                     "SET c.active_flg = 0 , " +
                     "c.updated_flg = 1, " +
                     "c.updated_date = NOW(), " +
-                    "c.end_date = CURRENT_DATE " +
+                    "c.end_date = NOW() " +
                     "WHERE c.task_id = :taskId")
     void deleteByTaskId(Long taskId);
 

@@ -1,6 +1,7 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.*;
+import com.momo.task.manager.exception.DataHasBeenDeletedException;
 import com.momo.task.manager.exception.PictureDataException;
 import com.momo.task.manager.exception.ProjectNotFoundException;
 import com.momo.task.manager.exception.UserNotFoundException;
@@ -82,12 +83,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public ResponseEntity<UserResponseDto> getUserDetails(String username) {
-        Optional<User> optUser = superAdminRepository.findByUsername(username);
-
-        if (optUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
-        }
-        User user = optUser.get();
+        User user = validateIfUserExistsAndIsActive(username);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(mapper.map(user, UserResponseDto.class));
@@ -95,7 +91,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        List<User> userList = superAdminRepository.findAll();
+        List<User> userList = superAdminRepository.findAllActiveUsers();
         List<UserResponseDto> userDtoList = new ArrayList<>();
         for (User user : userList) {
             UserResponseDto userDto = mapper.map(user, UserResponseDto.class);
@@ -123,11 +119,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     public ResponseEntity<String> removeUser(String username) {
 
         //user delete , delete their access, comment
-        Optional<User> optUser = superAdminRepository.findByUsername(username);
-        if (optUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
-        }
-        User user = optUser.get();
+        User user = validateIfUserExistsAndIsActive(username);
         removeAllUserRelatedData(user);
 
         return ResponseEntity
@@ -143,11 +135,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public ResponseEntity<String> updateUserDetails(String username, UserDetailsDto userDetailsDto) {
-        Optional<User> optUser = superAdminRepository.findByUsername(username);
-        if (optUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
-        }
-        User user = optUser.get();
+        User user = validateIfUserExistsAndIsActive(username);
         this.updateAllUserDetails(user,userDetailsDto);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_DETAILS_UPDATED_MESSAGE);
     }
@@ -162,11 +150,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public ResponseEntity<String> updateUserCredentials(String username, UserCredentialsDto userCredentialsDto) {
-        Optional<User> optUser = superAdminRepository.findByUsername(username);
-        if (optUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
-        }
-        User user = optUser.get();
+        User user = validateIfUserExistsAndIsActive(username);
         this.updateAllUserCredentials(user,userCredentialsDto);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
     }
@@ -179,11 +163,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public ResponseEntity<String> updateUserProfilePicture(String username, MultipartFile file) {
-        Optional<User> optUser = superAdminRepository.findByUsername(username);
-        if (optUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
-        }
-        User user = optUser.get();
+        User user = validateIfUserExistsAndIsActive(username);
         this.updateAllUserProfilePicture(user,file);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_PROFILE_PICTURE_UPDATED_MESSAGE);
     }
@@ -205,6 +185,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
+        if(!optUser.get().isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+        }
         User user = optUser.get();
         project.setProjectLead(user);
         this.setFlagForProjectCreation(project);
@@ -219,8 +202,14 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
+        if(!optionalProject.get().isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+        }
         Project project = optionalProject.get();
         User prevUser = project.getProjectLead();
+        if(!prevUser.isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+        }
         this.updateProjectLead(prevUser, project, updateProjectDto);
         this.updateGeneralProjectDetails(project, updateProjectDto);
         project.setUpdatedFlg(true);
@@ -234,6 +223,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+        }
+        if(!optionalProject.get().isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         Long projectId = optionalProject.get().getProjectId();
         //check if active flag is zero or not before deletion in every delete operation
@@ -257,6 +249,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+        }
+
+        if(!optionalProject.get().isActiveFlg() ||
+            !optionalUser.get().isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         User user = optionalUser.get();
         Project project = optionalProject.get();
@@ -339,6 +336,16 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
     }
 
+    private User validateIfUserExistsAndIsActive(String username) {
+        Optional<User> optUser = superAdminRepository.findByUsername(username);
+        if (optUser.isEmpty()) {
+            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+        }
+        if(!optUser.get().isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+        }
+        return optUser.get();
+    }
     private void setFlagForUserCreation(User user) {
         user.setActiveFlg(true);
         user.setUpdatedFlg(false);

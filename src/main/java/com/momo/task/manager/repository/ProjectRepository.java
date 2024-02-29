@@ -19,7 +19,7 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
                     "SET p.active_flg = 0 , " +
                     "p.updated_flg = 1, " +
                     "p.updated_date = NOW(), " +
-                    "p.end_date = CURRENT_DATE " +
+                    "p.end_date = NOW() " +
                     "WHERE p.project_id = :projectId ")
     void deleteProjectById(Long projectId);
 

@@ -2,6 +2,8 @@ package com.momo.task.manager.utils;
 
 public class ResourceInformation {
 
+    public static final String DATA_HAS_DELETED_MESSAGE ="Data has been deleted" ;
+
     private ResourceInformation() {
         throw new IllegalStateException();
     }

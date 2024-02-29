@@ -17,14 +17,14 @@ public interface AccessRepository extends JpaRepository<Access,Long> {
                     "SET a.active_flg = 0 , " +
                     "a.updated_flg = 1, " +
                     "a.updated_date = NOW(), " +
-                    "a.end_date = CURRENT_DATE " +
+                    "a.end_date = NOW() " +
                     "WHERE a.accessed_user_id = :userId ")
     void deleteByUserId (Long userId);
 
 
     @Query(nativeQuery = true,
             value = "select * " +
-                    "FROM access a where a.accessed_user_id = :userId AND a.accessed_project_id = :projectId ;"
+                    "FROM access a where a.accessed_user_id = :userId AND a.accessed_project_id = :projectId and a.active_flg = 1;"
     )
     Access validateUserProjectRelation(Long userId,Long projectId);
 
@@ -35,7 +35,7 @@ public interface AccessRepository extends JpaRepository<Access,Long> {
                     "SET a.active_flg = 0 , " +
                     "a.updated_flg = 1, " +
                     "a.updated_date = NOW(), " +
-                    "a.end_date = CURRENT_DATE " +
+                    "a.end_date = NOW() " +
                     "WHERE a.accessed_project_id = :projectId ")
     void deleteProjectById(Long projectId);
 }

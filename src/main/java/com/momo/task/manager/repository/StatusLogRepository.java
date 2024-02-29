@@ -13,7 +13,7 @@ public interface StatusLogRepository extends JpaRepository<StatusLog,Long> {
     @Modifying
     @Query(nativeQuery = true,
             value = "UPDATE status_log l " +
-                    "SET l.active_flg = 0 , " +
-                    "WHERE l.task_id = :taskId ")
+                    "SET l.active_flg = 0 " +
+                    "WHERE l.task_id = :taskId")
     void deleteByTaskId(Long taskId);
 }

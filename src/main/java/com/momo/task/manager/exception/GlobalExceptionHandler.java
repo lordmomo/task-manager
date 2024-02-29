@@ -51,7 +51,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> userNameNotFoundException(UserNameNotFoundException e){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
-
+    @ExceptionHandler(DataHasBeenDeletedException.class)
+    public ResponseEntity<String> dataHasBeenDeletedException(DataHasBeenDeletedException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
 
 }
 

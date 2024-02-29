@@ -1,12 +1,10 @@
 package com.momo.task.manager.utils;
 
-import com.momo.task.manager.exception.CommentNotFoundException;
-import com.momo.task.manager.exception.TaskDoesNotBelongToProjectException;
-import com.momo.task.manager.exception.UserHasNoAccessToProjectException;
-import com.momo.task.manager.exception.UserNotFoundException;
+import com.momo.task.manager.exception.*;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -109,5 +107,35 @@ public class CheckUtils {
 
     public Long getUserIdFromCommentId(Long commentId) {
         return commentRepository.getUserIdFromCommentId(commentId);
+    }
+
+    public boolean checkIfProjectIdDeleted(String projectKey){
+        Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
+        if(optionalProject.isEmpty()){
+            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+        }
+        return optionalProject.get().isActiveFlg();
+    }
+    public boolean checkIfTaskIdDeleted(Long taskId){
+        Optional<Task> optionalTask = taskRepository.findById(taskId);
+        if(optionalTask.isEmpty()){
+            throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
+        }
+        return optionalTask.get().isActiveFlg();
+    }
+
+    public boolean checkIfCommentIdDeleted(Long commentId){
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if(optionalComment.isEmpty()){
+            throw new CommentNotFoundException(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
+        }
+        return optionalComment.get().isActiveFlg();
+    }
+    public boolean checkIfUserDeletedByUsername(String username){
+        Optional<User> optionalUser = superAdminRepository.findByUsername(username);
+        if(optionalUser.isEmpty()){
+            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+        }
+        return optionalUser.get().isActiveFlg();
     }
 }

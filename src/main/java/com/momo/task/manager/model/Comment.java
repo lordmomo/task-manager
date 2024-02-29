@@ -41,7 +41,7 @@ public class Comment {
 
     @PastOrPresent(message = ResourceInformation.MESSAGE_POSTED_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "commented_date", nullable = false)
-    private Date messagePostDate;
+    private LocalDateTime messagePostDate;
 
     @Lob
     @Nullable

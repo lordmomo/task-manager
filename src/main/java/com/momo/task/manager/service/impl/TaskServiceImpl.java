@@ -92,9 +92,13 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public ResponseEntity<String> deleteTask(Long taskId) {
 
+
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         if (optionalTask.isEmpty()) {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
+        }
+        if(!optionalTask.get().isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         this.removeAllTaskRelatedData(taskId);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_DELETED_MESSAGE);
@@ -106,6 +110,9 @@ public class TaskServiceImpl implements TaskService {
         Optional<Task> optTask = taskRepository.findById(taskId);
         if (optTask.isEmpty()) {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
+        }
+        if(!optTask.get().isActiveFlg()){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         Task task = optTask.get();
         this.updateTaskFile(task, taskDto.getFile());
@@ -195,6 +202,9 @@ public class TaskServiceImpl implements TaskService {
             if (user.isEmpty()) {
                 throw new UserNotFoundException(ResourceInformation.REPORTER_NOT_FOUND_MESSAGE);
             }
+            if(user.get().isActiveFlg()){
+                throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+            }
             task.setReporterId(user.get());
         }
     }
@@ -204,6 +214,9 @@ public class TaskServiceImpl implements TaskService {
             Optional<User> user = superAdminRepository.findById(userId);
             if (user.isEmpty()) {
                 throw new UserNotFoundException(ResourceInformation.ASSIGNEE_NOT_FOUND_MESSAGE);
+            }
+            if(user.get().isActiveFlg()){
+                throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
             }
             task.setAssigneeId(user.get());
         }

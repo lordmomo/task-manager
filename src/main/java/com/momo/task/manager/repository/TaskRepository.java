@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task,Long> {
     @Query(nativeQuery = true,
-            value = "SELECT * FROM TASK t WHERE t.project_id = :projectId"
+            value = "SELECT * FROM TASK t WHERE t.project_id = :projectId AND t.active_flg = 1"
     )
     List<Task>findByProdId(Long projectId);
 
@@ -29,7 +29,7 @@ public interface TaskRepository extends JpaRepository<Task,Long> {
                     "t.updated_flg = 1, " +
                     "t.updated_date = NOW(), " +
                     "t.end_date = CURRENT_DATE " +
-                    "WHERE t.task_id = :taskId ")
+                    "WHERE t.task_id = :taskId")
     void deleteByTaskId(Long taskId);
 
     @Transactional
@@ -44,6 +44,6 @@ public interface TaskRepository extends JpaRepository<Task,Long> {
     void deleteByProjectId(Long projectId);
 
     @Query(nativeQuery = true,
-            value = "Select t.task_id from task t where t.project_id = :projectId")
+            value = "Select t.task_id from task t where t.project_id = :projectId where t.active_flg = 1")
     List<Long> getAllTaskIdFromProjectId(Long projectId);
 }

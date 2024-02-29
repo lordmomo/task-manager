@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface SuperAdminRepository extends JpaRepository<User,Long> {
     @Query(nativeQuery = true,
-            value = "SELECT * FROM USER u where u.role = :role")
+            value = "SELECT * FROM USER u where u.role = :role AND u.active_flg = 1")
     List<User> findUsersByRole(Long role);
     @Transactional
     @Modifying
@@ -22,9 +22,15 @@ public interface SuperAdminRepository extends JpaRepository<User,Long> {
                     "SET u.active_flg = 0 , " +
                     "u.updated_flg = 1, " +
                     "u.updated_date = NOW(), " +
-                    "u.end_date = CURRENT_DATE " +
+                    "u.end_date = NOW() " +
                     "WHERE u.user_id = :userId ")
     void deleteByUserId(Long userId);
 
     Optional<User> findByUsername(String username);
+
+    @Query(nativeQuery = true,
+            value = "SELECT * " +
+                    "FROM user u " +
+                    "WHERE u.active_flg = 1")
+    List<User> findAllActiveUsers();
 }

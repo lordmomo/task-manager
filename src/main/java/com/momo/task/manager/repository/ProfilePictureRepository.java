@@ -16,7 +16,7 @@ public interface ProfilePictureRepository extends JpaRepository<ProfilePicture,L
                     "SET p.active_flg = 0 , " +
                     "p.updated_flg = 1, " +
                     "p.updated_date = NOW(), " +
-                    "p.end_date = CURRENT_DATE " +
+                    "p.end_date = NOW() " +
                     "WHERE p.profile_picture_id = :profilePictureId ")
     void deleteByPictureId(Long profilePictureId);
 }

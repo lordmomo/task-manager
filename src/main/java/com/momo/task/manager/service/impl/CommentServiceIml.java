@@ -3,6 +3,7 @@ package com.momo.task.manager.service.impl;
 import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.dto.CommentValidation;
 import com.momo.task.manager.dto.UpdateCommentDto;
+import com.momo.task.manager.exception.DataHasBeenDeletedException;
 import com.momo.task.manager.exception.PictureDataException;
 import com.momo.task.manager.model.Comment;
 import com.momo.task.manager.model.Task;
@@ -53,6 +54,8 @@ public class CommentServiceIml implements CommentService {
     public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
 
         try {
+            checkIfDetailsAreAlreadyDeleted(projectKey,taskId,commentId,username);
+
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToDeleteComment = checkUtils.getUserIdFromUsername(username);
             if (!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)) {
@@ -69,10 +72,22 @@ public class CommentServiceIml implements CommentService {
 
     }
 
+    private void checkIfDetailsAreAlreadyDeleted(String projectKey, Long taskId, Long commentId, String username) {
+        if(!this.checkUtils.checkIfProjectIdDeleted(projectKey) ||
+                !this.checkUtils.checkIfTaskIdDeleted(taskId) ||
+                !this.checkUtils.checkIfCommentIdDeleted(commentId) ||
+                !this.checkUtils.checkIfUserDeletedByUsername(username)
+        ){
+            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+        }
+    }
+
     @Override
     public ResponseEntity<String> updateComment(String projectKey, Long taskId, Long commentId,
                                                 String username, UpdateCommentDto updateCommentDto) {
         try {
+            checkIfDetailsAreAlreadyDeleted(projectKey,taskId,commentId,username);
+
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToUpdateComment = checkUtils.getUserIdFromUsername(username);
             if (!userIdOfUserWhoWantsToUpdateComment.equals(userIdOfUserWhoCommented)) {
@@ -120,7 +135,7 @@ public class CommentServiceIml implements CommentService {
             comment.setTaskId(task);
             comment.setUserId(user);
             comment.setMessage(commentDto.getMessage());
-            comment.setMessagePostDate(new Date());
+            comment.setMessagePostDate(LocalDateTime.now());
             this.setFlagForCommentCreation(comment);
         } catch (NullPointerException e) {
             throw new NullPointerException(e.getMessage());

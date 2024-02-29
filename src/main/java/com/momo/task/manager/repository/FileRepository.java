@@ -17,7 +17,7 @@ public interface FileRepository extends JpaRepository<File,Long> {
             "SET f.active_flg = 0 , " +
             "f.updated_flg = 1, " +
             "f.updated_date = NOW(), " +
-            "f.end_date = CURRENT_DATE " +
+            "f.end_date = NOW() " +
             "WHERE f.task_id = :taskId")
     void deleteByTaskId(Long taskId);
 
