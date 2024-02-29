@@ -73,9 +73,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public ResponseEntity<String> createUser(UserCreateDto userCreateDto) {
         User user = new User();
-        createUserFromDto(user, userCreateDto);
-        setRoleForUser(user, userCreateDto.getRoleId());
-        setProfilePictureForUser(user, userCreateDto.getPictureFile(), new ProfilePicture());
+        this.createUserFromDto(user, userCreateDto);
+        this.setRoleForUser(user, userCreateDto.getRoleId());
+        this.setProfilePictureForUser(user, userCreateDto.getPictureFile(), new ProfilePicture());
         superAdminRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREATED_MESSAGE);
     }
@@ -128,12 +128,17 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         User user = optUser.get();
-        superAdminRepository.deleteByUserId(user.getUserId());
-        profilePictureRepository.deleteByPictureId(user.getPicture().getProfilePictureId());
-        accessRepository.deleteByUserId(user.getUserId());
+        removeAllUserRelatedData(user);
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResourceInformation.USER_DELETED_MESSAGE);
+    }
+
+    private void removeAllUserRelatedData(User user) {
+        superAdminRepository.deleteByUserId(user.getUserId());
+        profilePictureRepository.deleteByPictureId(user.getPicture().getProfilePictureId());
+        accessRepository.deleteByUserId(user.getUserId());
     }
 
     @Override
@@ -143,12 +148,16 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         User user = optUser.get();
+        this.updateAllUserDetails(user,userDetailsDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_DETAILS_UPDATED_MESSAGE);
+    }
+
+    private void updateAllUserDetails(User user,UserDetailsDto userDetailsDto) {
         user.setFirstName(userDetailsDto.getFirstName());
         user.setLastName(userDetailsDto.getLastName());
         user.setEmail(userDetailsDto.getEmail());
-        setFlagForUserUpdate(user);
+        this.setFlagForUserUpdate(user);
         superAdminRepository.save(user);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_DETAILS_UPDATED_MESSAGE);
     }
 
     @Override
@@ -158,11 +167,14 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         User user = optUser.get();
+        this.updateAllUserCredentials(user,userCredentialsDto);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
+    }
+    private void updateAllUserCredentials(User user, UserCredentialsDto userCredentialsDto) {
         user.setUsername(userCredentialsDto.getUsername());
         user.setPassword(passwordEncoder.encode(userCredentialsDto.getPassword()));
-        setFlagForUserUpdate(user);
+        this.setFlagForUserUpdate(user);
         superAdminRepository.save(user);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
     }
 
     @Override
@@ -172,13 +184,17 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         User user = optUser.get();
+        this.updateAllUserProfilePicture(user,file);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_PROFILE_PICTURE_UPDATED_MESSAGE);
+    }
+
+    private void updateAllUserProfilePicture(User user, MultipartFile file) {
         var userPPId = user.getPicture().getProfilePictureId();
         Optional<ProfilePicture> profilePicture = profilePictureRepository.findById(userPPId);
         ProfilePicture picture = profilePicture.orElseGet(ProfilePicture::new);
-        updateProfilePictureForUser(user, file, picture);
-        setFlagForUserUpdate(user);
+        this.updateProfilePictureForUser(user, file, picture);
+        this.setFlagForUserUpdate(user);
         superAdminRepository.save(user);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_PROFILE_PICTURE_UPDATED_MESSAGE);
     }
 
     @Override
@@ -191,9 +207,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         User user = optUser.get();
         project.setProjectLead(user);
-        setFlagForProjectCreation(project);
+        this.setFlagForProjectCreation(project);
         projectRepository.save(project);
-        addUsersToProject(project.getProjectKey(), user.getUsername());
+        this.addUsersToProject(project.getProjectKey(), user.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.PROJECT_CREATED_MESSAGE);
     }
 
@@ -205,8 +221,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         Project project = optionalProject.get();
         User prevUser = project.getProjectLead();
-        updateProjectLead(prevUser, project, updateProjectDto);
-        updateGeneralProjectDetails(project, updateProjectDto);
+        this.updateProjectLead(prevUser, project, updateProjectDto);
+        this.updateGeneralProjectDetails(project, updateProjectDto);
         project.setUpdatedFlg(true);
         project.setUpdatedDate(LocalDateTime.now());
         projectRepository.save(project);
@@ -253,7 +269,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         Access access = new Access();
         access.setUser(user);
         access.setProject(project);
-        setFlagForAccessCreation(access);
+        this.setFlagForAccessCreation(access);
         return access;
     }
 
@@ -263,7 +279,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setEmail(userCreateDto.getEmail());
         user.setUsername(userCreateDto.getUsername());
         user.setPassword(passwordEncoder.encode(userCreateDto.getPassword()));
-        setFlagForUserCreation(user);
+        this.setFlagForUserCreation(user);
     }
 
     private void setRoleForUser(User user, Long roleId) {
@@ -283,7 +299,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             byte[] defaultPicture = imageLoader.loadImage(ResourceInformation.DEFAULT_IMAGE_PATH);
             profilePicture.setPictureData(defaultPicture);
         }
-        setFlagForProfilePictureCreation(profilePicture);
+        this.setFlagForProfilePictureCreation(profilePicture);
         user.setPicture(profilePictureRepository.save(profilePicture));
     }
 
@@ -291,13 +307,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (pictureFile != null) {
             try {
                 profilePicture.setPictureData(pictureFile.getBytes());
-                setFlagForProfilePictureUpdate(profilePicture);
+                this.setFlagForProfilePictureUpdate(profilePicture);
 
             } catch (IOException e) {
                 throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
             }
         }
-
         user.setPicture(profilePictureRepository.save(profilePicture));
     }
 
@@ -312,7 +327,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         }
         project.setProjectLead(user);
         accessRepository.deleteByUserId(prevUser.getUserId());
-        addUsersToProject(project.getProjectKey(), user.getUsername());
+        this.addUsersToProject(project.getProjectKey(), user.getUsername());
     }
 
     private void updateGeneralProjectDetails(Project project, UpdateProjectDto updateProjectDto) {

@@ -46,6 +46,18 @@ public class CheckUtils {
         }
         return true;
     }
+    public void checkProjectAndUserAccess(String projectKey, Long userId) {
+        User user = getUserFromId(userId);
+        this.checkUserProjectAccess(user.getUserId(), projectKey);
+    }
+
+    public void checkProjectAndUserIfNull(String projectKey, Long userId) {
+        Project project = getProjectFromKey(projectKey);
+        User user = getUserFromId(userId);
+        if (project == null || user == null) {
+            throw new UserNotFoundException(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
+        }
+    }
 
     public Task checkTaskExists(Long taskId) {
         Optional<Task> optionalTask = taskRepository.findById(taskId);

@@ -4,11 +4,7 @@ import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.dto.CommentValidation;
 import com.momo.task.manager.dto.UpdateCommentDto;
 import com.momo.task.manager.exception.PictureDataException;
-import com.momo.task.manager.exception.TaskDoesNotBelongToProjectException;
-import com.momo.task.manager.exception.UserHasNoAccessToProjectException;
-import com.momo.task.manager.exception.UserNotFoundException;
 import com.momo.task.manager.model.Comment;
-import com.momo.task.manager.model.Project;
 import com.momo.task.manager.model.Task;
 import com.momo.task.manager.model.User;
 import com.momo.task.manager.repository.CommentRepository;
@@ -46,9 +42,9 @@ public class CommentServiceIml implements CommentService {
         Long userId = commentDto.getUserId();
         this.performCommonValidations(projectKey, userId);
         Comment comment = new Comment();
-        createCommentFromDto(comment, userId, taskId, commentDto);
+        this.createCommentFromDto(comment, userId, taskId, commentDto);
         MultipartFile file = commentDto.getDocumentFile();
-        saveFileInComment(comment, file);
+        this.saveFileInComment(comment, file);
         commentRepository.save(comment);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_ADDED_MESSAGE);
     }
@@ -57,7 +53,6 @@ public class CommentServiceIml implements CommentService {
     public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
 
         try {
-
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToDeleteComment = checkUtils.getUserIdFromUsername(username);
             if (!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)) {
@@ -95,16 +90,13 @@ public class CommentServiceIml implements CommentService {
     @Override
     public ResponseEntity<Object> listAllComments(String projectKey, Long taskId) {
 
-        try {
-            this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
-            List<Comment> commentList = commentRepository.findAllByCommentByTaskId(taskId);
-            //make commentList Dto..also for task
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(commentList);
-        } catch (TaskDoesNotBelongToProjectException e) {
-            throw new TaskDoesNotBelongToProjectException(e.getMessage());
-        }
+        this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
+        List<Comment> commentList = commentRepository.findAllByCommentByTaskId(taskId);
+        //make commentList Dto..also for task
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(commentList);
+
     }
 
     private void updateCommentFromDto(Long commentId, UpdateCommentDto updateCommentDto) {
@@ -116,7 +108,7 @@ public class CommentServiceIml implements CommentService {
             comment.setUpdatedDate(LocalDateTime.now());
             MultipartFile file = updateCommentDto.getDocumentFile();
             //check is file is null , delete then null too
-            saveFileInComment(comment, file);
+            this.saveFileInComment(comment, file);
             commentRepository.save(comment);
         }
     }
@@ -129,7 +121,7 @@ public class CommentServiceIml implements CommentService {
             comment.setUserId(user);
             comment.setMessage(commentDto.getMessage());
             comment.setMessagePostDate(new Date());
-            setFlagForCommentCreation(comment);
+            this.setFlagForCommentCreation(comment);
         } catch (NullPointerException e) {
             throw new NullPointerException(e.getMessage());
         }
@@ -149,34 +141,12 @@ public class CommentServiceIml implements CommentService {
     }
 
     private void performCommonValidations(String projectKey, Long userId) {
-        try {
-            this.checkProjectAndUserIfNull(projectKey, userId);
-            this.checkProjectAndUserAccess(projectKey, userId);
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException(e.getMessage());
-        } catch (UserHasNoAccessToProjectException e) {
-            throw new UserHasNoAccessToProjectException(e.getMessage());
-        }
+
+        this.checkUtils.checkProjectAndUserIfNull(projectKey, userId);
+        this.checkUtils.checkUserProjectAccess(userId, projectKey);
+
     }
 
-    private void checkProjectAndUserAccess(String projectKey, Long userId) {
-        try {
-            User user = checkUtils.getUserFromId(userId);
-            checkUtils.checkUserProjectAccess(user.getUserId(), projectKey);
-        } catch (UserHasNoAccessToProjectException e) {
-            throw new UserHasNoAccessToProjectException(e.getMessage());
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException(e.getMessage());
-        }
-    }
-
-    private void checkProjectAndUserIfNull(String projectKey, Long userId) {
-        Project project = checkUtils.getProjectFromKey(projectKey);
-        User user = checkUtils.getUserFromId(userId);
-        if (project == null || user == null) {
-            throw new UserNotFoundException(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
-        }
-    }
 
     private void setFlagForCommentCreation(Comment comment) {
         comment.setActiveFlg(true);

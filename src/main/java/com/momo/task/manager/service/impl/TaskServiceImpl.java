@@ -77,7 +77,7 @@ public class TaskServiceImpl implements TaskService {
         ) {
             Task task = createTaskFromDto(taskDto);
             taskRepository.save(task);
-            saveTaskFile(task, taskDto.getFile());
+            this.saveTaskFile(task, taskDto.getFile());
             log.info(ResourceInformation.TASK_CREATED_MESSAGE);
             return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
         } else {
@@ -87,18 +87,14 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public ResponseEntity<String> deleteTask(Long taskId) {
-        try {
-            Optional<Task> optionalTask = taskRepository.findById(taskId);
-            if (optionalTask.isEmpty()) {
-                throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
-            }
-            fileRepository.deleteByTaskId(taskId);
-            commentRepository.deleteByTaskId(taskId);
-            taskRepository.deleteByTaskId(taskId);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_DELETED_MESSAGE);
-        } catch (TaskNotFoundException e) {
-            throw new TaskNotFoundException(e.getMessage());
+
+        Optional<Task> optionalTask = taskRepository.findById(taskId);
+        if (optionalTask.isEmpty()) {
+            throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
+        this.removeAllTaskRelatedData(taskId);
+        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_DELETED_MESSAGE);
+
     }
 
     @Override
@@ -108,10 +104,10 @@ public class TaskServiceImpl implements TaskService {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
         }
         Task task = optTask.get();
-        updateTaskFile(task, taskDto.getFile());
-        updateTaskFields(task, taskDto);
+        this.updateTaskFile(task, taskDto.getFile());
+        this.updateTaskFields(task, taskDto);
         task.setUpdatedFlg(true);
-        updateTaskDateFields(task);
+        this.updateTaskDateFields(task);
         taskRepository.save(task);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_UPDATED_MESSAGE);
     }
@@ -135,13 +131,13 @@ public class TaskServiceImpl implements TaskService {
             File file = optFile.get();
             updateExistingFile(file, mFile);
         }
-        createNewFile(task, mFile);
+        this.createNewFile(task, mFile);
     }
 
     private void createNewFile(Task task, MultipartFile mFile) {
         File file = new File();
         file.setTask(task);
-        setFlagForFileCreation(file);
+        this.setFlagForFileCreation(file);
         if (mFile != null && !mFile.isEmpty()) {
             try {
                 file.setFileData(mFile.getBytes());
@@ -161,7 +157,7 @@ public class TaskServiceImpl implements TaskService {
                 } else {
                     file.setFileData(null);
                 }
-                setFlagForFileUpdate(file);
+                this.setFlagForFileUpdate(file);
             }
         } catch (IOException e) {
             throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
@@ -178,11 +174,11 @@ public class TaskServiceImpl implements TaskService {
 
     private void updateTaskFields(Task task, TaskDto taskDto) {
 
-        updateGeneralTaskInformation(task, taskDto);
-        updateTaskStatus(task, taskDto);
-        updateTaskStage(task, taskDto);
-        updateAssociatedReporterUsers(taskDto.getReporterId(), task);
-        updateAssociatedAssigneeUsers(taskDto.getAssigneeId(), task);
+        this.updateGeneralTaskInformation(task, taskDto);
+        this.updateTaskStatus(task, taskDto);
+        this.updateTaskStage(task, taskDto);
+        this.updateAssociatedReporterUsers(taskDto.getReporterId(), task);
+        this.updateAssociatedAssigneeUsers(taskDto.getAssigneeId(), task);
     }
 
     private void updateAssociatedReporterUsers(Long userId, Task task) {
@@ -272,7 +268,7 @@ public class TaskServiceImpl implements TaskService {
         }
         File file = new File();
         file.setTask(task);
-        setFlagForFileCreation(file);
+        this.setFlagForFileCreation(file);
         try {
             file.setFileData(mFile.getBytes());
         } catch (IOException e) {
@@ -293,6 +289,12 @@ public class TaskServiceImpl implements TaskService {
         file.setActiveFlg(true);
         file.setUpdatedFlg(true);
         file.setUpdatedDate(LocalDateTime.now());
+    }
+
+    private void removeAllTaskRelatedData(Long taskId) {
+        fileRepository.deleteByTaskId(taskId);
+        commentRepository.deleteByTaskId(taskId);
+        taskRepository.deleteByTaskId(taskId);
     }
 
 }
