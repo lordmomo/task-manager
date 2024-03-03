@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 @Repository
-public interface CommentRepository extends JpaRepository<Comment,Long> {
+public interface CommentDbRepository extends JpaRepository<Comment,Long> {
     @Query(nativeQuery = true,
             value = "SELECT * FROM COMMENT c where c.task_id = :taskId AND c.active_flg = 1"
             )

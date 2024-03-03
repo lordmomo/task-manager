@@ -26,7 +26,7 @@ import java.util.Optional;
 @Slf4j
 public class TaskServiceImpl implements TaskService {
     TaskRepository taskRepository;
-    CommentRepository commentRepository;
+    CommentDbRepository commentRepository;
     FileRepository fileRepository;
     TaskStatusRepository taskStatusRepository;
     SuperAdminRepository superAdminRepository;
@@ -39,7 +39,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     public TaskServiceImpl(TaskRepository taskRepository,
-                           CommentRepository commentRepository,
+                           CommentDbRepository commentRepository,
                            FileRepository fileRepository,
                            TaskStatusRepository taskStatusRepository,
                            SuperAdminRepository superAdminRepository,

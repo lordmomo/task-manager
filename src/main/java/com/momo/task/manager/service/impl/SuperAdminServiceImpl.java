@@ -33,7 +33,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     ProjectRepository projectRepository;
     TaskRepository taskRepository;
     AccessRepository accessRepository;
-    CommentRepository commentRepository;
+    CommentDbRepository commentRepository;
     FileRepository fileRepository;
     ModelMapper mapper;
     ImageLoader imageLoader;
@@ -46,7 +46,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                                  ProjectRepository projectRepository,
                                  TaskRepository taskRepository,
                                  AccessRepository accessRepository,
-                                 CommentRepository commentRepository,
+                                 CommentDbRepository commentRepository,
                                  FileRepository fileRepository,
                                  ModelMapper mapper,
                                  ImageLoader imageLoader,

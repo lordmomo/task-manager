@@ -8,12 +8,14 @@ import com.momo.task.manager.exception.PictureDataException;
 import com.momo.task.manager.model.Comment;
 import com.momo.task.manager.model.Task;
 import com.momo.task.manager.model.User;
-import com.momo.task.manager.repository.CommentRepository;
+import com.momo.task.manager.repository.CommentDbRepository;
+import com.momo.task.manager.response.CommentResponse;
 import com.momo.task.manager.service.interfaces.CommentService;
 import com.momo.task.manager.utils.CheckUtils;
 import com.momo.task.manager.utils.ResourceInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,18 +24,21 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @Slf4j
+@EnableCaching
+@CacheConfig(cacheNames = "COMMENT")
 public class CommentServiceIml implements CommentService {
     CheckUtils checkUtils;
-    CommentRepository commentRepository;
+    CommentDbRepository commentRepository;
 
     @Autowired
-    public CommentServiceIml(CheckUtils checkUtils, CommentRepository commentRepository) {
+    public CommentServiceIml(CheckUtils checkUtils,
+                             CommentDbRepository commentRepository) {
         this.checkUtils = checkUtils;
         this.commentRepository = commentRepository;
     }
@@ -51,21 +56,25 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
-    public ResponseEntity<String> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
+    @CacheEvict(key = "#taskId", value = "COMMENT")
+    public CommentResponse<Object> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
 
         try {
-            checkIfDetailsAreAlreadyDeleted(projectKey,taskId,commentId,username);
+            checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
 
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToDeleteComment = checkUtils.getUserIdFromUsername(username);
             if (!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)) {
-                throw new AccessDeniedException("access denied");
+                throw new AccessDeniedException(ResourceInformation.ACCESS_DENIED_MESSAGE);
             }
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToDeleteComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.checkUtils.checkIfCommentExists(commentId);
             commentRepository.deleteByCommentId(commentId);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_DELETED_MESSAGE);
+            return CommentResponse.builder()
+                    .statusCode(HttpStatus.OK.value())
+                    .message(ResourceInformation.COMMENT_DELETED_MESSAGE)
+                    .build();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -73,45 +82,76 @@ public class CommentServiceIml implements CommentService {
     }
 
     private void checkIfDetailsAreAlreadyDeleted(String projectKey, Long taskId, Long commentId, String username) {
-        if(!this.checkUtils.checkIfProjectIdDeleted(projectKey) ||
+        if (!this.checkUtils.checkIfProjectIdDeleted(projectKey) ||
                 !this.checkUtils.checkIfTaskIdDeleted(taskId) ||
                 !this.checkUtils.checkIfCommentIdDeleted(commentId) ||
                 !this.checkUtils.checkIfUserDeletedByUsername(username)
-        ){
+        ) {
             throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
     }
 
     @Override
-    public ResponseEntity<String> updateComment(String projectKey, Long taskId, Long commentId,
-                                                String username, UpdateCommentDto updateCommentDto) {
+    @CachePut(key = "#taskId", value = "COMMENT")
+    public CommentResponse<Object> updateComment(String projectKey, Long taskId, Long commentId,
+                                                 String username, UpdateCommentDto updateCommentDto) {
         try {
-            checkIfDetailsAreAlreadyDeleted(projectKey,taskId,commentId,username);
+            checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
 
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToUpdateComment = checkUtils.getUserIdFromUsername(username);
             if (!userIdOfUserWhoWantsToUpdateComment.equals(userIdOfUserWhoCommented)) {
-                throw new AccessDeniedException("access denied");
+                throw new AccessDeniedException(ResourceInformation.ACCESS_DENIED_MESSAGE);
             }
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToUpdateComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.updateCommentFromDto(commentId, updateCommentDto);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_UPDATED_MESSAGE);
+
+            List<CommentDto> responseCommentList = getCommentList(projectKey, taskId);
+
+            return CommentResponse.builder()
+                    .statusCode(HttpStatus.OK.value())
+                    .message(ResourceInformation.COMMENT_UPDATED_MESSAGE)
+                    .data(responseCommentList)
+                    .build();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    public ResponseEntity<Object> listAllComments(String projectKey, Long taskId) {
+    @Cacheable(key = "#taskId", value = "COMMENT")
+    public CommentResponse<Object> listAllComments(String projectKey, Long taskId) {
 
+        List<CommentDto> responseCommentList = getCommentList(projectKey, taskId);
+
+
+        log.info("inside db");
+        return CommentResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Success OK")
+                .data(responseCommentList)
+                .build();
+
+    }
+
+    private List<CommentDto> getCommentList(String projectKey, Long taskId) {
         this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
-        List<Comment> commentList = commentRepository.findAllByCommentByTaskId(taskId);
-        //make commentList Dto..also for task
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(commentList);
 
+        List<Comment> commentList = commentRepository.findAllByCommentByTaskId(taskId);
+        List<CommentDto> responseCommentList = new ArrayList<>();
+
+        for (Comment comment : commentList) {
+            CommentDto commentDto = CommentDto
+                    .builder()
+                    .userId(comment.getUserId().getUserId())
+                    .username(comment.getUserId().fullName())
+                    .fileData(comment.getFileData())
+                    .message(comment.getMessage())
+                    .build();
+            responseCommentList.add(commentDto);
+        }
+        return responseCommentList;
     }
 
     private void updateCommentFromDto(Long commentId, UpdateCommentDto updateCommentDto) {
@@ -122,7 +162,6 @@ public class CommentServiceIml implements CommentService {
             comment.setUpdatedFlg(true);
             comment.setUpdatedDate(LocalDateTime.now());
             MultipartFile file = updateCommentDto.getDocumentFile();
-            //check is file is null , delete then null too
             this.saveFileInComment(comment, file);
             commentRepository.save(comment);
         }

@@ -13,7 +13,7 @@ public class CustomCommentSerializer extends JsonSerializer<Comment> {
         jsonGenerator.writeStartObject();
 
         jsonGenerator.writeNumberField("commentId", comment.getCommentId());
-        jsonGenerator.writeObjectField("userId", comment.getUserId().fullName());
+        jsonGenerator.writeObjectField("userId", comment.getUserId());
         jsonGenerator.writeStringField("message", comment.getMessage());
         jsonGenerator.writeStringField("messagePostDate", comment.getMessagePostDate().toString());
         // Assuming fileData is a byte array

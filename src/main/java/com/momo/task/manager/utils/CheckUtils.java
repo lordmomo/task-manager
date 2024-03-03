@@ -18,7 +18,7 @@ public class CheckUtils {
     TaskRepository taskRepository;
     TaskStatusRepository taskStatusRepository;
     StagesRepository stagesRepository;
-    CommentRepository commentRepository;
+    CommentDbRepository commentRepository;
     LabelRepository labelRepository;
     TaskLabelRepository taskLabelRepository;
 
@@ -29,7 +29,7 @@ public class CheckUtils {
                       TaskRepository taskRepository,
                       TaskStatusRepository taskStatusRepository,
                       StagesRepository stagesRepository,
-                      CommentRepository commentRepository,
+                      CommentDbRepository commentRepository,
                       LabelRepository labelRepository,
                       TaskLabelRepository taskLabelRepository) {
 

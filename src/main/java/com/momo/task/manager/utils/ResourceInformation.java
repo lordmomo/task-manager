@@ -5,6 +5,8 @@ public class ResourceInformation {
     public static final String DATA_HAS_DELETED_MESSAGE ="Data has been deleted" ;
     public static final String LABEL_NOT_FOUND = "Label not found" ;
 
+    public static final String ACCESS_DENIED_MESSAGE = "Access denied";
+
     private ResourceInformation() {
         throw new IllegalStateException();
     }
