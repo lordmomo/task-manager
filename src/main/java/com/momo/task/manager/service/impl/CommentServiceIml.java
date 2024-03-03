@@ -19,6 +19,7 @@ import org.springframework.cache.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -56,6 +57,7 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
+    @Transactional
     @CacheEvict(key = "#taskId", value = "COMMENT")
     public CommentResponse<Object> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
 
@@ -92,6 +94,7 @@ public class CommentServiceIml implements CommentService {
     }
 
     @Override
+    @Transactional
     @CachePut(key = "#taskId", value = "COMMENT")
     public CommentResponse<Object> updateComment(String projectKey, Long taskId, Long commentId,
                                                  String username, UpdateCommentDto updateCommentDto) {
