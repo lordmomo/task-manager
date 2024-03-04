@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Data
 @Builder
-public class ResponseTaskDto implements Serializable {
+public class TaskResponseDto implements Serializable {
     private String taskName;
     private String description;
     private String status;

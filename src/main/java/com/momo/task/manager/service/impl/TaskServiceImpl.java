@@ -5,7 +5,7 @@ import com.momo.task.manager.exception.*;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.response.CustomResponse;
-import com.momo.task.manager.response.ResponseTaskDto;
+import com.momo.task.manager.response.TaskResponseDto;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
 import com.momo.task.manager.utils.RefreshCache;
@@ -125,7 +125,7 @@ public class TaskServiceImpl implements TaskService {
             throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         this.removeAllTaskRelatedData(taskId);
-        List<ResponseTaskDto> responseTask = refreshAndSetNewCache(projectKey);
+        List<TaskResponseDto> responseTask = refreshAndSetNewCache(projectKey);
         log.info("inside db delete task");
 
         return CustomResponse.builder()
@@ -136,13 +136,13 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
-    private List<ResponseTaskDto> refreshAndSetNewCache(String projectKey) {
+    private List<TaskResponseDto> refreshAndSetNewCache(String projectKey) {
         this.refreshCache.refresh("PROJECT_TASK");
         Project project = checkUtils.getProjectFromKey(projectKey);
         List<Task> listOfTask = taskRepository.findByProdId(project.getProjectId());
-        List<ResponseTaskDto> responseTask = new ArrayList<>();
+        List<TaskResponseDto> responseTask = new ArrayList<>();
         for(Task task : listOfTask){
-            ResponseTaskDto responseTaskDto = ResponseTaskDto.builder()
+            TaskResponseDto taskResponseDto = TaskResponseDto.builder()
                     .taskName(task.getTaskName())
                     .description(task.getDescription())
                     .status(task.getStatus().getStatusName())
@@ -154,7 +154,7 @@ public class TaskServiceImpl implements TaskService {
                     .endDate(task.getEndDate())
                     .build();
 
-            responseTask.add(responseTaskDto);
+            responseTask.add(taskResponseDto);
 
         }
         return responseTask;
@@ -177,7 +177,7 @@ public class TaskServiceImpl implements TaskService {
         this.updateTaskDateFields(task);
         taskRepository.save(task);
         log.info("inside db update task");
-        List<ResponseTaskDto> responseTask = refreshAndSetNewCache(projectKey);
+        List<TaskResponseDto> responseTask = refreshAndSetNewCache(projectKey);
         return CustomResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(ResourceInformation.TASK_UPDATED_MESSAGE)
@@ -209,6 +209,7 @@ public class TaskServiceImpl implements TaskService {
         if (label.isEmpty()){
             throw new LabelNotFoundException(ResourceInformation.LABEL_NOT_FOUND);
         }
+//        refreshCache.refresh("LABEL_TASK");
 
         List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey,labelName);
         log.info("inside db label task list");

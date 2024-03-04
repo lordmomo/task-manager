@@ -1,8 +1,7 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.CommentDto;
-import com.momo.task.manager.dto.CommentValidation;
-import com.momo.task.manager.dto.UpdateCommentDto;
+import com.momo.task.manager.request.UpdateCommentRequestDto;
 import com.momo.task.manager.exception.DataHasBeenDeletedException;
 import com.momo.task.manager.exception.PictureDataException;
 import com.momo.task.manager.model.Comment;
@@ -63,7 +62,7 @@ public class CommentServiceIml implements CommentService {
     @Override
     @Transactional
     @CacheEvict(key = "#taskId", value = "COMMENT")
-    public CustomResponse<Object> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
+    public CustomResponse<Object> deleteComment(String projectKey, Long taskId, Long commentId, String username) {
 
         try {
             checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
@@ -107,7 +106,7 @@ public class CommentServiceIml implements CommentService {
     @Transactional
     @CachePut(key = "#taskId", value = "COMMENT")
     public CustomResponse<Object> updateComment(String projectKey, Long taskId, Long commentId,
-                                                String username, UpdateCommentDto updateCommentDto) {
+                                                String username, UpdateCommentRequestDto updateCommentRequestDto) {
         try {
             checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
 
@@ -118,7 +117,7 @@ public class CommentServiceIml implements CommentService {
             }
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToUpdateComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
-            this.updateCommentFromDto(commentId, updateCommentDto);
+            this.updateCommentFromDto(commentId, updateCommentRequestDto);
 //          Use flush concept
 //          flush removes all the data from cache and then retrieves new data from db...i.e. it hits the db
             this.refreshCache.refresh("COMMENT");
@@ -171,14 +170,14 @@ public class CommentServiceIml implements CommentService {
         return responseCommentList;
     }
 
-    private void updateCommentFromDto(Long commentId, UpdateCommentDto updateCommentDto) {
+    private void updateCommentFromDto(Long commentId, UpdateCommentRequestDto updateCommentRequestDto) {
         Optional<Comment> optComment = commentRepository.findById(commentId);
         if (optComment.isPresent()) {
             Comment comment = optComment.get();
-            comment.setMessage(updateCommentDto.getMessage());
+            comment.setMessage(updateCommentRequestDto.getMessage());
             comment.setUpdatedFlg(true);
             comment.setUpdatedDate(LocalDateTime.now());
-            MultipartFile file = updateCommentDto.getDocumentFile();
+            MultipartFile file = updateCommentRequestDto.getDocumentFile();
             this.saveFileInComment(comment, file);
             commentRepository.save(comment);
         }

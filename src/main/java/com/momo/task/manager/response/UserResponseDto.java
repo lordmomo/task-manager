@@ -1,4 +1,4 @@
-package com.momo.task.manager.dto;
+package com.momo.task.manager.response;
 
 import com.momo.task.manager.model.Role;
 import lombok.AllArgsConstructor;

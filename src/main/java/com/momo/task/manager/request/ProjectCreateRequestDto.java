@@ -1,4 +1,4 @@
-package com.momo.task.manager.dto;
+package com.momo.task.manager.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateProjectDto {
+public class ProjectCreateRequestDto {
 
     private String projectName;
-    private String key;
+    private String projectKey;
+    private String template;
+    private String type;
     private Long projectLead;
 }

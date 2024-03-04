@@ -1,6 +1,7 @@
 package com.momo.task.manager.controller;
 
-import com.momo.task.manager.dto.*;
+import com.momo.task.manager.request.*;
+import com.momo.task.manager.response.UserResponseDto;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import com.momo.task.manager.utils.ResourceEndpoints;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +22,14 @@ public class SuperAdminController {
 
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping(ResourceEndpoints.CREATE_PROJECTS_ENDPOINT)
-    public ResponseEntity<String> createProjects(@RequestBody ProjectDto projectDto) {
-        return superAdminService.createProject(projectDto);
+    public ResponseEntity<String> createProjects(@RequestBody ProjectCreateRequestDto projectCreateRequestDto) {
+        return superAdminService.createProject(projectCreateRequestDto);
     }
 
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping(ResourceEndpoints.UPDATE_PROJECTS_ENDPOINT)
-    public ResponseEntity<String> updateProjects(@PathVariable("projectKey") String projectKey, @RequestBody UpdateProjectDto updateProjectDto) {
-        return superAdminService.updateProject(projectKey, updateProjectDto);
+    public ResponseEntity<String> updateProjects(@PathVariable("projectKey") String projectKey, @RequestBody UpdateProjectRequestDto updateProjectRequestDto) {
+        return superAdminService.updateProject(projectKey, updateProjectRequestDto);
     }
 
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
@@ -39,9 +40,9 @@ public class SuperAdminController {
 
     @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping(ResourceEndpoints.CREATE_USERS_ENDPOINT)
-    public ResponseEntity<String> createUsers(@ModelAttribute UserCreateDto userCreateDto) {
+    public ResponseEntity<String> createUsers(@ModelAttribute UserCreateRequestDto userCreateRequestDto) {
 
-        return superAdminService.createUser(userCreateDto);
+        return superAdminService.createUser(userCreateRequestDto);
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
@@ -70,15 +71,15 @@ public class SuperAdminController {
 
     @PreAuthorize("hasAuthority('ADMIN') or (hasAuthority('USER') and #username == authentication.name) ")
     @PostMapping(ResourceEndpoints.UPDATE_USERS_DETAILS_ENDPOINT)
-    public ResponseEntity<String> updateUserDetails(@PathVariable("username") String username, @RequestBody UserDetailsDto userDetailsDto) {
-        return superAdminService.updateUserDetails(username, userDetailsDto);
+    public ResponseEntity<String> updateUserDetails(@PathVariable("username") String username, @RequestBody UserDetailsRequestDto userDetailsRequestDto) {
+        return superAdminService.updateUserDetails(username, userDetailsRequestDto);
     }
 
     @PreAuthorize("#username == authentication.name")
     @PostMapping(ResourceEndpoints.UPDATE_USERS_CREDENTIALS_ENDPOINT)
     //add username instead of userId
-    public ResponseEntity<String> updateUserCredentials(@PathVariable("username") String username, @RequestBody UserCredentialsDto userCredentialsDto) {
-        return superAdminService.updateUserCredentials(username, userCredentialsDto);
+    public ResponseEntity<String> updateUserCredentials(@PathVariable("username") String username, @RequestBody UserCredentialsRequestDto userCredentialsRequestDto) {
+        return superAdminService.updateUserCredentials(username, userCredentialsRequestDto);
     }
 
     @PreAuthorize("#username == authentication.name")

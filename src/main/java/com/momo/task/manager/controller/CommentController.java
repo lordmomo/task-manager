@@ -1,8 +1,7 @@
 package com.momo.task.manager.controller;
 
 import com.momo.task.manager.dto.CommentDto;
-import com.momo.task.manager.dto.CommentValidation;
-import com.momo.task.manager.dto.UpdateCommentDto;
+import com.momo.task.manager.request.UpdateCommentRequestDto;
 import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.service.interfaces.CommentService;
 import com.momo.task.manager.utils.ResourceEndpoints;
@@ -12,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
 
 
 @RestController
@@ -36,9 +34,9 @@ public class CommentController {
     public CustomResponse<Object> deleteComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
-                                                @PathVariable("username") String username,
-                                                @RequestBody CommentValidation commentValidation) {
-        return commentService.deleteComment(projectKey, taskId, commentId, username, commentValidation);
+                                                @PathVariable("username") String username
+                                                ) {
+        return commentService.deleteComment(projectKey, taskId, commentId, username);
     }
 
     @PreAuthorize("#username == authentication.name")
@@ -47,8 +45,8 @@ public class CommentController {
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
                                                 @PathVariable("username") String username,
-                                                @ModelAttribute UpdateCommentDto updateCommentDto) {
-        return commentService.updateComment(projectKey, taskId, commentId, username, updateCommentDto);
+                                                @ModelAttribute UpdateCommentRequestDto updateCommentRequestDto) {
+        return commentService.updateComment(projectKey, taskId, commentId, username, updateCommentRequestDto);
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")

@@ -1,12 +1,13 @@
 package com.momo.task.manager.service.impl;
 
-import com.momo.task.manager.dto.*;
 import com.momo.task.manager.exception.DataHasBeenDeletedException;
 import com.momo.task.manager.exception.PictureDataException;
 import com.momo.task.manager.exception.ProjectNotFoundException;
 import com.momo.task.manager.exception.UserNotFoundException;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
+import com.momo.task.manager.request.*;
+import com.momo.task.manager.response.UserResponseDto;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
 import com.momo.task.manager.utils.ImageLoader;
 import com.momo.task.manager.utils.ResourceInformation;
@@ -72,11 +73,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> createUser(UserCreateDto userCreateDto) {
+    public ResponseEntity<String> createUser(UserCreateRequestDto userCreateRequestDto) {
         User user = new User();
-        this.createUserFromDto(user, userCreateDto);
-        this.setRoleForUser(user, userCreateDto.getRoleId());
-        this.setProfilePictureForUser(user, userCreateDto.getPictureFile(), new ProfilePicture());
+        this.createUserFromDto(user, userCreateRequestDto);
+        this.setRoleForUser(user, userCreateRequestDto.getRoleId());
+        this.setProfilePictureForUser(user, userCreateRequestDto.getPictureFile(), new ProfilePicture());
         superAdminRepository.save(user);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREATED_MESSAGE);
     }
@@ -134,29 +135,29 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> updateUserDetails(String username, UserDetailsDto userDetailsDto) {
+    public ResponseEntity<String> updateUserDetails(String username, UserDetailsRequestDto userDetailsRequestDto) {
         User user = validateIfUserExistsAndIsActive(username);
-        this.updateAllUserDetails(user,userDetailsDto);
+        this.updateAllUserDetails(user, userDetailsRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_DETAILS_UPDATED_MESSAGE);
     }
 
-    private void updateAllUserDetails(User user,UserDetailsDto userDetailsDto) {
-        user.setFirstName(userDetailsDto.getFirstName());
-        user.setLastName(userDetailsDto.getLastName());
-        user.setEmail(userDetailsDto.getEmail());
+    private void updateAllUserDetails(User user, UserDetailsRequestDto userDetailsRequestDto) {
+        user.setFirstName(userDetailsRequestDto.getFirstName());
+        user.setLastName(userDetailsRequestDto.getLastName());
+        user.setEmail(userDetailsRequestDto.getEmail());
         this.setFlagForUserUpdate(user);
         superAdminRepository.save(user);
     }
 
     @Override
-    public ResponseEntity<String> updateUserCredentials(String username, UserCredentialsDto userCredentialsDto) {
+    public ResponseEntity<String> updateUserCredentials(String username, UserCredentialsRequestDto userCredentialsRequestDto) {
         User user = validateIfUserExistsAndIsActive(username);
-        this.updateAllUserCredentials(user,userCredentialsDto);
+        this.updateAllUserCredentials(user, userCredentialsRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
     }
-    private void updateAllUserCredentials(User user, UserCredentialsDto userCredentialsDto) {
-        user.setUsername(userCredentialsDto.getUsername());
-        user.setPassword(passwordEncoder.encode(userCredentialsDto.getPassword()));
+    private void updateAllUserCredentials(User user, UserCredentialsRequestDto userCredentialsRequestDto) {
+        user.setUsername(userCredentialsRequestDto.getUsername());
+        user.setPassword(passwordEncoder.encode(userCredentialsRequestDto.getPassword()));
         this.setFlagForUserUpdate(user);
         superAdminRepository.save(user);
     }
@@ -178,10 +179,10 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> createProject(ProjectDto projectDto) {
+    public ResponseEntity<String> createProject(ProjectCreateRequestDto projectCreateRequestDto) {
 
-        Project project = mapper.map(projectDto, Project.class);
-        Optional<User> optUser = superAdminRepository.findById(projectDto.getProjectLead());
+        Project project = mapper.map(projectCreateRequestDto, Project.class);
+        Optional<User> optUser = superAdminRepository.findById(projectCreateRequestDto.getProjectLead());
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
@@ -197,7 +198,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     }
 
     @Override
-    public ResponseEntity<String> updateProject(String projectKey, UpdateProjectDto updateProjectDto) {
+    public ResponseEntity<String> updateProject(String projectKey, UpdateProjectRequestDto updateProjectRequestDto) {
         Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
@@ -210,8 +211,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if(!prevUser.isActiveFlg()){
             throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
-        this.updateProjectLead(prevUser, project, updateProjectDto);
-        this.updateGeneralProjectDetails(project, updateProjectDto);
+        this.updateProjectLead(prevUser, project, updateProjectRequestDto);
+        this.updateGeneralProjectDetails(project, updateProjectRequestDto);
         project.setUpdatedFlg(true);
         project.setUpdatedDate(LocalDateTime.now());
         projectRepository.save(project);
@@ -270,12 +271,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         return access;
     }
 
-    private void createUserFromDto(User user, UserCreateDto userCreateDto) {
-        user.setFirstName(userCreateDto.getFirstName());
-        user.setLastName(userCreateDto.getLastName());
-        user.setEmail(userCreateDto.getEmail());
-        user.setUsername(userCreateDto.getUsername());
-        user.setPassword(passwordEncoder.encode(userCreateDto.getPassword()));
+    private void createUserFromDto(User user, UserCreateRequestDto userCreateRequestDto) {
+        user.setFirstName(userCreateRequestDto.getFirstName());
+        user.setLastName(userCreateRequestDto.getLastName());
+        user.setEmail(userCreateRequestDto.getEmail());
+        user.setUsername(userCreateRequestDto.getUsername());
+        user.setPassword(passwordEncoder.encode(userCreateRequestDto.getPassword()));
         this.setFlagForUserCreation(user);
     }
 
@@ -313,13 +314,13 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         user.setPicture(profilePictureRepository.save(profilePicture));
     }
 
-    private void updateProjectLead(User prevUser, Project project, UpdateProjectDto updateProjectDto) {
-        Optional<User> optionalUser = superAdminRepository.findById(updateProjectDto.getProjectLead());
+    private void updateProjectLead(User prevUser, Project project, UpdateProjectRequestDto updateProjectRequestDto) {
+        Optional<User> optionalUser = superAdminRepository.findById(updateProjectRequestDto.getProjectLead());
         if (optionalUser.isEmpty()) {
             throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
         }
         User user = optionalUser.get();
-        if (updateProjectDto.getProjectLead().equals(prevUser.getUserId())) {
+        if (updateProjectRequestDto.getProjectLead().equals(prevUser.getUserId())) {
             return;
         }
         project.setProjectLead(user);
@@ -327,12 +328,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.addUsersToProject(project.getProjectKey(), user.getUsername());
     }
 
-    private void updateGeneralProjectDetails(Project project, UpdateProjectDto updateProjectDto) {
+    private void updateGeneralProjectDetails(Project project, UpdateProjectRequestDto updateProjectRequestDto) {
         if (!project.getProjectKey().isEmpty() && project.getProjectKey() != null) {
-            project.setProjectKey(updateProjectDto.getKey());
+            project.setProjectKey(updateProjectRequestDto.getKey());
         }
         if (!project.getProjectName().isEmpty() && project.getProjectName() != null) {
-            project.setProjectName(updateProjectDto.getProjectName());
+            project.setProjectName(updateProjectRequestDto.getProjectName());
         }
     }
 
