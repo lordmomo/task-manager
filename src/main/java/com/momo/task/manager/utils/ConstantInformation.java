@@ -1,13 +1,13 @@
 package com.momo.task.manager.utils;
 
-public class ResourceInformation {
+public class ConstantInformation {
 
     public static final String DATA_HAS_DELETED_MESSAGE ="Data has been deleted" ;
     public static final String LABEL_NOT_FOUND = "Label not found" ;
 
     public static final String ACCESS_DENIED_MESSAGE = "Access denied";
 
-    private ResourceInformation() {
+    private ConstantInformation() {
         throw new IllegalStateException();
     }
     public static final String DEFAULT_IMAGE_PATH = "images/profile-svgrepo-com.svg";

@@ -2,7 +2,7 @@ package com.momo.task.manager.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.momo.task.manager.utils.CustomCommentSerializer;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -41,7 +41,7 @@ public class Comment implements Serializable {
     @Column(name = "message", nullable = false)
     private String message;
 
-    @PastOrPresent(message = ResourceInformation.MESSAGE_POSTED_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.MESSAGE_POSTED_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "commented_date", nullable = false)
     private LocalDateTime messagePostDate;
 
@@ -56,15 +56,15 @@ public class Comment implements Serializable {
     @Column(name = "updated_flg")
     private boolean updatedFlg;
 
-    @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 
-    @PastOrPresent(message = ResourceInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
-    @FutureOrPresent(message = ResourceInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
+    @FutureOrPresent(message = ConstantInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "end_date")
     private LocalDateTime endDate;
 

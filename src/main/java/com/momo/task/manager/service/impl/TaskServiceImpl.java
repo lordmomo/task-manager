@@ -9,7 +9,7 @@ import com.momo.task.manager.response.TaskResponseDto;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
 import com.momo.task.manager.utils.RefreshCache;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -90,8 +90,8 @@ public class TaskServiceImpl implements TaskService {
             this.saveTaskLabel(task, taskDto.getLabel());
             this.saveStatusLog(task, task.getStatus(), true);
             this.saveTaskFile(task, taskDto.getFile());
-            log.info(ResourceInformation.TASK_CREATED_MESSAGE);
-            return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_CREATED_MESSAGE);
+            log.info(ConstantInformation.TASK_CREATED_MESSAGE);
+            return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.TASK_CREATED_MESSAGE);
         } else {
             return null;
         }
@@ -112,10 +112,10 @@ public class TaskServiceImpl implements TaskService {
 
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         if (optionalTask.isEmpty()) {
-            throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
+            throw new TaskNotFoundException(ConstantInformation.TASK_NOT_FOUND_MESSAGE);
         }
         if (!optionalTask.get().isActiveFlg()) {
-            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         this.removeAllTaskRelatedData(taskId);
         List<TaskResponseDto> responseTask = refreshAndSetNewCache(projectKey);
@@ -123,7 +123,7 @@ public class TaskServiceImpl implements TaskService {
 
         return CustomResponse.builder()
                 .statusCode(HttpStatus.OK.value())
-                .message(ResourceInformation.TASK_DELETED_MESSAGE)
+                .message(ConstantInformation.TASK_DELETED_MESSAGE)
                 .data(responseTask)
                 .build();
 
@@ -157,10 +157,10 @@ public class TaskServiceImpl implements TaskService {
     public CustomResponse<Object> updateTask(String projectKey, Long taskId, TaskDto taskDto) {
         Optional<Task> optTask = taskRepository.findById(taskId);
         if (optTask.isEmpty()) {
-            throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
+            throw new TaskNotFoundException(ConstantInformation.TASK_NOT_FOUND_MESSAGE);
         }
         if (!optTask.get().isActiveFlg()) {
-            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         Task task = optTask.get();
         this.updateTaskFile(task, taskDto.getFile());
@@ -172,7 +172,7 @@ public class TaskServiceImpl implements TaskService {
         List<TaskResponseDto> responseTask = refreshAndSetNewCache(projectKey);
         return CustomResponse.builder()
                 .statusCode(HttpStatus.OK.value())
-                .message(ResourceInformation.TASK_UPDATED_MESSAGE)
+                .message(ConstantInformation.TASK_UPDATED_MESSAGE)
                 .data(responseTask)
                 .build();
     }
@@ -182,7 +182,7 @@ public class TaskServiceImpl implements TaskService {
     public CustomResponse<Object> getAllTask(String projectKey) {
         Optional<Project> project = projectRepository.findByProjectKey(projectKey);
         if (project.isEmpty()) {
-            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+            throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
         List<Task> taskList = taskRepository.findByProdId(project.get().getProjectId());
         log.info("inside db project task list");
@@ -195,11 +195,11 @@ public class TaskServiceImpl implements TaskService {
     public CustomResponse<Object> getAllTaskOfLabel(String projectKey, String labelName) {
         Optional<Project> project = projectRepository.findByProjectKey(projectKey);
         if (project.isEmpty()) {
-            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+            throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
         Optional<Label> label = labelRepository.findByLabelName(labelName);
         if (label.isEmpty()){
-            throw new LabelNotFoundException(ResourceInformation.LABEL_NOT_FOUND);
+            throw new LabelNotFoundException(ConstantInformation.LABEL_NOT_FOUND);
         }
 
         List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey,labelName);
@@ -229,11 +229,11 @@ public class TaskServiceImpl implements TaskService {
             try {
                 file.setFileData(mFile.getBytes());
             } catch (IOException e) {
-                throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+                throw new PictureDataException(ConstantInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
             }
         }
         fileRepository.save(file);
-        log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
+        log.info(ConstantInformation.TASK_FILE_ADDED_MESSAGE);
     }
 
     private void updateExistingFile(File file, MultipartFile mFile) {
@@ -247,7 +247,7 @@ public class TaskServiceImpl implements TaskService {
                 this.setFlagForFileUpdate(file);
             }
         } catch (IOException e) {
-            throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+            throw new PictureDataException(ConstantInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
         }
     }
 
@@ -271,10 +271,10 @@ public class TaskServiceImpl implements TaskService {
         if (userId != null) {
             Optional<User> user = superAdminRepository.findById(userId);
             if (user.isEmpty()) {
-                throw new UserNotFoundException(ResourceInformation.REPORTER_NOT_FOUND_MESSAGE);
+                throw new UserNotFoundException(ConstantInformation.REPORTER_NOT_FOUND_MESSAGE);
             }
             if (user.get().isActiveFlg()) {
-                throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+                throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
             }
             task.setReporterId(user.get());
         }
@@ -284,10 +284,10 @@ public class TaskServiceImpl implements TaskService {
         if (userId != null) {
             Optional<User> user = superAdminRepository.findById(userId);
             if (user.isEmpty()) {
-                throw new UserNotFoundException(ResourceInformation.ASSIGNEE_NOT_FOUND_MESSAGE);
+                throw new UserNotFoundException(ConstantInformation.ASSIGNEE_NOT_FOUND_MESSAGE);
             }
             if (user.get().isActiveFlg()) {
-                throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+                throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
             }
             task.setAssigneeId(user.get());
         }
@@ -300,7 +300,7 @@ public class TaskServiceImpl implements TaskService {
         ) {
             Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findById(taskDto.getStatus());
             if (optionalTaskStatus.isEmpty()) {
-                throw new TaskStatusNotFoundException(ResourceInformation.STATUS_NOT_FOUND_MESSAGE);
+                throw new TaskStatusNotFoundException(ConstantInformation.STATUS_NOT_FOUND_MESSAGE);
             }
             TaskStatus status = optionalTaskStatus.get();
             saveStatusLog(task, status, false);
@@ -377,10 +377,10 @@ public class TaskServiceImpl implements TaskService {
         try {
             file.setFileData(mFile.getBytes());
         } catch (IOException e) {
-            throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+            throw new PictureDataException(ConstantInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
         }
         fileRepository.save(file);
-        log.info(ResourceInformation.TASK_FILE_ADDED_MESSAGE);
+        log.info(ConstantInformation.TASK_FILE_ADDED_MESSAGE);
     }
 
     private void setFlagForFileCreation(File file) {

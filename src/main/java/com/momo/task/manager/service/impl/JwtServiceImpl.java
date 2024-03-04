@@ -1,7 +1,7 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.service.interfaces.JwtService;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -55,7 +55,7 @@ public class JwtServiceImpl implements JwtService {
             if (!isTokenExpired(claims)) {
                 return true;
             } else {
-                log.info(ResourceInformation.TOKEN_EXPIRED_MESSAGE);
+                log.info(ConstantInformation.TOKEN_EXPIRED_MESSAGE);
                 return false;
             }
         }
@@ -71,9 +71,9 @@ public class JwtServiceImpl implements JwtService {
         try {
             return Optional.of(jwtParser.parseSignedClaims(jwtToken).getPayload());
         } catch (JwtException e) {
-            log.error(ResourceInformation.JWT_EXCEPTION_OCCURS_MESSAGE);
+            log.error(ConstantInformation.JWT_EXCEPTION_OCCURS_MESSAGE);
         } catch (IllegalArgumentException e) {
-            log.error(ResourceInformation.ILLEGAL_ARGUMENT_OCCURS_MESSAGE);
+            log.error(ConstantInformation.ILLEGAL_ARGUMENT_OCCURS_MESSAGE);
         }
         return Optional.empty();
     }
@@ -92,7 +92,7 @@ public class JwtServiceImpl implements JwtService {
         var expiration = DateUtils.addMinutes(currentDate, jwtExpirationInMinutes);
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
-                .issuer(ResourceInformation.TOKEN_ISSUER)
+                .issuer(ConstantInformation.TOKEN_ISSUER)
                 .subject(username)
                 .signWith(secretKey)
                 .issuedAt(currentDate)
@@ -107,7 +107,7 @@ public class JwtServiceImpl implements JwtService {
         var expiration = DateUtils.addHours(currentDate, jwtExpirationInHours);
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
-                .issuer(ResourceInformation.TOKEN_ISSUER)
+                .issuer(ConstantInformation.TOKEN_ISSUER)
                 .subject(username)
                 .signWith(secretKey)
                 .issuedAt(currentDate)

@@ -1,6 +1,6 @@
 package com.momo.task.manager.model;
 
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class Role implements Serializable {
     @Column(name = "role_id", nullable = false)
     private Long roleId;
 
-    @NotBlank(message = ResourceInformation.ROLE_NOT_BLANK_VALIDATION_MESSAGE)
+    @NotBlank(message = ConstantInformation.ROLE_NOT_BLANK_VALIDATION_MESSAGE)
     @Column(name = "role_name", nullable = false)
     private String roleName;
 }

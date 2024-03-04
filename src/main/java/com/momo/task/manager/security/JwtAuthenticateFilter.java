@@ -1,7 +1,7 @@
 package com.momo.task.manager.security;
 
 import com.momo.task.manager.service.impl.JwtServiceImpl;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
@@ -54,21 +54,21 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
                             });
 
                         } catch (IllegalAccessError e) {
-                            log.error(ResourceInformation.ILLEGAL_ACCESS_ERROR_MESSAGE);
+                            log.error(ConstantInformation.ILLEGAL_ACCESS_ERROR_MESSAGE);
                             e.printStackTrace();
                         } catch (ExpiredJwtException e) {
-                            log.error(ResourceInformation.TOKEN_EXPIRED_MESSAGE);
+                            log.error(ConstantInformation.TOKEN_EXPIRED_MESSAGE);
                             e.printStackTrace();
                         } catch (MalformedJwtException e) {
-                            log.error(ResourceInformation.MALFORMED_JWT_EXCEPTION_MESSAGE);
+                            log.error(ConstantInformation.MALFORMED_JWT_EXCEPTION_MESSAGE);
                             e.printStackTrace();
                         } catch (Exception e) {
                             e.printStackTrace();
-                            log.error(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+                            log.error(ConstantInformation.USER_NOT_FOUND_MESSAGE);
                         }
 
                     } else {
-                        log.info(ResourceInformation.TOKEN_EXPIRED_MESSAGE);
+                        log.info(ConstantInformation.TOKEN_EXPIRED_MESSAGE);
                     }
                 }
         );

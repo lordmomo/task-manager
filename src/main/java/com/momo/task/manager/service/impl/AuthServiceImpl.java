@@ -2,7 +2,7 @@ package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.service.interfaces.AuthService;
 import com.momo.task.manager.service.interfaces.JwtService;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
             return jwtServiceImpl.generateToken(((UserDetails) (authenticate.getPrincipal())).getUsername());
 
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException(ResourceInformation.BAD_CREDENTIALS_MESSAGE);
+            throw new BadCredentialsException(ConstantInformation.BAD_CREDENTIALS_MESSAGE);
         }
     }
 

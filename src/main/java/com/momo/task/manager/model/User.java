@@ -1,6 +1,6 @@
 package com.momo.task.manager.model;
 
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -31,28 +31,28 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
     private Long userId;
-    @NotBlank(message = ResourceInformation.FIRST_NAME_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.FIRST_NAME_REQUIRED_MESSAGE)
     @Column(name = "first_name", nullable = false)
-    @Length(min = 3, max = 16, message = ResourceInformation.FIRST_NAME_LENGTH_MESSAGE)
+    @Length(min = 3, max = 16, message = ConstantInformation.FIRST_NAME_LENGTH_MESSAGE)
     private String firstName;
-    @NotBlank(message = ResourceInformation.LAST_NAME_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.LAST_NAME_REQUIRED_MESSAGE)
     @Column(name = "last_name", nullable = false)
-    @Length(min = 3, max = 16, message = ResourceInformation.LAST_NAME_LENGTH_MESSAGE)
+    @Length(min = 3, max = 16, message = ConstantInformation.LAST_NAME_LENGTH_MESSAGE)
     private String lastName;
 
-    @Email(message = ResourceInformation.INVALID_EMAIL_FORMAT_MESSAGE)
-    @NotBlank(message = ResourceInformation.EMAIL_REQUIRED_MESSAGE)
+    @Email(message = ConstantInformation.INVALID_EMAIL_FORMAT_MESSAGE)
+    @NotBlank(message = ConstantInformation.EMAIL_REQUIRED_MESSAGE)
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @NotBlank(message = ResourceInformation.USERNAME_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.USERNAME_REQUIRED_MESSAGE)
     @Column(name = "username", unique = true, nullable = false)
-    @Length(min = 6, max = 16, message = ResourceInformation.USERNAME_LENGTH_MESSAGE)
+    @Length(min = 6, max = 16, message = ConstantInformation.USERNAME_LENGTH_MESSAGE)
     private String username;
 
-    @NotBlank(message = ResourceInformation.PASSWORD_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.PASSWORD_REQUIRED_MESSAGE)
     @Column(name = "password", nullable = false)
-    @Length(min = 8, message = ResourceInformation.PASSWORD_LENGTH_MESSAGE)
+    @Length(min = 8, message = ConstantInformation.PASSWORD_LENGTH_MESSAGE)
     private String password;
 
     @ManyToOne
@@ -70,15 +70,15 @@ public class User implements Serializable {
     @Column(name = "updated_flg")
     private boolean updatedFlg;
 
-    @PastOrPresent(message = ResourceInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
-    @FutureOrPresent(message = ResourceInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
+    @FutureOrPresent(message = ConstantInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 

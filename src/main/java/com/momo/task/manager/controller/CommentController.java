@@ -4,7 +4,7 @@ import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.request.UpdateCommentRequestDto;
 import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.service.interfaces.CommentService;
-import com.momo.task.manager.utils.ResourceEndpoints;
+import com.momo.task.manager.utils.ConstantEndpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,14 +14,14 @@ import java.io.IOException;
 
 
 @RestController
-@RequestMapping(ResourceEndpoints.MAIN_COMMENT_KEY)
+@RequestMapping(ConstantEndpoints.MAIN_COMMENT_KEY)
 public class CommentController {
 
     @Autowired
     CommentService commentService;
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
-    @PostMapping(ResourceEndpoints.CREATE_COMMENTS_ENDPOINT)
+    @PostMapping(ConstantEndpoints.CREATE_COMMENTS_ENDPOINT)
     public ResponseEntity<String> createComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @ModelAttribute CommentDto commentDto) throws IOException {
@@ -30,7 +30,7 @@ public class CommentController {
 
 
     @PreAuthorize("#username == authentication.name")
-    @PostMapping(ResourceEndpoints.DELETE_COMMENTS_ENDPOINT)
+    @PostMapping(ConstantEndpoints.DELETE_COMMENTS_ENDPOINT)
     public CustomResponse<Object> deleteComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
@@ -40,7 +40,7 @@ public class CommentController {
     }
 
     @PreAuthorize("#username == authentication.name")
-    @PostMapping(ResourceEndpoints.UPDATE_COMMENTS_ENDPOINT)
+    @PostMapping(ConstantEndpoints.UPDATE_COMMENTS_ENDPOINT)
     public CustomResponse<Object> updateComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
@@ -50,7 +50,7 @@ public class CommentController {
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
-    @GetMapping(ResourceEndpoints.VIEW_ALL_COMMENTS_ENDPOINT)
+    @GetMapping(ConstantEndpoints.VIEW_ALL_COMMENTS_ENDPOINT)
     public CustomResponse<Object> listOfAllComments(@PathVariable("projectKey") String projectKey, @PathVariable("taskId") Long taskId) {
         return commentService.listAllComments(projectKey, taskId);
     }

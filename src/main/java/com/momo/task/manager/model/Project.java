@@ -1,6 +1,6 @@
 package com.momo.task.manager.model;
 
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -24,21 +24,21 @@ public class Project implements Serializable {
     @Column(name = "project_id")
     private Long projectId;
 
-    @NotBlank(message = ResourceInformation.PROJECT_NAME_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.PROJECT_NAME_REQUIRED_MESSAGE)
     @Column(name = "project_name", nullable = false, unique = true)
     private String projectName;
 
     // distinguishly  identify project
-    @NotBlank(message = ResourceInformation.PROJECT_KEY_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.PROJECT_KEY_REQUIRED_MESSAGE)
     @Column(name = "project_key", nullable = false, unique = true)
     private String projectKey;
 
     // kanban,scrum
-    @NotBlank(message = ResourceInformation.PROJECT_TEMPLATE_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.PROJECT_TEMPLATE_REQUIRED_MESSAGE)
     @Column(name = "project_template", nullable = false)
     private String template;
     //team, company managed
-    @NotBlank(message = ResourceInformation.PROJECT_TYPE_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.PROJECT_TYPE_REQUIRED_MESSAGE)
     @Column(name = "project_type", nullable = false)
     private String type;
 
@@ -52,15 +52,15 @@ public class Project implements Serializable {
     @Column(name = "updated_flg")
     private boolean updatedFlg;
 
-    @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 
-    @PastOrPresent(message = ResourceInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.START_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
-    @FutureOrPresent(message = ResourceInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
+    @FutureOrPresent(message = ConstantInformation.END_DATE_BEAN_VALIDATION_MESSAGE)
     @Column(name = "end_date")
     private LocalDateTime endDate;
 

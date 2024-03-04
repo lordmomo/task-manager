@@ -45,7 +45,7 @@ public class CheckUtils {
         Long projectId = projectRepository.getProjectIdFromProjectKey(projectKey);
         Access check = accessRepository.validateUserProjectRelation(userId, projectId);
         if (check == null) {
-            throw new UserHasNoAccessToProjectException(ResourceInformation.USER_HAS_NO_ACCESS_MESSAGE);
+            throw new UserHasNoAccessToProjectException(ConstantInformation.USER_HAS_NO_ACCESS_MESSAGE);
         }
         return true;
     }
@@ -55,7 +55,7 @@ public class CheckUtils {
         Project project = getProjectFromKey(projectKey);
         User user = getUserFromId(userId);
         if (project == null || user == null) {
-            throw new UserNotFoundException(ResourceInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
+            throw new UserNotFoundException(ConstantInformation.PROJECT_OR_USER_NOT_FOUND_MESSAGE);
         }
     }
 
@@ -72,7 +72,7 @@ public class CheckUtils {
     public User getUserFromId(Long userId) {
         Optional<User> optionalUser = superAdminRepository.findById(userId);
         if (optionalUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+            throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
         }
         return optionalUser.get();
     }
@@ -80,7 +80,7 @@ public class CheckUtils {
     public Long getUserIdFromUsername(String username) {
         Optional<User> optionalUser = superAdminRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+            throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
         }
         return optionalUser.get().getUserId();
     }
@@ -102,7 +102,7 @@ public class CheckUtils {
     public void checkIfCommentExists(Long commentId) {
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
         if (optionalComment.isEmpty()) {
-            throw new CommentNotFoundException(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
+            throw new CommentNotFoundException(ConstantInformation.COMMENT_NOT_FOUND_MESSAGE);
         }
     }
 
@@ -113,7 +113,7 @@ public class CheckUtils {
     public boolean checkIfProjectIdDeleted(String projectKey) {
         Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         if (optionalProject.isEmpty()) {
-            throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
+            throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
         return optionalProject.get().isActiveFlg();
     }
@@ -121,7 +121,7 @@ public class CheckUtils {
     public boolean checkIfTaskIdDeleted(Long taskId) {
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         if (optionalTask.isEmpty()) {
-            throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
+            throw new TaskNotFoundException(ConstantInformation.TASK_NOT_FOUND_MESSAGE);
         }
         return optionalTask.get().isActiveFlg();
     }
@@ -129,7 +129,7 @@ public class CheckUtils {
     public boolean checkIfCommentIdDeleted(Long commentId) {
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
         if (optionalComment.isEmpty()) {
-            throw new CommentNotFoundException(ResourceInformation.COMMENT_NOT_FOUND_MESSAGE);
+            throw new CommentNotFoundException(ConstantInformation.COMMENT_NOT_FOUND_MESSAGE);
         }
         return optionalComment.get().isActiveFlg();
     }
@@ -137,7 +137,7 @@ public class CheckUtils {
     public boolean checkIfUserDeletedByUsername(String username) {
         Optional<User> optionalUser = superAdminRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
-            throw new UserNotFoundException(ResourceInformation.USER_NOT_FOUND_MESSAGE);
+            throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
         }
         return optionalUser.get().isActiveFlg();
     }

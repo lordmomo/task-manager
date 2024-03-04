@@ -12,7 +12,7 @@ import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.service.interfaces.CommentService;
 import com.momo.task.manager.utils.CheckUtils;
 import com.momo.task.manager.utils.RefreshCache;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
@@ -56,7 +56,7 @@ public class CommentServiceIml implements CommentService {
         MultipartFile file = commentDto.getDocumentFile();
         this.saveFileInComment(comment, file);
         commentRepository.save(comment);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.COMMENT_ADDED_MESSAGE);
+        return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.COMMENT_ADDED_MESSAGE);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class CommentServiceIml implements CommentService {
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToDeleteComment = checkUtils.getUserIdFromUsername(username);
             if (!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)) {
-                throw new AccessDeniedException(ResourceInformation.ACCESS_DENIED_MESSAGE);
+                throw new AccessDeniedException(ConstantInformation.ACCESS_DENIED_MESSAGE);
             }
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToDeleteComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
@@ -82,7 +82,7 @@ public class CommentServiceIml implements CommentService {
 
             return CustomResponse.builder()
                     .statusCode(HttpStatus.OK.value())
-                    .message(ResourceInformation.COMMENT_DELETED_MESSAGE)
+                    .message(ConstantInformation.COMMENT_DELETED_MESSAGE)
                     .data(responseCommentList)
                     .build();
 
@@ -98,7 +98,7 @@ public class CommentServiceIml implements CommentService {
                 !this.checkUtils.checkIfCommentIdDeleted(commentId) ||
                 !this.checkUtils.checkIfUserDeletedByUsername(username)
         ) {
-            throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
+            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
     }
 
@@ -113,7 +113,7 @@ public class CommentServiceIml implements CommentService {
             Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
             Long userIdOfUserWhoWantsToUpdateComment = checkUtils.getUserIdFromUsername(username);
             if (!userIdOfUserWhoWantsToUpdateComment.equals(userIdOfUserWhoCommented)) {
-                throw new AccessDeniedException(ResourceInformation.ACCESS_DENIED_MESSAGE);
+                throw new AccessDeniedException(ConstantInformation.ACCESS_DENIED_MESSAGE);
             }
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToUpdateComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
@@ -127,7 +127,7 @@ public class CommentServiceIml implements CommentService {
 //              Return the updated comment (or any other data you want to store in the cache)
             return CustomResponse.builder()
                     .statusCode(HttpStatus.OK.value())
-                    .message(ResourceInformation.COMMENT_UPDATED_MESSAGE)
+                    .message(ConstantInformation.COMMENT_UPDATED_MESSAGE)
                     .data(responseCommentList)
                     .build();
 
@@ -203,7 +203,7 @@ public class CommentServiceIml implements CommentService {
             try {
                 comment.setFileData(file.getBytes());
             } catch (IOException e) {
-                throw new PictureDataException(ResourceInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
+                throw new PictureDataException(ConstantInformation.PICTURE_DATA_EXCEPTION_MESSAGE);
             }
         } else {
             comment.setFileData(null);

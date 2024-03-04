@@ -1,9 +1,9 @@
 package com.momo.task.manager.utils;
 
 
-public class ResourceEndpoints {
+public class ConstantEndpoints {
 
-    private ResourceEndpoints() {
+    private ConstantEndpoints() {
         throw new IllegalStateException();
     }
 

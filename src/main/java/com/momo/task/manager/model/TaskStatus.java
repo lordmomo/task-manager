@@ -1,6 +1,6 @@
 package com.momo.task.manager.model;
 
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -22,7 +22,7 @@ public class TaskStatus implements Serializable {
     @Column(name = "status_id")
     private Long statusId;
 
-    @NotBlank(message = ResourceInformation.STATUS_NOT_BLANK_VALIDATION_MESSAGE)
+    @NotBlank(message = ConstantInformation.STATUS_NOT_BLANK_VALIDATION_MESSAGE)
     @Column(name = "status_name", nullable = false)
     private String statusName;
 }

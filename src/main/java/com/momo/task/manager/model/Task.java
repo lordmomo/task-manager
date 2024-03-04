@@ -3,7 +3,7 @@ package com.momo.task.manager.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.momo.task.manager.utils.CustomTaskSerializer;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,15 +38,15 @@ public class Task implements Serializable {
     @Column(name = "task_id", nullable = false)
     private Long taskId;
 
-    @NotBlank(message = ResourceInformation.TASK_NAME_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.TASK_NAME_REQUIRED_MESSAGE)
     @Column(name = "task_name", nullable = false)
     private String taskName;
 
-    @NotBlank(message = ResourceInformation.TASK_DESCRIPTION_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.TASK_DESCRIPTION_REQUIRED_MESSAGE)
     @Column(name = "task_description", nullable = false)
     private String description;
 
-    @NotBlank(message = ResourceInformation.TASK_TYPE_REQUIRED_MESSAGE)
+    @NotBlank(message = ConstantInformation.TASK_TYPE_REQUIRED_MESSAGE)
     @Column(name = "task_type", nullable = false)
     private String type;
 
@@ -54,11 +54,11 @@ public class Task implements Serializable {
     @JoinColumn(name = "task_status", referencedColumnName = "status_id")
     private TaskStatus status;
 
-    @NotNull(message = ResourceInformation.TASK_START_DATE_REQUIRED_MESSAGE)
+    @NotNull(message = ConstantInformation.TASK_START_DATE_REQUIRED_MESSAGE)
     @Column(name = "start_date", nullable = false)
     private Date startDate;
 
-    @NotNull(message = ResourceInformation.TASK_END_DATE_REQUIRED_MESSAGE)
+    @NotNull(message = ConstantInformation.TASK_END_DATE_REQUIRED_MESSAGE)
     @Column(name = "end_date", nullable = false)
     private Date endDate;
 
@@ -76,7 +76,7 @@ public class Task implements Serializable {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "updated_date")
-    @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
+    @PastOrPresent(message = ConstantInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)
     private LocalDateTime updatedDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

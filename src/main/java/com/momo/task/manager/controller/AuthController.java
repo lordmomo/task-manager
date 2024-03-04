@@ -7,7 +7,7 @@ import com.momo.task.manager.exception.UserNameNotFoundException;
 import com.momo.task.manager.service.interfaces.AuthService;
 import com.momo.task.manager.service.interfaces.JwtService;
 import com.momo.task.manager.utils.AuthStatus;
-import com.momo.task.manager.utils.ResourceInformation;
+import com.momo.task.manager.utils.ConstantInformation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class AuthController {
                         );
 
                     } else {
-                        throw new InvalidTokenException(ResourceInformation.TOKEN_INVALID_MESSAGE);
+                        throw new InvalidTokenException(ConstantInformation.TOKEN_INVALID_MESSAGE);
                     }
                 });
 
@@ -81,7 +81,7 @@ public class AuthController {
                     .status(HttpStatus.OK)
                     .body(authResponseDto);
         } else {
-            throw new UserNameNotFoundException(ResourceInformation.USERNAME_NOT_FOUND_MESSAGE);
+            throw new UserNameNotFoundException(ConstantInformation.USERNAME_NOT_FOUND_MESSAGE);
         }
 
     }
