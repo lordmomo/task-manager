@@ -169,12 +169,54 @@ public class CheckUtils {
         Long labelId = labelRepository.getLabelIdFromName(labelName);
         List<Long> taskIds = taskLabelRepository.getTaskIdFromLabel(labelId);
         List<Task> approvedTasks = new ArrayList<>();
-        for(Long task : taskIds){
-            checkIfTaskBelongsToProject(projectKey,task);
+        for (Long task : taskIds) {
+            checkIfTaskBelongsToProject(projectKey, task);
             Optional<Task> taskOptional = taskRepository.findById(task);
             taskOptional.ifPresent(approvedTasks::add);
 
         }
         return approvedTasks;
+    }
+
+    public void checkIfLabelExistsInTaskLabel(Long taskId, String label) {
+
+        Optional<Label> optionalLabel = labelRepository.findByLabelName(label);
+        if (optionalLabel.isEmpty()) {
+            Label newLabel = Label.builder()
+                    .labelName(label)
+                    .build();
+            labelRepository.save(newLabel);
+            optionalLabel = Optional.of(newLabel);
+        }
+
+        Label tempLabel = optionalLabel.get();
+
+        TaskLabel taskLabel = taskLabelRepository.findByTaskIdAndLabelId(taskId, tempLabel.getLabelId());
+        if (taskLabel == null) {
+            Optional<Task> optionalTask = taskRepository.findById(taskId);
+            if (optionalTask.isPresent()) {
+                Task task = optionalTask.get();
+                saveToTaskLabel(task, tempLabel);
+            }
+        }
+
+    }
+
+    public void removeLabelsFromTaskLabel(Long taskId, List<String> labels) {
+        List<Long> currentLabels = taskLabelRepository.getAllLabelIdFromTaskId(taskId);
+
+        List<Label> currentLabelNames = new ArrayList<>();
+
+        for (Long labelId : currentLabels) {
+            Optional<Label> optLabel = labelRepository.findById(labelId);
+            optLabel.ifPresent(currentLabelNames::add);
+        }
+
+        for (Label label : currentLabelNames) {
+            String labelName = label.getLabelName();
+            if (!labels.contains(labelName)) {
+                taskLabelRepository.deleteByTaskIdAndLabelName(taskId, label.getLabelId());
+            }
+        }
     }
 }

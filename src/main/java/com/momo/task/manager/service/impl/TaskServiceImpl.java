@@ -8,8 +8,8 @@ import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.response.TaskResponseDto;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
-import com.momo.task.manager.utils.RefreshCache;
 import com.momo.task.manager.utils.ConstantInformation;
+import com.momo.task.manager.utils.RefreshCache;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -25,7 +25,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -107,7 +110,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @CacheEvict(key="#projectKey",value = "PROJECT_TASK")
+    @CacheEvict(key = "#projectKey", value = "PROJECT_TASK")
     public CustomResponse<Object> deleteTask(String projectKey, Long taskId) {
 
         Optional<Task> optionalTask = taskRepository.findById(taskId);
@@ -134,7 +137,7 @@ public class TaskServiceImpl implements TaskService {
         Project project = checkUtils.getProjectFromKey(projectKey);
         List<Task> listOfTask = taskRepository.findByProdId(project.getProjectId());
         List<TaskResponseDto> responseTask = new ArrayList<>();
-        for(Task task : listOfTask){
+        for (Task task : listOfTask) {
             TaskResponseDto taskResponseDto = TaskResponseDto.builder()
                     .taskName(task.getTaskName())
                     .description(task.getDescription())
@@ -153,7 +156,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @CachePut(key="#projectKey",value= "PROJECT_TASK")
+    @CachePut(key = "#projectKey", value = "PROJECT_TASK")
     public CustomResponse<Object> updateTask(String projectKey, Long taskId, TaskDto taskDto) {
         Optional<Task> optTask = taskRepository.findById(taskId);
         if (optTask.isEmpty()) {
@@ -178,7 +181,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @Cacheable(key="#projectKey",value = "PROJECT_TASK")
+    @Cacheable(key = "#projectKey", value = "PROJECT_TASK")
     public CustomResponse<Object> getAllTask(String projectKey) {
         Optional<Project> project = projectRepository.findByProjectKey(projectKey);
         if (project.isEmpty()) {
@@ -191,18 +194,18 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @Cacheable(key="#labelName",value = "LABEL_TASK")
+    @Cacheable(key = "#labelName", value = "LABEL_TASK")
     public CustomResponse<Object> getAllTaskOfLabel(String projectKey, String labelName) {
         Optional<Project> project = projectRepository.findByProjectKey(projectKey);
         if (project.isEmpty()) {
             throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
         Optional<Label> label = labelRepository.findByLabelName(labelName);
-        if (label.isEmpty()){
+        if (label.isEmpty()) {
             throw new LabelNotFoundException(ConstantInformation.LABEL_NOT_FOUND);
         }
 
-        List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey,labelName);
+        List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey, labelName);
         log.info("inside db label task list");
 
         return CustomResponse.builder().statusCode(HttpStatus.OK.value()).message("Success OK").data(taskList).build();
@@ -262,9 +265,22 @@ public class TaskServiceImpl implements TaskService {
     private void updateTaskFields(Task task, TaskDto taskDto) {
 
         this.updateGeneralTaskInformation(task, taskDto);
+        this.updateTaskLabel(task, taskDto.getLabel());
         this.updateTaskStatus(task, taskDto);
         this.updateAssociatedReporterUsers(taskDto.getReporterId(), task);
         this.updateAssociatedAssigneeUsers(taskDto.getAssigneeId(), task);
+    }
+
+    private void updateTaskLabel(Task task, List<String> labels) {
+        // check if task id has all the labels in task_label table
+        // new labels are added
+        // labels which are not passed are removed form labelTask table
+
+        checkUtils.removeLabelsFromTaskLabel(task.getTaskId(), labels);
+        for (String label : labels) {
+            checkUtils.checkIfLabelExistsInTaskLabel(task.getTaskId(), label);
+        }
+
     }
 
     private void updateAssociatedReporterUsers(Long userId, Task task) {
