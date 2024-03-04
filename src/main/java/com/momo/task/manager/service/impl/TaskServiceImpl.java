@@ -37,7 +37,6 @@ public class TaskServiceImpl implements TaskService {
     TaskStatusRepository taskStatusRepository;
     SuperAdminRepository superAdminRepository;
     ProjectRepository projectRepository;
-    StagesRepository stagesRepository;
     StatusLogRepository statusLogRepository;
     LabelRepository labelRepository;
     RefreshCache refreshCache;
@@ -51,7 +50,6 @@ public class TaskServiceImpl implements TaskService {
                            TaskStatusRepository taskStatusRepository,
                            SuperAdminRepository superAdminRepository,
                            ProjectRepository projectRepository,
-                           StagesRepository stagesRepository,
                            StatusLogRepository statusLogRepository,
                            LabelRepository labelRepository,
                            RefreshCache refreshCache,
@@ -64,7 +62,6 @@ public class TaskServiceImpl implements TaskService {
         this.taskStatusRepository = taskStatusRepository;
         this.superAdminRepository = superAdminRepository;
         this.projectRepository = projectRepository;
-        this.stagesRepository = stagesRepository;
         this.statusLogRepository = statusLogRepository;
         this.labelRepository = labelRepository;
         this.checkUtils = checkUtils;

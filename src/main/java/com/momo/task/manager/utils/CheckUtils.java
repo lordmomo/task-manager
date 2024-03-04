@@ -17,7 +17,6 @@ public class CheckUtils {
     SuperAdminRepository superAdminRepository;
     TaskRepository taskRepository;
     TaskStatusRepository taskStatusRepository;
-    StagesRepository stagesRepository;
     CommentDbRepository commentRepository;
     LabelRepository labelRepository;
     TaskLabelRepository taskLabelRepository;
@@ -28,7 +27,6 @@ public class CheckUtils {
                       SuperAdminRepository superAdminRepository,
                       TaskRepository taskRepository,
                       TaskStatusRepository taskStatusRepository,
-                      StagesRepository stagesRepository,
                       CommentDbRepository commentRepository,
                       LabelRepository labelRepository,
                       TaskLabelRepository taskLabelRepository) {
@@ -38,7 +36,6 @@ public class CheckUtils {
         this.superAdminRepository = superAdminRepository;
         this.taskRepository = taskRepository;
         this.taskStatusRepository = taskStatusRepository;
-        this.stagesRepository = stagesRepository;
         this.commentRepository = commentRepository;
         this.labelRepository = labelRepository;
         this.taskLabelRepository = taskLabelRepository;
@@ -53,10 +50,6 @@ public class CheckUtils {
         return true;
     }
 
-    public void checkProjectAndUserAccess(String projectKey, Long userId) {
-        User user = getUserFromId(userId);
-        this.checkUserProjectAccess(user.getUserId(), projectKey);
-    }
 
     public void checkProjectAndUserIfNull(String projectKey, Long userId) {
         Project project = getProjectFromKey(projectKey);
@@ -95,11 +88,6 @@ public class CheckUtils {
     public TaskStatus getStatusFromId(Long statusId) {
         Optional<TaskStatus> optionalTaskStatus = taskStatusRepository.findById(statusId);
         return optionalTaskStatus.orElse(null);
-    }
-
-    public Stages getStageFromId(Long stageId) {
-        Optional<Stages> optionalStages = stagesRepository.findById(stageId);
-        return optionalStages.orElse(null);
     }
 
     public void checkIfTaskBelongsToProject(String projectKey, Long taskId) {
