@@ -74,10 +74,6 @@ public class Task implements Serializable {
     @JoinColumn(name = "reporter", referencedColumnName = "user_id", nullable = false)
     private User reporterId;
 
-    @ManyToOne
-    @JoinColumn(name = "stage_id", referencedColumnName = "stage_id", nullable = false)
-    private Stages stageId;
-
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "updated_date")
     @PastOrPresent(message = ResourceInformation.UPDATE_DATE_BEAN_VALIDATION_MESSAGE)

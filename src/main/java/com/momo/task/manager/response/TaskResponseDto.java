@@ -19,6 +19,5 @@ public class TaskResponseDto implements Serializable {
     private Date endDate;
     private String assigneeId;
     private String reporterId;
-    private String stageId;
 
 }

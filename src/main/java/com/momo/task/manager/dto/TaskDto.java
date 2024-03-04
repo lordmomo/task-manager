@@ -26,7 +26,6 @@ public class TaskDto {
     private Date endDate;
     private Long assigneeId;
     private Long reporterId;
-    private Long stageId;
 
     @Nullable
     private MultipartFile file;

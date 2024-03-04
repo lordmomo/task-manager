@@ -25,10 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -83,8 +80,7 @@ public class TaskServiceImpl implements TaskService {
         // Explicitly define mappings to avoid conflicts
         mapper.createTypeMap(TaskDto.class, Task.class)
                 .addMapping(TaskDto::getReporterId, Task::setReporterId)
-                .addMapping(TaskDto::getAssigneeId, Task::setAssigneeId)
-                .addMapping(TaskDto::getStageId, Task::setStageId);
+                .addMapping(TaskDto::getAssigneeId, Task::setAssigneeId);
     }
 
     @Override
@@ -149,7 +145,6 @@ public class TaskServiceImpl implements TaskService {
                     .type(task.getType())
                     .assigneeId(task.getAssigneeId().fullName())
                     .reporterId(task.getReporterId().fullName())
-                    .stageId(task.getStageId().getStageName())
                     .startDate(task.getStartDate())
                     .endDate(task.getEndDate())
                     .build();
@@ -209,7 +204,6 @@ public class TaskServiceImpl implements TaskService {
         if (label.isEmpty()){
             throw new LabelNotFoundException(ResourceInformation.LABEL_NOT_FOUND);
         }
-//        refreshCache.refresh("LABEL_TASK");
 
         List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey,labelName);
         log.info("inside db label task list");
@@ -272,7 +266,6 @@ public class TaskServiceImpl implements TaskService {
 
         this.updateGeneralTaskInformation(task, taskDto);
         this.updateTaskStatus(task, taskDto);
-        this.updateTaskStage(task, taskDto);
         this.updateAssociatedReporterUsers(taskDto.getReporterId(), task);
         this.updateAssociatedAssigneeUsers(taskDto.getAssigneeId(), task);
     }
@@ -300,16 +293,6 @@ public class TaskServiceImpl implements TaskService {
                 throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
             }
             task.setAssigneeId(user.get());
-        }
-    }
-
-    private void updateTaskStage(Task task, TaskDto taskDto) {
-        if (task.getStageId() != null && taskDto.getStageId() != null) {
-            Optional<Stages> stages = stagesRepository.findById(taskDto.getStageId());
-            if (stages.isEmpty()) {
-                throw new TaskStageNotFoundException(ResourceInformation.STAGE_NOT_FOUND_MESSAGE);
-            }
-            task.setStageId(stages.get());
         }
     }
 
@@ -359,9 +342,7 @@ public class TaskServiceImpl implements TaskService {
         ) {
             task.setDescription(taskDto.getDescription());
         }
-//        if (taskDto.getLabel() != null) {
-//            updateTaskLabels(task, taskDto.getLabel());
-//        }
+
         if (task.getStartDate() != null && taskDto.getStartDate() != null) {
             task.setStartDate(taskDto.getStartDate());
         }
@@ -370,31 +351,18 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-//    private void updateTaskLabels(Task task, List<String> labelNames) {
-//        if (labelNames != null && !labelNames.isEmpty()) {
-//            Set<Label> labels = labelNames.stream()
-//                    .map(labelName -> checkUtils.getLabelFromName(labelName))
-//                    .collect(Collectors.toSet());
-//            task.setLabels(labels);
-//        } else {
-//            task.setLabels(Collections.emptySet());
-//        }
-//    }
-
     private Task createTaskFromDto(TaskDto taskDto) {
         Task task = new Task();
         task.setActiveFlg(true);
         task.setTaskName(taskDto.getTaskName());
         task.setDescription(taskDto.getDescription());
         task.setType(taskDto.getType());
-//        task.setLabel(taskDto.getLabel());
         task.setStatus(checkUtils.getStatusFromId(taskDto.getStatus()));
         task.setStartDate(taskDto.getStartDate());
         task.setEndDate(taskDto.getEndDate());
         task.setProject(checkUtils.getProjectFromKey(taskDto.getProjectKey()));
         task.setAssigneeId(checkUtils.getUserFromId(taskDto.getAssigneeId()));
         task.setReporterId(checkUtils.getUserFromId(taskDto.getReporterId()));
-        task.setStageId(checkUtils.getStageFromId(taskDto.getStageId()));
         return task;
     }
 
