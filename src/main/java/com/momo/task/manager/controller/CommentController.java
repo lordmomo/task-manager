@@ -3,8 +3,7 @@ package com.momo.task.manager.controller;
 import com.momo.task.manager.dto.CommentDto;
 import com.momo.task.manager.dto.CommentValidation;
 import com.momo.task.manager.dto.UpdateCommentDto;
-import com.momo.task.manager.model.Comment;
-import com.momo.task.manager.response.CommentResponse;
+import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.service.interfaces.CommentService;
 import com.momo.task.manager.utils.ResourceEndpoints;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,7 @@ public class CommentController {
 
     @PreAuthorize("#username == authentication.name")
     @PostMapping(ResourceEndpoints.DELETE_COMMENTS_ENDPOINT)
-    public CommentResponse<Object> deleteComment(@PathVariable("projectKey") String projectKey,
+    public CustomResponse<Object> deleteComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
                                                 @PathVariable("username") String username,
@@ -44,7 +43,7 @@ public class CommentController {
 
     @PreAuthorize("#username == authentication.name")
     @PostMapping(ResourceEndpoints.UPDATE_COMMENTS_ENDPOINT)
-    public CommentResponse<Object> updateComment(@PathVariable("projectKey") String projectKey,
+    public CustomResponse<Object> updateComment(@PathVariable("projectKey") String projectKey,
                                                 @PathVariable("taskId") Long taskId,
                                                 @PathVariable("commentId") Long commentId,
                                                 @PathVariable("username") String username,
@@ -54,7 +53,7 @@ public class CommentController {
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
     @GetMapping(ResourceEndpoints.VIEW_ALL_COMMENTS_ENDPOINT)
-    public CommentResponse<Object> listOfAllComments(@PathVariable("projectKey") String projectKey, @PathVariable("taskId") Long taskId) {
+    public CustomResponse<Object> listOfAllComments(@PathVariable("projectKey") String projectKey, @PathVariable("taskId") Long taskId) {
         return commentService.listAllComments(projectKey, taskId);
     }
 

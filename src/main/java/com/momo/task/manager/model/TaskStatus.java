@@ -10,12 +10,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "task_status")
-public class TaskStatus {
+public class TaskStatus implements Serializable {
     @Id
     @Column(name = "status_id")
     private Long statusId;

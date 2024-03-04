@@ -2,6 +2,7 @@ package com.momo.task.manager.controller;
 
 import com.momo.task.manager.dto.TaskDto;
 import com.momo.task.manager.model.Task;
+import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
 import com.momo.task.manager.utils.ResourceEndpoints;
@@ -33,25 +34,25 @@ public class TaskController {
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(ResourceEndpoints.DELETE_TASKS_ENDPOINT)
-    public ResponseEntity<String> deleteTasks(@PathVariable("taskId") Long taskId) {
-        return taskService.deleteTask(taskId);
+    public CustomResponse<Object> deleteTasks(@PathVariable("taskId") Long taskId,@PathVariable("projectKey") String projectKey) {
+        return taskService.deleteTask(projectKey,taskId);
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN')")
     @PostMapping(value = ResourceEndpoints.UPDATE_TASKS_ENDPOINT)
-    public ResponseEntity<String> updateTasks(@PathVariable("taskId") Long taskId, @ModelAttribute TaskDto taskDto) {
-        return taskService.updateTask(taskId, taskDto);
+    public CustomResponse<Object> updateTasks(@PathVariable("taskId") Long taskId,@PathVariable("projectKey")String projectKey, @ModelAttribute TaskDto taskDto) {
+        return taskService.updateTask(projectKey,taskId, taskDto);
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
     @GetMapping(ResourceEndpoints.GET_ALL_TASKS_IN_PROJECT_ENDPOINT)
-    public ResponseEntity<List<Task>> getAllTasksOfProjects(@PathVariable("projectKey") String projectKey) {
+    public CustomResponse<Object> getAllTasksOfProjects(@PathVariable("projectKey") String projectKey) {
         return taskService.getAllTask(projectKey);
     }
 
     @PreAuthorize("hasAnyAuthority('SUPER_ADMIN','ADMIN','USER')")
     @GetMapping(ResourceEndpoints.GET_ALL_TASKS_OF_LABEL)
-    public ResponseEntity<List<Task>> getAllTasksOfLabel(@PathVariable("projectKey") String projectKey,@PathVariable("labelName") String labelName) {
+    public CustomResponse<Object> getAllTasksOfLabel(@PathVariable("projectKey") String projectKey,@PathVariable("labelName") String labelName) {
         return taskService.getAllTaskOfLabel(projectKey,labelName);
     }
 

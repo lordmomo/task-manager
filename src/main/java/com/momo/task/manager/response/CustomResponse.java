@@ -12,7 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommentResponse<T> implements Serializable {
+public class CustomResponse<T> implements Serializable {
 
     private Integer statusCode;
     private Object message;
@@ -22,7 +22,7 @@ public class CommentResponse<T> implements Serializable {
     @Override
     public String toString() {
         Gson gson = new Gson();
-        return "CommentResponse{" +
+        return "CustomResponse{" +
                 "statusCode=" + statusCode +
                 ", message=" + message +
                 ", data=" + gson.toJson(data) +

@@ -1,7 +1,7 @@
 package com.momo.task.manager.controller;
 
-import com.momo.task.manager.dto.AuthRequestDto;
-import com.momo.task.manager.dto.AuthResponseDto;
+import com.momo.task.manager.request.AuthRequestDto;
+import com.momo.task.manager.response.AuthResponseDto;
 import com.momo.task.manager.exception.InvalidTokenException;
 import com.momo.task.manager.exception.UserNameNotFoundException;
 import com.momo.task.manager.service.interfaces.AuthService;

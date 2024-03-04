@@ -4,13 +4,20 @@ import com.momo.task.manager.dto.TaskDto;
 import com.momo.task.manager.exception.*;
 import com.momo.task.manager.model.*;
 import com.momo.task.manager.repository.*;
+import com.momo.task.manager.response.CustomResponse;
+import com.momo.task.manager.response.ResponseTaskDto;
 import com.momo.task.manager.service.interfaces.TaskService;
 import com.momo.task.manager.utils.CheckUtils;
+import com.momo.task.manager.utils.RefreshCache;
 import com.momo.task.manager.utils.ResourceInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,12 +25,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @Slf4j
+@CacheConfig(cacheNames = "TASK")
 public class TaskServiceImpl implements TaskService {
     TaskRepository taskRepository;
     CommentDbRepository commentRepository;
@@ -34,6 +43,7 @@ public class TaskServiceImpl implements TaskService {
     StagesRepository stagesRepository;
     StatusLogRepository statusLogRepository;
     LabelRepository labelRepository;
+    RefreshCache refreshCache;
     CheckUtils checkUtils;
     ModelMapper mapper;
 
@@ -47,6 +57,7 @@ public class TaskServiceImpl implements TaskService {
                            StagesRepository stagesRepository,
                            StatusLogRepository statusLogRepository,
                            LabelRepository labelRepository,
+                           RefreshCache refreshCache,
                            CheckUtils checkUtils,
                            ModelMapper mapper) {
 
@@ -60,6 +71,7 @@ public class TaskServiceImpl implements TaskService {
         this.statusLogRepository = statusLogRepository;
         this.labelRepository = labelRepository;
         this.checkUtils = checkUtils;
+        this.refreshCache = refreshCache;
         this.mapper = mapper;
         configureModelMapper();
     }
@@ -102,8 +114,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public ResponseEntity<String> deleteTask(Long taskId) {
-
+    @CacheEvict(key="#projectKey",value = "PROJECT_TASK")
+    public CustomResponse<Object> deleteTask(String projectKey, Long taskId) {
 
         Optional<Task> optionalTask = taskRepository.findById(taskId);
         if (optionalTask.isEmpty()) {
@@ -113,12 +125,44 @@ public class TaskServiceImpl implements TaskService {
             throw new DataHasBeenDeletedException(ResourceInformation.DATA_HAS_DELETED_MESSAGE);
         }
         this.removeAllTaskRelatedData(taskId);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_DELETED_MESSAGE);
+        List<ResponseTaskDto> responseTask = refreshAndSetNewCache(projectKey);
+        log.info("inside db delete task");
+
+        return CustomResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(ResourceInformation.TASK_DELETED_MESSAGE)
+                .data(responseTask)
+                .build();
 
     }
 
+    private List<ResponseTaskDto> refreshAndSetNewCache(String projectKey) {
+        this.refreshCache.refresh("PROJECT_TASK");
+        Project project = checkUtils.getProjectFromKey(projectKey);
+        List<Task> listOfTask = taskRepository.findByProdId(project.getProjectId());
+        List<ResponseTaskDto> responseTask = new ArrayList<>();
+        for(Task task : listOfTask){
+            ResponseTaskDto responseTaskDto = ResponseTaskDto.builder()
+                    .taskName(task.getTaskName())
+                    .description(task.getDescription())
+                    .status(task.getStatus().getStatusName())
+                    .type(task.getType())
+                    .assigneeId(task.getAssigneeId().fullName())
+                    .reporterId(task.getReporterId().fullName())
+                    .stageId(task.getStageId().getStageName())
+                    .startDate(task.getStartDate())
+                    .endDate(task.getEndDate())
+                    .build();
+
+            responseTask.add(responseTaskDto);
+
+        }
+        return responseTask;
+    }
+
     @Override
-    public ResponseEntity<String> updateTask(Long taskId, TaskDto taskDto) {
+    @CachePut(key="#projectKey",value= "PROJECT_TASK")
+    public CustomResponse<Object> updateTask(String projectKey, Long taskId, TaskDto taskDto) {
         Optional<Task> optTask = taskRepository.findById(taskId);
         if (optTask.isEmpty()) {
             throw new TaskNotFoundException(ResourceInformation.TASK_NOT_FOUND_MESSAGE);
@@ -132,23 +176,31 @@ public class TaskServiceImpl implements TaskService {
         task.setUpdatedFlg(true);
         this.updateTaskDateFields(task);
         taskRepository.save(task);
-        return ResponseEntity.status(HttpStatus.OK).body(ResourceInformation.TASK_UPDATED_MESSAGE);
+        log.info("inside db update task");
+        List<ResponseTaskDto> responseTask = refreshAndSetNewCache(projectKey);
+        return CustomResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(ResourceInformation.TASK_UPDATED_MESSAGE)
+                .data(responseTask)
+                .build();
     }
 
     @Override
-    public ResponseEntity<List<Task>> getAllTask(String projectKey) {
+    @Cacheable(key="#projectKey",value = "PROJECT_TASK")
+    public CustomResponse<Object> getAllTask(String projectKey) {
         Optional<Project> project = projectRepository.findByProjectKey(projectKey);
         if (project.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
         List<Task> taskList = taskRepository.findByProdId(project.get().getProjectId());
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(taskList);
+        log.info("inside db project task list");
+
+        return CustomResponse.builder().statusCode(HttpStatus.OK.value()).message("Success OK").data(taskList).build();
     }
 
     @Override
-    public ResponseEntity<List<Task>> getAllTaskOfLabel(String projectKey, String labelName) {
+    @Cacheable(key="#labelName",value = "LABEL_TASK")
+    public CustomResponse<Object> getAllTaskOfLabel(String projectKey, String labelName) {
         Optional<Project> project = projectRepository.findByProjectKey(projectKey);
         if (project.isEmpty()) {
             throw new ProjectNotFoundException(ResourceInformation.PROJECT_NOT_FOUND_MESSAGE);
@@ -159,10 +211,9 @@ public class TaskServiceImpl implements TaskService {
         }
 
         List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey,labelName);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(taskList);
+        log.info("inside db label task list");
 
+        return CustomResponse.builder().statusCode(HttpStatus.OK.value()).message("Success OK").data(taskList).build();
     }
 
 

@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Table(name = "profile_picture")
-public class ProfilePicture {
+public class ProfilePicture implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

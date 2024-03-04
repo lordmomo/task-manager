@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -24,7 +25,7 @@ import java.util.*;
 @Builder
 @Table(name = "task")
 @JsonSerialize(using = CustomTaskSerializer.class)
-public class Task {
+public class Task implements Serializable {
     @Column(name = "active_flg", nullable = false)
     boolean activeFlg;
     @Column(name = "updated_flg", nullable = false)

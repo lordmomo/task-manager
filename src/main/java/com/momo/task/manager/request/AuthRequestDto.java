@@ -1,4 +1,4 @@
-package com.momo.task.manager.dto;
+package com.momo.task.manager.request;
 
 public record AuthRequestDto (
         String firstName,

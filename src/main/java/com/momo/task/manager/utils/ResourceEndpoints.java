@@ -38,12 +38,12 @@ public class ResourceEndpoints {
 
 
 //      Task controller endpoints
-    public static final String MAIN_TASK_KEY = "/task";
+    public static final String MAIN_TASK_KEY = "projects/{projectKey}/task";
     public static final String CREATE_TASKS_ENDPOINT = "/tasks";
     public static final String DELETE_TASKS_ENDPOINT = "/tasks/{taskId}";
     public static final String UPDATE_TASKS_ENDPOINT = "/tasks/{taskId}/update";
-    public static final String GET_ALL_TASKS_IN_PROJECT_ENDPOINT = "projects/{projectKey}/tasks";
-    public static final String GET_ALL_TASKS_OF_LABEL = "projects/{projectKey}/tasks/{labelName}";
+    public static final String GET_ALL_TASKS_IN_PROJECT_ENDPOINT = "/all-tasks";
+    public static final String GET_ALL_TASKS_OF_LABEL = "/tasks/{labelName}";
 
 
 

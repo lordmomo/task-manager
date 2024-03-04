@@ -9,9 +9,10 @@ import com.momo.task.manager.model.Comment;
 import com.momo.task.manager.model.Task;
 import com.momo.task.manager.model.User;
 import com.momo.task.manager.repository.CommentDbRepository;
-import com.momo.task.manager.response.CommentResponse;
+import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.service.interfaces.CommentService;
 import com.momo.task.manager.utils.CheckUtils;
+import com.momo.task.manager.utils.RefreshCache;
 import com.momo.task.manager.utils.ResourceInformation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +37,15 @@ import java.util.Optional;
 public class CommentServiceIml implements CommentService {
     CheckUtils checkUtils;
     CommentDbRepository commentRepository;
+    RefreshCache refreshCache;
 
     @Autowired
     public CommentServiceIml(CheckUtils checkUtils,
-                             CommentDbRepository commentRepository) {
+                             CommentDbRepository commentRepository,
+                             RefreshCache refreshCache) {
         this.checkUtils = checkUtils;
         this.commentRepository = commentRepository;
+        this.refreshCache = refreshCache;
     }
 
     @Override
@@ -59,7 +63,7 @@ public class CommentServiceIml implements CommentService {
     @Override
     @Transactional
     @CacheEvict(key = "#taskId", value = "COMMENT")
-    public CommentResponse<Object> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
+    public CustomResponse<Object> deleteComment(String projectKey, Long taskId, Long commentId, String username, CommentValidation commentValidation) {
 
         try {
             checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
@@ -73,10 +77,16 @@ public class CommentServiceIml implements CommentService {
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.checkUtils.checkIfCommentExists(commentId);
             commentRepository.deleteByCommentId(commentId);
-            return CommentResponse.builder()
+
+            this.refreshCache.refresh("COMMENT");
+            List<CommentDto> responseCommentList = getCommentList(projectKey, taskId);
+
+            return CustomResponse.builder()
                     .statusCode(HttpStatus.OK.value())
                     .message(ResourceInformation.COMMENT_DELETED_MESSAGE)
+                    .data(responseCommentList)
                     .build();
+
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -96,8 +106,8 @@ public class CommentServiceIml implements CommentService {
     @Override
     @Transactional
     @CachePut(key = "#taskId", value = "COMMENT")
-    public CommentResponse<Object> updateComment(String projectKey, Long taskId, Long commentId,
-                                                 String username, UpdateCommentDto updateCommentDto) {
+    public CustomResponse<Object> updateComment(String projectKey, Long taskId, Long commentId,
+                                                String username, UpdateCommentDto updateCommentDto) {
         try {
             checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
 
@@ -109,14 +119,19 @@ public class CommentServiceIml implements CommentService {
             this.performCommonValidations(projectKey, userIdOfUserWhoWantsToUpdateComment);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.updateCommentFromDto(commentId, updateCommentDto);
+//          Use flush concept
+//          flush removes all the data from cache and then retrieves new data from db...i.e. it hits the db
+            this.refreshCache.refresh("COMMENT");
 
             List<CommentDto> responseCommentList = getCommentList(projectKey, taskId);
 
-            return CommentResponse.builder()
+//              Return the updated comment (or any other data you want to store in the cache)
+            return CustomResponse.builder()
                     .statusCode(HttpStatus.OK.value())
                     .message(ResourceInformation.COMMENT_UPDATED_MESSAGE)
                     .data(responseCommentList)
                     .build();
+
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -124,13 +139,12 @@ public class CommentServiceIml implements CommentService {
 
     @Override
     @Cacheable(key = "#taskId", value = "COMMENT")
-    public CommentResponse<Object> listAllComments(String projectKey, Long taskId) {
+    public CustomResponse<Object> listAllComments(String projectKey, Long taskId) {
 
         List<CommentDto> responseCommentList = getCommentList(projectKey, taskId);
 
-
         log.info("inside db");
-        return CommentResponse.builder()
+        return CustomResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Success OK")
                 .data(responseCommentList)
@@ -211,4 +225,6 @@ public class CommentServiceIml implements CommentService {
         comment.setStartDate(LocalDateTime.now());
         comment.setEndDate(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
     }
+
+
 }
