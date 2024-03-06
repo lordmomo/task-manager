@@ -105,27 +105,12 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    private void saveTaskLabel(Task task, List<String> labelNames) {
-        if (labelNames != null && !labelNames.isEmpty()) {
-            for (String name : labelNames) {
-                Label label = checkUtils.getLabelFromName(name);
-                checkUtils.saveToTaskLabel(task, label);
-            }
-        }
-    }
-
     @Override
     @CacheEvict(key = "#projectKey", value = "PROJECT_TASK")
     public CustomResponse<Object> deleteTask(String projectKey, Long taskId) {
 
-        Optional<Task> optionalTask = taskRepository.findById(taskId);
-        if (optionalTask.isEmpty()) {
-            throw new TaskNotFoundException(ConstantInformation.TASK_NOT_FOUND_MESSAGE);
-        }
-        if (!optionalTask.get().isActiveFlg()) {
-            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
-        }
-        this.removeAllTaskRelatedData(taskId);
+        Task task = checkIfTaskExistsAndIsActive(taskId);
+        this.removeAllTaskRelatedData(task.getTaskId());
         List<TaskResponseDto> responseTask = refreshAndSetNewCache(projectKey);
         log.info("inside db delete task");
 
@@ -155,22 +140,13 @@ public class TaskServiceImpl implements TaskService {
                     .build();
 
             responseTask.add(taskResponseDto);
-
         }
         return responseTask;
     }
-
     @Override
     @CachePut(key = "#projectKey", value = "PROJECT_TASK")
     public CustomResponse<Object> updateTask(String projectKey, Long taskId, TaskDto taskDto) {
-        Optional<Task> optTask = taskRepository.findById(taskId);
-        if (optTask.isEmpty()) {
-            throw new TaskNotFoundException(ConstantInformation.TASK_NOT_FOUND_MESSAGE);
-        }
-        if (!optTask.get().isActiveFlg()) {
-            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
-        }
-        Task task = optTask.get();
+        Task task = checkIfTaskExistsAndIsActive(taskId);
         this.updateTaskFile(task, taskDto.getFile());
         this.updateTaskFields(task, taskDto);
         task.setUpdatedFlg(true);
@@ -186,7 +162,6 @@ public class TaskServiceImpl implements TaskService {
                 .data(responseTask)
                 .build();
     }
-
     private void sendMessageToAdmins(String projectKey, TaskDto taskDto) {
         List<User> projectAdminsList = getAdminListFromProject(projectKey);
 
@@ -199,24 +174,6 @@ public class TaskServiceImpl implements TaskService {
                 .build();
         taskUpdatePublisher.publishTaskUpdateEvent(taskUpdateEventDto);
     }
-
-    private List<User> getAdminListFromProject(String projectKey) {
-        Project project = checkUtils.getProjectFromKey(projectKey);
-        List<Long> usersOfProject = checkUtils.getUserIdByProjectKey(project.getProjectId());
-        List<User> projectAdminsList = new ArrayList<>();
-        for (Long userId : usersOfProject) {
-            Optional<User> optionalUser = checkUtils.checkIfUserIsAdmin(userId);
-            if (optionalUser.isPresent()) {
-                User user = optionalUser.get();
-                if (!user.getRole().getRoleName().equalsIgnoreCase("ADMIN")) {
-                    continue;
-                }
-                projectAdminsList.add(user);
-            }
-        }
-        return projectAdminsList;
-    }
-
     @Override
     @Cacheable(key = "#projectKey", value = "PROJECT_TASK")
     public CustomResponse<Object> getAllTask(String projectKey) {
@@ -239,7 +196,7 @@ public class TaskServiceImpl implements TaskService {
         }
         Optional<Label> label = labelRepository.findByLabelName(labelName);
         if (label.isEmpty()) {
-            throw new LabelNotFoundException(ConstantInformation.LABEL_NOT_FOUND);
+            throw new LabelNotFoundException(ConstantInformation.LABEL_NOT_FOUND_MESSAGE);
         }
 
         List<Task> taskList = checkUtils.getAllTaskFromLabel(projectKey, labelName);
@@ -248,6 +205,24 @@ public class TaskServiceImpl implements TaskService {
         return CustomResponse.builder().statusCode(HttpStatus.OK.value()).message("Success OK").data(taskList).build();
     }
 
+    private Task checkIfTaskExistsAndIsActive(Long taskId) {
+        Optional<Task> optionalTask = taskRepository.findById(taskId);
+        if (optionalTask.isEmpty()) {
+            throw new TaskNotFoundException(ConstantInformation.TASK_NOT_FOUND_MESSAGE);
+        }
+        if (!optionalTask.get().isActiveFlg()) {
+            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
+        }
+        return optionalTask.get();
+    }
+    private void saveTaskLabel(Task task, List<String> labelNames) {
+        if (labelNames != null && !labelNames.isEmpty()) {
+            for (String name : labelNames) {
+                Label label = checkUtils.getLabelFromName(name);
+                checkUtils.saveToTaskLabel(task, label);
+            }
+        }
+    }
 
     private void updateTaskFile(Task task, MultipartFile mFile) {
         Optional<File> optFile = Optional.ofNullable(fileRepository.findFileByTaskId(task.getTaskId()));
@@ -259,6 +234,22 @@ public class TaskServiceImpl implements TaskService {
         } else {
             this.createNewFile(task, mFile);
         }
+    }
+    private List<User> getAdminListFromProject(String projectKey) {
+        Project project = checkUtils.getProjectFromKey(projectKey);
+        List<Long> usersOfProject = checkUtils.getUserIdByProjectKey(project.getProjectId());
+        List<User> projectAdminsList = new ArrayList<>();
+        for (Long userId : usersOfProject) {
+            Optional<User> optionalUser = checkUtils.checkIfUserIsAdmin(userId);
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+                if (!user.getRole().getRoleName().equalsIgnoreCase("ADMIN")) {
+                    continue;
+                }
+                projectAdminsList.add(user);
+            }
+        }
+        return projectAdminsList;
     }
 
     private void createNewFile(Task task, MultipartFile mFile) {

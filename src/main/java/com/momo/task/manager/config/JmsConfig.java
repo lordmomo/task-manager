@@ -20,7 +20,6 @@ import java.util.UUID;
 @EnableJms
 public class JmsConfig {
 
-    ArrayList<String> clientList = new ArrayList<>();
     @Value("${activemq.broker-url}")
     private String brokerUrl;
 

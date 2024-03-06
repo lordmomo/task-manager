@@ -13,7 +13,7 @@ public class RefreshCache {
     public void refresh(String cacheName) {
         Cache cache = cacheManager.getCache(cacheName);
         if (cache != null) {
-            // Clears all entries from the cache, effectively refreshing it
+            // Clears all entries from the cache
             cache.clear();
         }
     }

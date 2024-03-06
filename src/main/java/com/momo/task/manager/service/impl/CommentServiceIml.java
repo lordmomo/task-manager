@@ -66,17 +66,10 @@ public class CommentServiceIml implements CommentService {
 
         try {
             checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
-
-            Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
-            Long userIdOfUserWhoWantsToDeleteComment = checkUtils.getUserIdFromUsername(username);
-            if (!userIdOfUserWhoWantsToDeleteComment.equals(userIdOfUserWhoCommented)) {
-                throw new AccessDeniedException(ConstantInformation.ACCESS_DENIED_MESSAGE);
-            }
-            this.performCommonValidations(projectKey, userIdOfUserWhoWantsToDeleteComment);
+            checkIfUserTryingToModifyIsSameAsCreator(commentId,username,projectKey);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.checkUtils.checkIfCommentExists(commentId);
             commentRepository.deleteByCommentId(commentId);
-
             this.refreshCache.refresh("COMMENT");
             List<CommentDto> responseCommentList = getCommentList(projectKey, taskId);
 
@@ -89,19 +82,7 @@ public class CommentServiceIml implements CommentService {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
-
     }
-
-    private void checkIfDetailsAreAlreadyDeleted(String projectKey, Long taskId, Long commentId, String username) {
-        if (!this.checkUtils.checkIfProjectIdDeleted(projectKey) ||
-                !this.checkUtils.checkIfTaskIdDeleted(taskId) ||
-                !this.checkUtils.checkIfCommentIdDeleted(commentId) ||
-                !this.checkUtils.checkIfUserDeletedByUsername(username)
-        ) {
-            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
-        }
-    }
-
     @Override
     @Transactional
     @CachePut(key = "#taskId", value = "COMMENT")
@@ -109,22 +90,16 @@ public class CommentServiceIml implements CommentService {
                                                 String username, UpdateCommentRequestDto updateCommentRequestDto) {
         try {
             checkIfDetailsAreAlreadyDeleted(projectKey, taskId, commentId, username);
-
-            Long userIdOfUserWhoCommented = checkUtils.getUserIdFromCommentId(commentId);
-            Long userIdOfUserWhoWantsToUpdateComment = checkUtils.getUserIdFromUsername(username);
-            if (!userIdOfUserWhoWantsToUpdateComment.equals(userIdOfUserWhoCommented)) {
-                throw new AccessDeniedException(ConstantInformation.ACCESS_DENIED_MESSAGE);
-            }
-            this.performCommonValidations(projectKey, userIdOfUserWhoWantsToUpdateComment);
+            checkIfUserTryingToModifyIsSameAsCreator(commentId,username,projectKey);
             this.checkUtils.checkIfTaskBelongsToProject(projectKey, taskId);
             this.updateCommentFromDto(commentId, updateCommentRequestDto);
 //          Use flush concept
-//          flush removes all the data from cache and then retrieves new data from db...i.e. it hits the db
+//          flush removes all the data from cache and then retrieves new data from db.
             this.refreshCache.refresh("COMMENT");
 
             List<CommentDto> responseCommentList = getCommentList(projectKey, taskId);
 
-//              Return the updated comment (or any other data you want to store in the cache)
+//          Returns the updated comment you want to store in the cache
             return CustomResponse.builder()
                     .statusCode(HttpStatus.OK.value())
                     .message(ConstantInformation.COMMENT_UPDATED_MESSAGE)
@@ -149,6 +124,30 @@ public class CommentServiceIml implements CommentService {
                 .data(responseCommentList)
                 .build();
 
+    }
+
+    private void checkIfUserTryingToModifyIsSameAsCreator(Long commentId, String username,String projectKey) {
+        try {
+            Long userIdOfCreator = checkUtils.getUserIdFromCommentId(commentId);
+            Long userIdOfModifier = checkUtils.getUserIdFromUsername(username);
+            if (!userIdOfModifier.equals(userIdOfCreator)) {
+                throw new AccessDeniedException(ConstantInformation.ACCESS_DENIED_MESSAGE);
+            }
+            this.performCommonValidations(projectKey, userIdOfModifier);
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+
+    private void checkIfDetailsAreAlreadyDeleted(String projectKey, Long taskId, Long commentId, String username) {
+        if (!this.checkUtils.checkIfProjectIdDeleted(projectKey) ||
+                !this.checkUtils.checkIfTaskIdDeleted(taskId) ||
+                !this.checkUtils.checkIfCommentIdDeleted(commentId) ||
+                !this.checkUtils.checkIfUserDeletedByUsername(username)
+        ) {
+            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
+        }
     }
 
     private List<CommentDto> getCommentList(String projectKey, Long taskId) {

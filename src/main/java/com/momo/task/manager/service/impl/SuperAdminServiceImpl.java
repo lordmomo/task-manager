@@ -9,6 +9,7 @@ import com.momo.task.manager.repository.*;
 import com.momo.task.manager.request.*;
 import com.momo.task.manager.response.UserResponseDto;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
+import com.momo.task.manager.utils.CheckUtils;
 import com.momo.task.manager.utils.ConstantInformation;
 import com.momo.task.manager.utils.ImageLoader;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +45,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     ImageLoader imageLoader;
     PasswordEncoder passwordEncoder;
 
-    @Autowired
+    CheckUtils checkUtils;
+
     JmsTemplate jmsTemplate;
 
     @Value("${emp.jms.topic.admin-added}")
@@ -61,7 +63,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
                                  FileRepository fileRepository,
                                  ModelMapper mapper,
                                  ImageLoader imageLoader,
-                                 PasswordEncoder passwordEncoder) {
+                                 PasswordEncoder passwordEncoder,
+                                 CheckUtils checkUtils,
+                                 JmsTemplate jmsTemplate) {
 
         this.superAdminRepository = superAdminRepository;
         this.roleRepository = roleRepository;
@@ -74,6 +78,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.mapper = mapper;
         this.imageLoader = imageLoader;
         this.passwordEncoder = passwordEncoder;
+        this.checkUtils= checkUtils;
+        this.jmsTemplate = jmsTemplate;
         configureModelMapper();
     }
 
@@ -135,7 +141,6 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public ResponseEntity<String> removeUser(String username) {
 
-        //user delete , delete their access, comment
         User user = validateIfUserExistsAndIsActive(username);
         removeAllUserRelatedData(user);
 
@@ -197,16 +202,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public ResponseEntity<String> createProject(ProjectCreateRequestDto projectCreateRequestDto) {
-
         Project project = mapper.map(projectCreateRequestDto, Project.class);
-        Optional<User> optUser = superAdminRepository.findById(projectCreateRequestDto.getProjectLead());
-        if (optUser.isEmpty()) {
-            throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
-        }
-        if (!optUser.get().isActiveFlg()) {
-            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
-        }
-        User user = optUser.get();
+        User user = checkUserExistsAndIsActive(projectCreateRequestDto.getProjectLead());
         project.setProjectLead(user);
         this.setFlagForProjectCreation(project);
         projectRepository.save(project);
@@ -214,16 +211,21 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.PROJECT_CREATED_MESSAGE);
     }
 
-    @Override
-    public ResponseEntity<String> updateProject(String projectKey, UpdateProjectRequestDto updateProjectRequestDto) {
-        Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
-        if (optionalProject.isEmpty()) {
-            throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
+    private User checkUserExistsAndIsActive(Long projectLead) {
+        Optional<User> optUser = superAdminRepository.findById(projectLead);
+        if (optUser.isEmpty()) {
+            throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
         }
-        if (!optionalProject.get().isActiveFlg()) {
+        if (!optUser.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
-        Project project = optionalProject.get();
+        return optUser.get();
+    }
+
+
+    @Override
+    public ResponseEntity<String> updateProject(String projectKey, UpdateProjectRequestDto updateProjectRequestDto) {
+        Project project = checkIfProjectExistsAndIsActive(projectKey);
         User prevUser = project.getProjectLead();
         if (!prevUser.isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
@@ -236,8 +238,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.PROJECT_UPDATED_MESSAGE);
     }
 
-    @Override
-    public ResponseEntity<String> deleteProject(String projectKey) {
+    private Project checkIfProjectExistsAndIsActive(String projectKey) {
         Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
@@ -245,8 +246,13 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (!optionalProject.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
-        Long projectId = optionalProject.get().getProjectId();
-        //check if active flag is zero or not before deletion in every delete operation
+        return optionalProject.get();
+    }
+
+    @Override
+    public ResponseEntity<String> deleteProject(String projectKey) {
+        Project project = checkIfProjectExistsAndIsActive(projectKey);
+        Long projectId = project.getProjectId();
         projectRepository.deleteProjectById(projectId);
         List<Long> taskIdsInProject = taskRepository.getAllTaskIdFromProjectId(projectId);
         taskRepository.deleteByProjectId(projectId);
@@ -260,21 +266,11 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     @Override
     public ResponseEntity<String> addUsersToProject(String projectKey, String username) {
-        Optional<User> optionalUser = superAdminRepository.findByUsername(username);
-        Optional<Project> optionalProject = projectRepository.findByProjectKey(projectKey);
-        if (optionalUser.isEmpty()) {
-            throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
-        }
-        if (optionalProject.isEmpty()) {
-            throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
-        }
 
-        if (!optionalProject.get().isActiveFlg() ||
-                !optionalUser.get().isActiveFlg()) {
-            throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
-        }
-        User user = optionalUser.get();
-        Project project = optionalProject.get();
+
+        Project project = checkIfProjectExistsAndIsActive(projectKey);
+        Long userId = checkUtils.getUserIdFromUsername(username);
+        User user = checkUserExistsAndIsActive(userId);
         Access access = createAccess(user, project);
         accessRepository.save(access);
         return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.USER_ADDED_TO_PROJECT_MESSAGE);

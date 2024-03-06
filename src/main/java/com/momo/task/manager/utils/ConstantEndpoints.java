@@ -9,7 +9,16 @@ public class ConstantEndpoints {
 
 //      Endpoints
 
-//      Comment controller endpoints
+//      Authentication endpoints
+
+    public static final String MAIN_AUTH_KEY = "/auth";
+
+    public static final String LOGIN_USER_ENDPOINT = "/login";
+    public static final String REFRESH_TOKEN_ENDPOINT = "/refresh-token";
+
+
+
+    //      Comment controller endpoints
     public static final String MAIN_COMMENT_KEY = "/comment";
     public static final String CREATE_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments";
     public static final String DELETE_COMMENTS_ENDPOINT = "/projects/{projectKey}/tasks/{taskId}/comments/{commentId}/{username}/delete";
