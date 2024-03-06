@@ -9,12 +9,15 @@ import com.momo.task.manager.repository.*;
 import com.momo.task.manager.request.*;
 import com.momo.task.manager.response.UserResponseDto;
 import com.momo.task.manager.service.interfaces.SuperAdminService;
-import com.momo.task.manager.utils.ImageLoader;
 import com.momo.task.manager.utils.ConstantInformation;
+import com.momo.task.manager.utils.ImageLoader;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class SuperAdminServiceImpl implements SuperAdminService {
 
     SuperAdminRepository superAdminRepository;
@@ -39,6 +43,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     ModelMapper mapper;
     ImageLoader imageLoader;
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    JmsTemplate jmsTemplate;
+
+    @Value("${emp.jms.topic.admin-added}")
+    private String adminAddedTopic;
 
     @Autowired
     public SuperAdminServiceImpl(SuperAdminRepository superAdminRepository,
@@ -79,8 +89,14 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.setRoleForUser(user, userCreateRequestDto.getRoleId());
         this.setProfilePictureForUser(user, userCreateRequestDto.getPictureFile(), new ProfilePicture());
         superAdminRepository.save(user);
+
+        if (user.getRole().getRoleName().equalsIgnoreCase("ADMIN")) {
+            jmsTemplate.convertAndSend(adminAddedTopic, "Subscribed Admin: " + user.getUsername());
+            log.info("Subscribed Admin: " + user.getUsername());
+        }
         return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.USER_CREATED_MESSAGE);
     }
+
 
     @Override
     public ResponseEntity<UserResponseDto> getUserDetails(String username) {
@@ -155,6 +171,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         this.updateAllUserCredentials(user, userCredentialsRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.USER_CREDENTIALS_UPDATED_MESSAGE);
     }
+
     private void updateAllUserCredentials(User user, UserCredentialsRequestDto userCredentialsRequestDto) {
         user.setUsername(userCredentialsRequestDto.getUsername());
         user.setPassword(passwordEncoder.encode(userCredentialsRequestDto.getPassword()));
@@ -165,7 +182,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     @Override
     public ResponseEntity<String> updateUserProfilePicture(String username, MultipartFile file) {
         User user = validateIfUserExistsAndIsActive(username);
-        this.updateAllUserProfilePicture(user,file);
+        this.updateAllUserProfilePicture(user, file);
         return ResponseEntity.status(HttpStatus.OK).body(ConstantInformation.USER_PROFILE_PICTURE_UPDATED_MESSAGE);
     }
 
@@ -186,7 +203,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
         }
-        if(!optUser.get().isActiveFlg()){
+        if (!optUser.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         User user = optUser.get();
@@ -203,12 +220,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
-        if(!optionalProject.get().isActiveFlg()){
+        if (!optionalProject.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         Project project = optionalProject.get();
         User prevUser = project.getProjectLead();
-        if(!prevUser.isActiveFlg()){
+        if (!prevUser.isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         this.updateProjectLead(prevUser, project, updateProjectRequestDto);
@@ -225,7 +242,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optionalProject.isEmpty()) {
             throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
-        if(!optionalProject.get().isActiveFlg()){
+        if (!optionalProject.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         Long projectId = optionalProject.get().getProjectId();
@@ -252,8 +269,8 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             throw new ProjectNotFoundException(ConstantInformation.PROJECT_NOT_FOUND_MESSAGE);
         }
 
-        if(!optionalProject.get().isActiveFlg() ||
-            !optionalUser.get().isActiveFlg()){
+        if (!optionalProject.get().isActiveFlg() ||
+                !optionalUser.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         User user = optionalUser.get();
@@ -342,11 +359,12 @@ public class SuperAdminServiceImpl implements SuperAdminService {
         if (optUser.isEmpty()) {
             throw new UserNotFoundException(ConstantInformation.USER_NOT_FOUND_MESSAGE);
         }
-        if(!optUser.get().isActiveFlg()){
+        if (!optUser.get().isActiveFlg()) {
             throw new DataHasBeenDeletedException(ConstantInformation.DATA_HAS_DELETED_MESSAGE);
         }
         return optUser.get();
     }
+
     private void setFlagForUserCreation(User user) {
         user.setActiveFlg(true);
         user.setUpdatedFlg(false);

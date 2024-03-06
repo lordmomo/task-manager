@@ -7,20 +7,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.List;
 
 @Repository
-public interface TaskRepository extends JpaRepository<Task,Long> {
+public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query(nativeQuery = true,
             value = "SELECT * FROM TASK t WHERE t.project_id = :projectId AND t.active_flg = 1"
     )
-    List<Task>findByProdId(Long projectId);
+    List<Task> findByProdId(Long projectId);
 
     @Query(nativeQuery = true,
             value = "SELECT * FROM TASK t where t.project_id=:projectId and t.task_id=:taskId"
-            )
-    Task doesTaskIdBelongToProjectId(Long projectId,Long taskId);
+    )
+    Task doesTaskIdBelongToProjectId(Long projectId, Long taskId);
+
     @Transactional
     @Modifying
     @Query(nativeQuery = true,
@@ -44,6 +44,10 @@ public interface TaskRepository extends JpaRepository<Task,Long> {
     void deleteByProjectId(Long projectId);
 
     @Query(nativeQuery = true,
-            value = "Select t.task_id from task t where t.project_id = :projectId where t.active_flg = 1")
+            value = "Select t.task_id from task t where t.project_id = :projectId and t.active_flg = 1")
     List<Long> getAllTaskIdFromProjectId(Long projectId);
+
+    @Query(nativeQuery = true,
+            value = "Select t.task_id from task t where t.task_name = :taskName and t.active_flg = 1")
+    Long getTaskIdFromTaskName(String taskName);
 }

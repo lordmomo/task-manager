@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @Component
 public class CheckUtils {
+
     AccessRepository accessRepository;
     ProjectRepository projectRepository;
     SuperAdminRepository superAdminRepository;
@@ -94,7 +95,7 @@ public class CheckUtils {
         Long projectId = projectRepository.getProjectIdFromProjectKey(projectKey);
         Task check = taskRepository.doesTaskIdBelongToProjectId(projectId, taskId);
         if (check == null) {
-            throw new TaskDoesNotBelongToProjectException("Error in task and project relationship [Duplicate data]");
+            throw new TaskDoesNotBelongToProjectException(ConstantInformation.TASK_DOES_NOT_BELONG_TO_PROJECT_MESSAGE);
         }
 
     }
@@ -218,5 +219,17 @@ public class CheckUtils {
                 taskLabelRepository.deleteByTaskIdAndLabelName(taskId, label.getLabelId());
             }
         }
+    }
+
+    public Long getTaskIdFromTaskName(String taskName) {
+        return taskRepository.getTaskIdFromTaskName(taskName);
+    }
+
+    public List<Long> getUserIdByProjectKey(Long projectId) {
+        return accessRepository.getUserIdByProjectKey(projectId);
+    }
+
+    public Optional<User> checkIfUserIsAdmin(Long userId) {
+        return superAdminRepository.findById(userId);
     }
 }

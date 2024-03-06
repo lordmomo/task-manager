@@ -1,5 +1,7 @@
 package com.momo.task.manager.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,7 @@ import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Configuration
 @EnableJms
@@ -44,15 +47,19 @@ public class JmsConfig {
         ActiveMQConnectionFactory activeMQConnFactory = new ActiveMQConnectionFactory();
         activeMQConnFactory.setBrokerURL(brokerUrl);
         factory.setTargetConnectionFactory(activeMQConnFactory);
-        factory.setClientId("Client_73");
+        factory.setClientId("Client_" + UUID.randomUUID());
         return factory;
     }
 
     @Bean
     public MessageConverter jacksonJmsMsgConverter() {
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        ObjectMapper objectMapper = new ObjectMapper();
         converter.setTargetType(MessageType.TEXT);
         converter.setTypeIdPropertyName("_type");
+        // Register JavaTimeModule for LocalDateTime
+        objectMapper.registerModule(new JavaTimeModule());
+        converter.setObjectMapper(objectMapper);
         return converter;
     }
 

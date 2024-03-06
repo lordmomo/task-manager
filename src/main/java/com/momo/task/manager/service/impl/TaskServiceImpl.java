@@ -1,8 +1,10 @@
 package com.momo.task.manager.service.impl;
 
 import com.momo.task.manager.dto.TaskDto;
+import com.momo.task.manager.dto.TaskUpdateEventDto;
 import com.momo.task.manager.exception.*;
 import com.momo.task.manager.model.*;
+import com.momo.task.manager.pubsub.TaskUpdatePublisher;
 import com.momo.task.manager.repository.*;
 import com.momo.task.manager.response.CustomResponse;
 import com.momo.task.manager.response.TaskResponseDto;
@@ -45,6 +47,7 @@ public class TaskServiceImpl implements TaskService {
     RefreshCache refreshCache;
     CheckUtils checkUtils;
     ModelMapper mapper;
+    TaskUpdatePublisher taskUpdatePublisher;
 
     @Autowired
     public TaskServiceImpl(TaskRepository taskRepository,
@@ -57,7 +60,8 @@ public class TaskServiceImpl implements TaskService {
                            LabelRepository labelRepository,
                            RefreshCache refreshCache,
                            CheckUtils checkUtils,
-                           ModelMapper mapper) {
+                           ModelMapper mapper,
+                           TaskUpdatePublisher taskUpdatePublisher) {
 
         this.taskRepository = taskRepository;
         this.commentRepository = commentRepository;
@@ -70,6 +74,7 @@ public class TaskServiceImpl implements TaskService {
         this.checkUtils = checkUtils;
         this.refreshCache = refreshCache;
         this.mapper = mapper;
+        this.taskUpdatePublisher = taskUpdatePublisher;
         configureModelMapper();
     }
 
@@ -173,11 +178,43 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.save(task);
         log.info("inside db update task");
         List<TaskResponseDto> responseTask = refreshAndSetNewCache(projectKey);
+        sendMessageToAdmins(projectKey, taskDto);
+//        List<User> projectAdminsList = checkUtils.getProjectAdmins(projectKey);
         return CustomResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(ConstantInformation.TASK_UPDATED_MESSAGE)
                 .data(responseTask)
                 .build();
+    }
+
+    private void sendMessageToAdmins(String projectKey, TaskDto taskDto) {
+        List<User> projectAdminsList = getAdminListFromProject(projectKey);
+
+        Long reqTaskId = checkUtils.getTaskIdFromTaskName(taskDto.getTaskName());
+        TaskUpdateEventDto taskUpdateEventDto = TaskUpdateEventDto.builder()
+                .taskId(reqTaskId)
+                .eventType(taskDto.getType())
+                .projectKey(taskDto.getProjectKey())
+//                .adminList(projectAdminsList)
+                .build();
+        taskUpdatePublisher.publishTaskUpdateEvent(taskUpdateEventDto);
+    }
+
+    private List<User> getAdminListFromProject(String projectKey) {
+        Project project = checkUtils.getProjectFromKey(projectKey);
+        List<Long> usersOfProject = checkUtils.getUserIdByProjectKey(project.getProjectId());
+        List<User> projectAdminsList = new ArrayList<>();
+        for (Long userId : usersOfProject) {
+            Optional<User> optionalUser = checkUtils.checkIfUserIsAdmin(userId);
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+                if (!user.getRole().getRoleName().equalsIgnoreCase("ADMIN")) {
+                    continue;
+                }
+                projectAdminsList.add(user);
+            }
+        }
+        return projectAdminsList;
     }
 
     @Override
